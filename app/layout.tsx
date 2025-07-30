@@ -57,7 +57,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <head>
         {styles && <style>{styles}</style>}
         <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription + '\n\nBuilt with LiveKit Agents.'} />
+        <meta name="description" content={pageDescription} />
         <ApplyThemeScript />
       </head>
       <body

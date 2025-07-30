@@ -16,12 +16,15 @@ export interface AppConfig {
   supportsVideoInput: boolean;
   supportsScreenShare: boolean;
   isPreConnectBufferEnabled: boolean;
+  debug?: boolean; // Enable debug features like test buttons
 
   logo: string;
   startButtonText: string;
   accent?: string;
   logoDark?: string;
   accentDark?: string;
+  hideCanvasInitially?: boolean;
+  canvasTitle?: string;
 }
 
 export interface SandboxConfig {
