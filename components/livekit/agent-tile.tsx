@@ -18,13 +18,13 @@ export const AgentTile = ({
       <BarVisualizer
         barCount={5}
         state={state}
-        options={{ minHeight: 5 }}
+        options={{ minHeight: 2 }}
         trackRef={audioTrack}
-        className={cn('flex aspect-video w-40 items-center justify-center gap-1')}
+        className={cn('flex aspect-video w-16 items-center justify-center gap-0.5')}
       >
         <span
           className={cn([
-            'bg-muted min-h-4 w-4 rounded-full',
+            'bg-muted min-h-1 w-1 rounded-full',
             'origin-center transition-colors duration-250 ease-linear',
             'data-[lk-highlighted=true]:bg-foreground data-[lk-muted=true]:bg-muted',
           ])}

@@ -38,6 +38,10 @@ const CanvasView: React.FC<CanvasViewProps> = ({
   const dragging = useRef(false);
   const [testPanelOpen, setTestPanelOpen] = useState(false);
 
+  // Calculate actual left section width in pixels (assuming 100vw container)
+  const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1200; // fallback for SSR
+  const leftSectionWidth = containerWidth * divider;
+
   // SessionView state and hooks
   const { state: agentState } = useVoiceAssistant();
   const [chatOpen, setChatOpen] = useState(false);
@@ -339,7 +343,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         >
           {/* Header/avatar section */}
           <div style={{ flex: '0 0 auto', minHeight: 96, paddingTop: 24, paddingBottom: 8 }}>
-            <MediaTiles chatOpen={chatOpen} />
+            <MediaTiles chatOpen={chatOpen} leftSectionWidth={leftSectionWidth} />
           </div>
           {/* Chat area */}
           <div className="scrollbar_fix" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: 'auto' }}>

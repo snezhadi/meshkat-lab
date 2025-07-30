@@ -88,9 +88,10 @@ export function useLocalTrackRef(source: Track.Source) {
 
 interface MediaTilesProps {
   chatOpen: boolean;
+  leftSectionWidth?: number;
 }
 
-export function MediaTiles({ chatOpen }: MediaTilesProps) {
+export function MediaTiles({ chatOpen, leftSectionWidth }: MediaTilesProps) {
   const {
     state: agentState,
     audioTrack: agentAudioTrack,
@@ -121,10 +122,26 @@ export function MediaTiles({ chatOpen }: MediaTilesProps) {
 
   const isAvatar = agentVideoTrack !== undefined;
 
+  // Determine if width constraint should be applied
+  // Apply max-w-2xl when left section > 500px (desktop) or when chat is open
+  const shouldConstrainWidth = chatOpen || (leftSectionWidth && leftSectionWidth > 500);
+
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-8 bottom-32 z-50 md:top-12 md:bottom-40">
-      <div className="relative mx-auto h-full max-w-2xl px-4 md:px-0">
-        <div className={cn(classNames.grid)}>
+    <div className={cn(
+      "pointer-events-none z-50",
+      chatOpen
+        ? "absolute inset-x-0 top-8 bottom-32 md:top-12 md:bottom-40"
+        : "absolute inset-0"
+    )}>
+      <div className={cn(
+        "relative h-full",
+        // Hide scrollbars only in big mode (when chat is closed)
+        chatOpen ? "overflow-hidden" : "media-tiles-big-mode",
+        shouldConstrainWidth
+          ? "mx-auto max-w-2xl px-4 md:px-0"
+          : "w-full"
+      )}>
+        <div className={cn(chatOpen ? classNames.grid : 'h-full w-full')}>
           {/* agent */}
           <div
             className={cn([

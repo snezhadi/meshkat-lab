@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface FormField {
   name: string;
@@ -97,49 +98,21 @@ const AddressAutocomplete: React.FC<{
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="relative">
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          padding: '0.5rem',
-          border: '1px solid #ccc',
-          borderRadius: 6,
-          fontSize: 16,
-          width: '100%',
-        }}
+        className="flex h-10 w-full dark:!bg-[#161616] rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring focus-visible:ring-gray-500 transition-all delay-150 disabled:cursor-not-allowed disabled:opacity-50"
         placeholder="Enter your address"
       />
       {showSuggestions && suggestions.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          background: '#fff',
-          border: '1px solid #ccc',
-          borderRadius: 6,
-          maxHeight: 200,
-          overflowY: 'auto',
-          zIndex: 1000,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        }}>
+        <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md max-h-48 overflow-y-auto z-[1000] shadow-lg">
           {suggestions.map((suggestion, index) => (
             <div
               key={index}
               onClick={() => handleSelect(suggestion)}
-              style={{
-                padding: '0.5rem',
-                cursor: 'pointer',
-                borderBottom: '1px solid #eee',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f5f5f5';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#fff';
-              }}
+              className="px-3 py-2 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {suggestion}
             </div>
@@ -526,37 +499,25 @@ export default function CanvasForm({
             </div>
           ))}
         </div>
-        <div className="flex w-full gap-4 pt-0 relative justify-between z-[60]">
-          <button
+        <div className="flex w-full gap-4 pt-0 relative justify-between z-[60] mt-5">
+          <Button
             type="button"
             onClick={onCancel}
             disabled={firstForm}
-            className={`inline-flex w-fit items-center cursor-pointer
-            justify-center whitespace-nowrap rounded-lg
-             text-sm font-medium ring-offset-background
-             transition-colors focus-visible:outline-none
-             focus-visible:ring-2 focus-visible:ring-ring px-8
-              focus-visible:ring-offset-2 disabled:pointer-events-none
-               disabled:opacity-50 py-2 border border-gray-300
-               ${firstForm ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}
-               dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 mt-5`}
+            variant="outline"
+            size="lg"
+            className="px-8"
           >
             &lt;Back
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="inline-flex w-fit items-center cursor-pointer
-            justify-center whitespace-nowrap rounded-lg
-             text-sm font-medium ring-offset-background
-             transition-colors focus-visible:outline-none
-             focus-visible:ring-2 focus-visible:ring-ring px-8
-              focus-visible:ring-offset-2 disabled:pointer-events-none
-               disabled:opacity-50 py-2 flex-1 bg-[#2e2e30]
-               text-white hover:bg-gray-700 dark:bg-gray-50
-                dark:text-gray-900 dark:hover:bg-gray-200 mt-5"
+            variant="primary"
+            size="lg"
+            className="px-8 flex-1"
           >
             Next &gt;
-          </button>
+          </Button>
         </div>
       </div>
     </form>
