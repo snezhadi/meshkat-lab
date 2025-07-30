@@ -324,13 +324,13 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         paddingTop: '45px',
       }}
     >
-      <div style={{ 
-        width: `${divider * 100}%`, 
-        minWidth: 200, 
-        height: '100%', 
-        overflow: 'hidden', 
-        position: 'relative', 
-        display: 'flex', 
+      <div style={{
+        width: `${divider * 100}%`,
+        minWidth: 350,
+        height: '100%',
+        overflow: 'hidden',
+        position: 'relative',
+        display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
         zIndex: 1
@@ -338,11 +338,14 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         {/* Left pane - SessionView content */}
         <main
           inert={disabled}
-          className="flex flex-col flex-1 h-full w-full bg-background px-6"
+          className={cn(
+            "flex flex-col flex-1 h-full w-full bg-background px-6",
+            !chatOpen && "overflow-hidden"
+          )}
           style={{ minHeight: 0 }}
         >
           {/* Header/avatar section */}
-          <div style={{ flex: '0 0 auto', minHeight: 96, paddingTop: 24, paddingBottom: 8 }}>
+          <div style={chatOpen ? { flex: '0 0 auto', minHeight: 96, paddingTop: 24, paddingBottom: 8 } : { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }} className={cn(!chatOpen && 'bottom-6 md:bottom-6')}>
             <MediaTiles chatOpen={chatOpen} leftSectionWidth={leftSectionWidth} />
           </div>
           {/* Chat area */}
