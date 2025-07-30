@@ -131,7 +131,7 @@ export function MediaTiles({ chatOpen, leftSectionWidth }: MediaTilesProps) {
       "pointer-events-none z-50",
       chatOpen
         ? "absolute inset-x-0 top-8 bottom-32 md:top-12 md:bottom-40"
-        : "absolute inset-0"
+        : "absolute inset-x-0 top-0 bottom-4"
     )}>
       <div className={cn(
         "relative h-full",

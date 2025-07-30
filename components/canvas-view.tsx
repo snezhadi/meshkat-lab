@@ -38,6 +38,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
   const [divider, setDivider] = useState(appConfig.hideCanvasInitially ? 1 : 0.4); // 1 = hidden, 0.4 = 60% right pane
   const [isDragging, setIsDragging] = useState(false);
   const [testPanelOpen, setTestPanelOpen] = useState(false);
+  const [rightPan, setRightPan] = useState(true);
 
   // Helper function to calculate minimum divider percentage based on 350px constraint
   const getMinDividerPercent = (containerWidth: number): number => {
@@ -49,7 +50,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
   const [containerWidth, setContainerWidth] = useState(0);
 
   // Calculate actual left section width in pixels
-  const leftSectionWidth = containerWidth * divider;
+  const leftSectionWidth = rightPan ? containerWidth * divider : containerWidth;
 
   // SessionView state and hooks
   const { state: agentState } = useVoiceAssistant();
@@ -385,7 +386,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         }}
       >
       <div style={{
-        width: `${divider * 100}%`,
+        width: rightPan ? `${divider * 100}%` : '100%',
         minWidth: 350,
         height: '100%',
         overflow: 'hidden',
@@ -393,8 +394,32 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
-        zIndex: 1
+        zIndex: 1,
+        userSelect: isDragging ? 'none' : 'auto'
       }}>
+        {/* Toggle button for expanding/collapsing right panel */}
+        <div className={`w-full right-0 py-3 h-auto flex items-center justify-end z-[600] absolute ${!rightPan ? 'px-8' : 'px-3'}`}>
+          {rightPan ? (
+            <button
+              onClick={() => setRightPan(false)}
+              className="bg-blue-300 group p-[8px] dark:bg-[#131313] hover:ring-offset-1 ring-[1px] ring-gray-700 hover:ring-[2px] cursor-pointer hover:ring-gray-600 hover:bg-blue-400 transition-all rounded-full w-fit"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="group-hover:scale-120" width="1em" height="1em" viewBox="0 0 16 16">
+                <path fill="currentColor" d="M4.5 2A2.5 2.5 0 0 0 2 4.5a.5.5 0 0 0 1 0A1.5 1.5 0 0 1 4.5 3a.5.5 0 0 0 0-1M7 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zM3 7a.5.5 0 0 0-1 0v2a.5.5 0 0 0 1 0zm0 4.5a.5.5 0 0 0-1 0A2.5 2.5 0 0 0 4.5 14a.5.5 0 0 0 0-1A1.5 1.5 0 0 1 3 11.5M7 13a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3-11a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h1.5a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 11.5 2zm.5 11V3h1A1.5 1.5 0 0 1 13 4.5v7a1.5 1.5 0 0 1-1.5 1.5z"/>
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={() => setRightPan(true)}
+              className="bg-blue-300 group p-[8px] dark:bg-[#131313] hover:ring-offset-1 cursor-pointer ring-[1px] ring-gray-700 hover:ring-[2px] hover:ring-gray-600 hover:bg-blue-400 hover:scale-110 transition-all rounded-full w-fit"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="group-hover:scale-120" width="1em" height="1em" viewBox="0 0 20 20">
+                <path fill="currentColor" d="M3 5.5A2.5 2.5 0 0 1 5.5 3a.5.5 0 0 1 0 1A1.5 1.5 0 0 0 4 5.5a.5.5 0 0 1-1 0m5-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5M3.5 8a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5m0 6a.5.5 0 0 1 .5.5A1.5 1.5 0 0 0 5.5 16a.5.5 0 0 1 0 1A2.5 2.5 0 0 1 3 14.5a.5.5 0 0 1 .5-.5M8 16.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4-13a.5.5 0 0 1 .5-.5H14a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-1.5a.5.5 0 0 1-.5-.5z"/>
+              </svg>
+            </button>
+          )}
+        </div>
+
         {/* Left pane - SessionView content */}
         <main
           inert={disabled}
@@ -409,7 +434,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
             <MediaTiles chatOpen={chatOpen} leftSectionWidth={leftSectionWidth} />
           </div>
           {/* Chat area */}
-          <div className="scrollbar_fix" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: 'auto' }}>
+          <div className={chatOpen ? "scrollbar_fix" : ""} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: chatOpen ? 'auto' : 'hidden', visibility: chatOpen ? 'visible' : 'hidden' }}>
             <ChatMessageView
               className={cn(
                 'mx-auto w-full max-w-2xl px-6 py-8 md:px-12 md:py-12 transition-[opacity,translate] duration-300 ease-out',
@@ -474,12 +499,14 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           </div>
         </main>
       </div>
-      <div className="relative bg-[#f3f3f3] dark:bg-[#0A0A0A]" style={{
-        flex: 1,
-        height: '100%',
-        minWidth: 0,
-        userSelect: isDragging ? 'none' : 'auto'
-      }}>
+
+      {rightPan && (
+        <div className="relative bg-[#f3f3f3] dark:bg-[#0A0A0A]" style={{
+          flex: 1,
+          height: '100%',
+          minWidth: 0,
+          userSelect: isDragging ? 'none' : 'auto'
+        }}>
         {/* Canvas content or title */}
         {canvasContent ? (
           <CanvasContent
@@ -508,7 +535,10 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           </div>
         )}
       </div>
-      {/* Divider as overlay */}
+      )}
+
+      {/* Divider as overlay - only show when rightPan is true */}
+      {rightPan && (
       <div
         style={{
           position: 'absolute',
@@ -523,7 +553,10 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         }}
         onMouseDown={handleMouseDown}
       />
-      {/* Visual divider line */}
+      )}
+
+      {/* Visual divider line - only show when rightPan is true */}
+      {rightPan && (
       <div
         style={{
           position: 'absolute',
@@ -558,6 +591,8 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           />
         </div>
       </div>
+      )}
+
       {/* Test buttons for different content types */}
       {sessionStarted && appConfig.debug && (
         <div style={{
