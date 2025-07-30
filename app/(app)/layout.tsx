@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { SimpleThemeToggle } from '@/components/SimpleThemeToggle';
+import { SimpleThemeToggle } from '@/components/simple-theme-toggle';
 import { getAppConfig, getOrigin } from '@/lib/utils';
 
 interface AppLayoutProps {

@@ -334,34 +334,14 @@ export default function CanvasForm({
     const commonProps = {
       id: field.name,
       name: field.name,
-      value: values[field.name],
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleValueChange(field.name, e.target.value),
+      value: values[field.name] || "",
+      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+        handleValueChange(field.name, e.target.value),
       required: field.required,
-      style: {
-        width: '100%',
-        padding: '0.75rem',
-        border: `1px solid ${errors[field.name] ? '#ff4444' : '#ddd'}`,
-        borderRadius: 6,
-        fontSize: 16,
-        background: '#fff',
-      },
+      className: `flex h-10 w-full dark:!bg-[#161616] rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring focus-visible:ring-gray-500 transition-all delay-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+        errors[field.name] ? "border-red-500 dark:border-red-400 focus-visible:ring-red-500" : ""
+      }`,
     };
-
-    // Don't render if fields is not properly defined
-    if (!fields || !Array.isArray(fields) || fields.length === 0) {
-      return (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100%',
-          color: '#666',
-          fontSize: '1.1rem'
-        }}>
-          No form fields defined
-        </div>
-      );
-    }
 
     switch (field.type) {
       case 'email':
@@ -467,140 +447,135 @@ export default function CanvasForm({
     }
   };
 
+  // Don't render if fields is not properly defined
+  if (!fields || !Array.isArray(fields) || fields.length === 0) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+        color: '#666',
+        fontSize: '1.1rem'
+      }}>
+        No form fields defined
+      </div>
+    );
+  }
+
   const formContent = (
     <form
       id={formId}
       onSubmit={handleSubmit}
-      style={{
-        ...(isCanvasMode ? {
-          width: '100%',
-          maxWidth: fields.some(f => f.type === 'selectable_table') ? 'none' : '500px',
-          margin: '0 auto',
-          padding: '1rem',
-        } : {
-          background: '#fff',
-          borderRadius: 12,
-          minWidth: 320,
-          maxWidth: 400,
-          padding: '2rem',
-          boxShadow: '0 4px 32px rgba(0,0,0,0.15)',
-        }),
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.25rem',
-        position: 'relative',
-        ...(isCanvasMode ? {} : { left: pos.x, top: pos.y }),
-        cursor: dragging ? 'move' : 'default',
-      }}
+      className="w-full max-w-full h-full"
     >
-      {!isCanvasMode && (
-        <div
-          style={{
-            margin: '-2rem -2rem 1.5rem -2rem',
-            padding: '1rem 2rem',
-            background: '#f5f5f5',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            cursor: 'move',
-            fontWeight: 600,
-            fontSize: 18,
-            userSelect: 'none',
-          }}
-          onMouseDown={handleMouseDown}
-        >
-          Please fill out this form
+      {/* Form element for submission */}
+      <div
+        className={`relative z-10 overflow-hidden border h-full dark:border-[#3d3d3e] border-gray-300
+     backdrop-blur-lg bg-white dark:bg-[#262626f0]
+         rounded-md shadow-lg p-6 space-y-6
+          ${isCanvasMode ? "mx-auto" : ""}
+        `}
+        style={isCanvasMode ? {} : { transform: `translate(${pos.x}px, ${pos.y}px)` }}
+      >
+
+        <div className="absolute right-[-25px] dark:right-0 bottom-[-30px] z-10 dark:opacity-40 opacity-90 w-[30rem] h-[20rem]">
+          <img src="/1.svg" className="dark:block hidden" />
+          <img src="/2.svg" className="block dark:hidden" />
         </div>
-      )}
-      {fields.map(field => (
-        <div key={field.name} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {field.type !== 'selectable_table' && (
-            <label htmlFor={field.name} style={{ 
-              fontWeight: 500,
-              fontSize: isCanvasMode ? '0.875rem' : '0.875rem',
-              color: isCanvasMode ? '#333' : '#000',
-            }}>
-              {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-            </label>
-          )}
-          {renderField(field)}
-          {errors[field.name] && (
-            <span style={{ 
-              color: '#ff4444', 
-              fontSize: isCanvasMode ? '0.75rem' : '13px',
-              marginTop: '0.25rem',
-            }}>{errors[field.name]}</span>
-          )}
+        <div className="absolute right-0 bottom-[-20px] z-10 w-full h-[20rem]">
+          <div className="absolute w-full h-[30rem] bg-gradient-to-br
+        dark:from-[#262626] dark:via-[#262626] dark:to-[#262626]/10 from-white via-white to-white/30 z-40">
+          </div>
         </div>
-      ))}
-      <div style={{ 
-        display: 'flex', 
-        gap: 12, 
-        marginTop: isCanvasMode ? '1.5rem' : '12px',
-        justifyContent: 'space-between',
-      }}>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={firstForm}
-          style={{
-            padding: isCanvasMode ? '0.5rem 1rem' : '0.5rem 1rem',
-            minWidth: isCanvasMode ? '80px' : '80px',
-            background: firstForm ? '#f0f0f0' : '#fff',
-            color: firstForm ? '#888' : '#222',
-            border: '1px solid #ccc',
-            borderRadius: 6,
-            fontWeight: 600,
-            fontSize: isCanvasMode ? '0.875rem' : '14px',
-            cursor: firstForm ? 'not-allowed' : 'pointer',
-            textAlign: 'center',
-            height: '36px',
-            boxSizing: 'border-box',
-          }}
-        >
-          {'<Back'}
-        </button>
-        <button
-          type="submit"
-          style={{
-            padding: isCanvasMode ? '0.5rem 1rem' : '0.5rem 1rem',
-            minWidth: isCanvasMode ? '80px' : '80px',
-            background: '#222',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            fontWeight: 600,
-            fontSize: isCanvasMode ? '0.875rem' : '14px',
-            cursor: 'pointer',
-            textAlign: 'center',
-            height: '36px',
-            boxSizing: 'border-box',
-          }}
-        >
-          Next &gt;
-        </button>
+
+        <div className="bg-gradient-to-br
+        from-[#dadada] via-white to-white h-48
+        dark:from-[#e43b3b36] dark:via-[#262626f0] dark:to-[#262626f0]
+         dark:bg-gray-800/20 absolute inset-0 z-1"></div>
+        <div className="flex mb-6 border-b pb-6 dark:border-gray-300/30 items-center relative z-[60] gap-x-5">
+          <div className="dark:bg-[#3e3f40] bg-[#3c3c3c] w-12 h-12 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 text-white" viewBox="0 0 20 20">
+              <path fill="currentColor" d="M5.75 3h8.5A2.75 2.75 0 0 1 17 5.75v3.651a3 3 0 0 0-1-.36V5.75A1.75 1.75 0 0 0 14.25 4h-8.5A1.75 1.75 0 0 0 4 5.75v8.5c0 .966.784 1.75 1.75 1.75h5.3q-.05.243-.05.5q0 .25.038.5H5.75A2.75 2.75 0 0 1 3 14.25v-8.5A2.75 2.75 0 0 1 5.75 3m3.75 7h3.764a3 3 0 0 0-.593 1H9.5a.5.5 0 0 1 0-1m0 3h3.17c.132.373.336.711.594 1H9.5a.5.5 0 0 1 0-1m-2-5.75a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0M6.75 11a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5m0 3a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5M9.5 7a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm8 5a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.5 4.5c0 1.245-1 2.5-3.5 2.5S12 17.75 12 16.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5"/>
+              </svg>
+          </div>
+          <div>
+            <div className="font-bold dark:text-gray-200 text-gray-700 text-lg">Personal Information</div>
+            <div className="dark:text-gray-400 text-gray-600">Enter the personal information here</div>
+          </div>
+        </div>
+        {!isCanvasMode && (
+          <div
+            className="absolute -top-0 -left-0 -right-0 bg-gray-100 dark:bg-gray-700/50 rounded-t-xl py-4 px-8 cursor-move font-semibold text-lg text-gray-800 dark:text-gray-200"
+            onMouseDown={handleMouseDown}
+          >
+            <h2 className="text-center text-lg font-semibold">Please fill out this form</h2>
+          </div>
+        )}
+        <div className={`grid grid-cols-12 relative z-[60] gap-6 ${!isCanvasMode ? "mt-16" : ""}`}>
+          {/* Add margin-top when not in canvas mode to account for header */}
+          {fields.map((field) => (
+            <div key={field.name} className="col-span-6">
+              {field.type !== 'selectable_table' && (
+                <label htmlFor={field.name} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}
+                </label>
+              )}
+              {renderField(field)}
+              {errors[field.name] && <span className="dark:text-red-400 text-red-500 text-sm mt-1">{errors[field.name]}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="flex w-full gap-4 pt-0 relative justify-between z-[60]">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={firstForm}
+            className={`inline-flex w-fit items-center cursor-pointer
+            justify-center whitespace-nowrap rounded-lg
+             text-sm font-medium ring-offset-background
+             transition-colors focus-visible:outline-none
+             focus-visible:ring-2 focus-visible:ring-ring px-8
+              focus-visible:ring-offset-2 disabled:pointer-events-none
+               disabled:opacity-50 py-2 border border-gray-300
+               ${firstForm ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}
+               dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 mt-5`}
+          >
+            &lt;Back
+          </button>
+          <button
+            type="submit"
+            className="inline-flex w-fit items-center cursor-pointer
+            justify-center whitespace-nowrap rounded-lg
+             text-sm font-medium ring-offset-background
+             transition-colors focus-visible:outline-none
+             focus-visible:ring-2 focus-visible:ring-ring px-8
+              focus-visible:ring-offset-2 disabled:pointer-events-none
+               disabled:opacity-50 py-2 flex-1 bg-[#2e2e30]
+               text-white hover:bg-gray-700 dark:bg-gray-50
+                dark:text-gray-900 dark:hover:bg-gray-200 mt-5"
+          >
+            Next &gt;
+          </button>
+        </div>
       </div>
     </form>
   );
 
-  return (
-    isCanvasMode ? (
-      formContent
-    ) : (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        background: 'rgba(0,0,0,0.3)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'auto',
-      }}>
-        {formContent}
-      </div>
-    )
+  return isCanvasMode ? (
+    formContent
+  ) : (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50 overflow-hidden
+        bg-gradient-to-br from-gray-900 to-black dark:from-gray-950 dark:to-black
+        before:content-[''] before:absolute before:inset-0 before:bg-[url('/noise.svg')] before:bg-repeat before:opacity-[0.03] before:pointer-events-none
+      "
+    >
+      {/* Blurred circles */}
+      <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+      <div className="animate-blob animation-delay-2000 absolute -top-20 -right-20 h-72 w-72 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 opacity-50 mix-blend-multiply blur-3xl filter"></div>
+      <div className="animate-blob animation-delay-4000 absolute -right-10 -bottom-10 h-80 w-80 rounded-full bg-gradient-to-br from-blue-500 to-green-500 opacity-50 mix-blend-multiply blur-3xl filter"></div>
+      {formContent}
+    </div>
   );
 }; 
