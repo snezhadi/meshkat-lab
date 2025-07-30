@@ -116,7 +116,7 @@ const AddressAutocomplete: React.FC<{
             <div
               key={index}
               onClick={() => handleSelect(suggestion)}
-              className="px-3 py-2 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="px-3 py-2 cursor-pointer border-b border-gray-100 dark:border-[#3d3d3e] last:border-b-0 hover:bg-gray-50 dark:hover:bg-[#161616]/50 transition-colors"
             >
               {suggestion}
             </div>
@@ -383,14 +383,14 @@ export default function CanvasForm({
             <h3 className="text-center mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
               {field.title || 'Select an Option'}
             </h3>
-            <table className="selectable-table w-full border-collapse border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+            <table className="selectable-table w-full border-collapse border border-gray-300 dark:border-[#3d3d3e] rounded-lg overflow-hidden bg-white dark:bg-[#262626f0]">
               <thead>
-                <tr className="bg-gray-100 dark:bg-gray-700">
-                  <th className="p-3 text-center border border-gray-300 dark:border-gray-600 font-semibold text-gray-800 dark:text-gray-200 w-10">
+                <tr className="bg-gray-100 dark:bg-[#161616]">
+                  <th className="p-3 text-center border border-gray-300 dark:border-[#3d3d3e] font-semibold text-gray-800 dark:text-gray-200 w-10">
                     Select
                   </th>
                   {field.columns?.map((column: any, index: number) => (
-                    <th key={index} className="p-3 text-center border border-gray-300 dark:border-gray-600 font-semibold text-gray-800 dark:text-gray-200">
+                    <th key={index} className="p-3 text-center border border-gray-300 dark:border-[#3d3d3e] font-semibold text-gray-800 dark:text-gray-200">
                       {column.header}
                     </th>
                   ))}
@@ -404,7 +404,7 @@ export default function CanvasForm({
                       "transition-colors duration-200",
                       selectedOptions[field.name] === option.value
                         ? "bg-blue-50 dark:bg-blue-900/30"
-                        : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
+                        : "bg-white dark:bg-[#262626f0] hover:bg-gray-50 dark:hover:bg-[#161616]/50",
                       option.disabled
                         ? "cursor-not-allowed opacity-50"
                         : "cursor-pointer"
@@ -417,7 +417,7 @@ export default function CanvasForm({
                       }
                     }}
                   >
-                    <td className="p-3 border border-gray-300 dark:border-gray-600 text-center">
+                    <td className="p-3 border border-gray-300 dark:border-[#3d3d3e] text-center">
                       <input
                         type="radio"
                         name={field.name}
@@ -441,7 +441,7 @@ export default function CanvasForm({
                       <td
                         key={colIndex}
                         className={cn(
-                          "p-3 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200",
+                          "p-3 border border-gray-300 dark:border-[#3d3d3e] text-gray-800 dark:text-gray-200",
                           column.key === 'label' ? "font-medium" : "font-normal",
                           column.align === 'center' ? "text-center" :
                           column.align === 'right' ? "text-right" : "text-left"

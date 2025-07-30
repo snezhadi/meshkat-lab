@@ -70,9 +70,9 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-[#262626f0] rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-300 dark:border-[#3d3d3e]">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-[#3d3d3e]">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Form Field Editor
           </h2>
@@ -87,7 +87,7 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
             {editingFields.map((field, index) => (
               <div
                 key={index}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
+                className="border border-gray-300 dark:border-[#3d3d3e] rounded-lg p-4 bg-gray-50 dark:bg-[#262626f0]"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Field Name */}
@@ -99,7 +99,7 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
                       type="text"
                       value={field.name}
                       onChange={(e) => updateField(index, { name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-[#3d3d3e] rounded-md bg-white dark:bg-[#161616] text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
@@ -112,7 +112,7 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
                       type="text"
                       value={field.label}
                       onChange={(e) => updateField(index, { label: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-[#3d3d3e] rounded-md bg-white dark:bg-[#161616] text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
@@ -124,7 +124,7 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
                     <select
                       value={field.type}
                       onChange={(e) => updateField(index, { type: e.target.value as FormField['type'] })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-[#3d3d3e] rounded-md bg-white dark:bg-[#161616] text-gray-900 dark:text-gray-100"
                     >
                       {typeOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -142,7 +142,7 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
                     <select
                       value={field.width || 'half'}
                       onChange={(e) => updateField(index, { width: e.target.value as FormField['width'] })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-[#3d3d3e] rounded-md bg-white dark:bg-[#161616] text-gray-900 dark:text-gray-100"
                     >
                       {widthOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -164,7 +164,7 @@ export function FormFieldEditor({ fields, onFieldsChange, onClose }: FormFieldEd
                         max="10"
                         value={field.rows || 3}
                         onChange={(e) => updateField(index, { rows: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-[#3d3d3e] rounded-md bg-white dark:bg-[#161616] text-gray-900 dark:text-gray-100"
                       />
                     </div>
                   )}

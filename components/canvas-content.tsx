@@ -233,15 +233,15 @@ export const CanvasContent: React.FC<CanvasContentProps> = ({
     case 'table':
       return (
         <div className="p-8 h-full overflow-y-auto">
-          <h3 className="mb-4 text-xl font-semibold text-foreground">
+          <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
             {data.title || 'Data Table'}
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-border bg-background">
+            <table className="w-full border-collapse border border-gray-300 dark:border-[#3d3d3e] bg-white dark:bg-[#262626f0] rounded-lg overflow-hidden">
               <thead>
-                <tr className="bg-muted">
+                <tr className="bg-gray-100 dark:bg-[#161616]">
                   {data.headers?.map((header: string, index: number) => (
-                    <th key={index} className="p-3 text-left border border-border font-semibold text-foreground">
+                    <th key={index} className="p-3 text-left border border-gray-300 dark:border-[#3d3d3e] font-semibold text-gray-800 dark:text-gray-200">
                       {header}
                     </th>
                   ))}
@@ -249,9 +249,9 @@ export const CanvasContent: React.FC<CanvasContentProps> = ({
               </thead>
               <tbody>
                 {data.rows?.map((row: any[], rowIndex: number) => (
-                  <tr key={rowIndex} className="hover:bg-muted/50">
+                  <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-[#161616]/50">
                     {row.map((cell: any, cellIndex: number) => (
-                      <td key={cellIndex} className="p-3 border border-border text-foreground">
+                      <td key={cellIndex} className="p-3 border border-gray-300 dark:border-[#3d3d3e] text-gray-800 dark:text-gray-200">
                         {cell}
                       </td>
                     ))}

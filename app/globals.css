@@ -26,6 +26,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .dark .selectable-table {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  background-color: #262626f0;
+  border-color: #3d3d3e;
+}
+
+.dark .selectable-table th {
+  background-color: #161616;
+  border-color: #3d3d3e;
+}
+
+.dark .selectable-table td {
+  border-color: #3d3d3e;
 }
 
 :root {
