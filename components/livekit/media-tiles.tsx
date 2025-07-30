@@ -175,6 +175,7 @@ export function MediaTiles({ chatOpen, leftSectionWidth }: MediaTilesProps) {
                   animate={avatarAnimate}
                   transition={avatarLayoutTransition}
                   videoTrack={agentVideoTrack}
+                  chatOpen={chatOpen}
                   className={cn(
                     chatOpen ? 'h-[90px] [&>video]:h-[90px] [&>video]:w-auto' : 'h-auto w-full'
                   )}

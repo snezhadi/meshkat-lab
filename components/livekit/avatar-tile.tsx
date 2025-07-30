@@ -4,11 +4,13 @@ import { cn } from '@/lib/utils';
 interface AgentAudioTileProps {
   videoTrack: TrackReference;
   className?: string;
+  chatOpen?: boolean;
 }
 
 export const AvatarTile = ({
   videoTrack,
   className,
+  chatOpen = false,
   ref,
 }: React.ComponentProps<'div'> & AgentAudioTileProps) => {
   return (
@@ -17,7 +19,7 @@ export const AvatarTile = ({
         trackRef={videoTrack}
         width={videoTrack?.publication.dimensions?.width ?? 0}
         height={videoTrack?.publication.dimensions?.height ?? 0}
-        className="rounded-b-4xl"
+        className={cn(!chatOpen && "rounded-b-4xl")}
       />
     </div>
   );

@@ -38,8 +38,16 @@ const CanvasView: React.FC<CanvasViewProps> = ({
   const dragging = useRef(false);
   const [testPanelOpen, setTestPanelOpen] = useState(false);
 
-  // Calculate actual left section width in pixels (assuming 100vw container)
-  const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1200; // fallback for SSR
+  // Helper function to calculate minimum divider percentage based on 350px constraint
+  const getMinDividerPercent = (containerWidth: number): number => {
+    const minLeftWidthPx = 350;
+    return minLeftWidthPx / containerWidth;
+  };
+
+  // State for tracking container width
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // Calculate actual left section width in pixels
   const leftSectionWidth = containerWidth * divider;
 
   // SessionView state and hooks
@@ -291,7 +299,20 @@ const CanvasView: React.FC<CanvasViewProps> = ({
     if (!container) return;
     const rect = container.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
-    setDivider(Math.max(0.15, Math.min(1, percent)));
+
+    // Update container width for accurate calculations
+    setContainerWidth(rect.width);
+
+    // Calculate minimum percentage based on 350px minimum width for left panel
+    const minLeftWidthPercent = getMinDividerPercent(rect.width);
+
+    // Calculate maximum percentage to ensure right panel has reasonable minimum width
+    const maxPercent = 0.85;
+
+    // Apply constraints: respect 350px minimum for left panel and reasonable maximum
+    const constrainedPercent = Math.max(minLeftWidthPercent, Math.min(maxPercent, percent));
+
+    setDivider(constrainedPercent);
   };
 
   useEffect(() => {
@@ -305,6 +326,23 @@ const CanvasView: React.FC<CanvasViewProps> = ({
       window.removeEventListener('mousemove', handleMouseMoveGlobal);
       window.removeEventListener('mouseup', handleMouseUpGlobal);
     };
+  }, []);
+
+  // Track container width for accurate calculations
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      const container = document.getElementById('canvas-view-container');
+      if (container) {
+        setContainerWidth(container.getBoundingClientRect().width);
+      }
+    };
+
+    // Set initial width
+    updateContainerWidth();
+
+    // Update on resize
+    window.addEventListener('resize', updateContainerWidth);
+    return () => window.removeEventListener('resize', updateContainerWidth);
   }, []);
 
   // Add this function to send a chat message
