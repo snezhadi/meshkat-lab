@@ -407,11 +407,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           </div>
         </main>
       </div>
-      <div style={{ 
-        flex: 1, 
-        background: '#fafbfc', 
+      <div className="dark:bg-transparent relative bg-[#f3f3f3]" style={{
+        flex: 1,
         height: '100%',
-        minWidth: 0
+        minWidth: 0,
+        userSelect: dragging.current ? 'none' : 'auto'
       }}>
         {/* Canvas content or title */}
         {canvasContent ? (
@@ -462,14 +462,35 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           position: 'absolute',
           left: `${divider * 100}%`,
           top: 0,
-          width: 1,
+          width: dragging.current ? 3 : 1,
           height: '100%',
-          background: '#666',
-          zIndex: 0,
+          zIndex: 5,
           transform: 'translateX(-50%)',
           pointerEvents: 'none',
+          transition: 'width 0.2s ease, background-color 0.2s ease',
+          backgroundColor: dragging.current ? '#ef4444' : undefined,
         }}
-      />
+        className={!dragging.current ? 'bg-[#7c7c7c] dark:!bg-[#6f7b8d]' : ''}
+      >
+        {/* Three dots in the middle - always visible */}
+        <div className="absolute top-[47%] left-1/2 flex translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1">
+          <div
+            className={`h-1 w-1 ml-0.5 rounded-full transition-colors duration-200 ease-in ${
+              dragging.current ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
+            }`}
+          />
+          <div
+            className={`h-1 w-1 ml-0.5 rounded-full transition-colors duration-200 ease-in ${
+              dragging.current ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
+            }`}
+          />
+          <div
+            className={`h-1 w-1 ml-0.5 rounded-full transition-colors duration-200 ease-in ${
+              dragging.current ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
+            }`}
+          />
+        </div>
+      </div>
       {/* Test buttons for different content types */}
       {sessionStarted && appConfig.debug && (
         <div style={{
