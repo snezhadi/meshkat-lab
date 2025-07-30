@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { FormFieldEditor } from './form-field-editor';
+import { cn } from '@/lib/utils';
 
 interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'date' | 'email' | 'phone' | 'address';
+  type: 'text' | 'date' | 'email' | 'phone' | 'address' | 'textarea';
+  width?: 'full' | 'half' | 'third' | 'quarter' | 'two-thirds' | 'three-quarters';
+  rows?: number;
   required?: boolean;
 }
 
@@ -141,6 +145,8 @@ export default function CanvasForm({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [showEditor, setShowEditor] = useState(false);
+  const [editableFields, setEditableFields] = useState<FormField[]>(fields || []);
 
   // Track agent-initiated updates to prevent cycles
   const lastAgentUpdate = useRef<{ [field: string]: number }>({});
@@ -166,6 +172,24 @@ export default function CanvasForm({
       return changed ? newValues : prev;
     });
   }, [fields]);
+
+  // Update editable fields when fields prop changes
+  useEffect(() => {
+    if (fields && Array.isArray(fields)) {
+      setEditableFields(fields);
+    }
+  }, [fields]);
+
+  // Editor functions
+  const handleFieldsChange = (newFields: FormField[]) => {
+    setEditableFields(newFields);
+    // Update values state to match new fields
+    const newValues: Record<string, string> = {};
+    newFields.forEach(field => {
+      newValues[field.name] = values[field.name] || '';
+    });
+    setValues(newValues);
+  };
 
   // Movable overlay state
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -321,6 +345,19 @@ export default function CanvasForm({
         return <input {...commonProps} type="email" placeholder="Enter your email" />;
       case 'phone':
         return <input {...commonProps} type="tel" placeholder="Enter your phone number" />;
+      case 'textarea':
+        const textareaRows = field.rows || 3;
+        return (
+          <textarea
+            {...commonProps}
+            rows={textareaRows}
+            placeholder={`Enter your ${field.label.toLowerCase()}`}
+            className={`${commonProps.className} resize-none`}
+            style={{ minHeight: `${textareaRows * 2.5}rem` }}
+          />
+        );
+      case 'text':
+        return <input {...commonProps} type="text" placeholder={`Enter your ${field.label.toLowerCase()}`} />;
       case 'address':
         return (
           <AddressAutocomplete
@@ -331,7 +368,15 @@ export default function CanvasForm({
           />
         );
       case 'date':
-        return <input {...commonProps} type="date" />;
+        return (
+          <div className="relative">
+            <input
+              {...commonProps}
+              type="date"
+              className={`${commonProps.className} pr-10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:top-1/2 [&::-webkit-calendar-picker-indicator]:-translate-y-1/2 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 dark:[&::-webkit-calendar-picker-indicator]:invert`}
+            />
+          </div>
+        );
       case 'selectable_table':
         return (
           <div style={{ width: '100%' }}>
@@ -466,16 +511,26 @@ export default function CanvasForm({
         from-[#dadada] via-white to-white h-48
         dark:from-[#e43b3b36] dark:via-[#262626f0] dark:to-[#262626f0]
          dark:bg-gray-800/20 absolute inset-0 z-1"></div>
-        <div className="flex mb-6 border-b pb-6 dark:border-gray-300/30 items-center relative z-[60] gap-x-5">
-          <div className="dark:bg-[#3e3f40] bg-[#3c3c3c] w-12 h-12 rounded-full flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 text-white" viewBox="0 0 20 20">
-              <path fill="currentColor" d="M5.75 3h8.5A2.75 2.75 0 0 1 17 5.75v3.651a3 3 0 0 0-1-.36V5.75A1.75 1.75 0 0 0 14.25 4h-8.5A1.75 1.75 0 0 0 4 5.75v8.5c0 .966.784 1.75 1.75 1.75h5.3q-.05.243-.05.5q0 .25.038.5H5.75A2.75 2.75 0 0 1 3 14.25v-8.5A2.75 2.75 0 0 1 5.75 3m3.75 7h3.764a3 3 0 0 0-.593 1H9.5a.5.5 0 0 1 0-1m0 3h3.17c.132.373.336.711.594 1H9.5a.5.5 0 0 1 0-1m-2-5.75a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0M6.75 11a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5m0 3a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5M9.5 7a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm8 5a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.5 4.5c0 1.245-1 2.5-3.5 2.5S12 17.75 12 16.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5"/>
-              </svg>
+        <div className="flex mb-6 border-b pb-6 dark:border-gray-300/30 items-center justify-between relative z-[60]">
+          <div className="flex items-center gap-x-5">
+            <div className="dark:bg-[#3e3f40] bg-[#3c3c3c] w-12 h-12 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-7 text-white" viewBox="0 0 20 20">
+                <path fill="currentColor" d="M5.75 3h8.5A2.75 2.75 0 0 1 17 5.75v3.651a3 3 0 0 0-1-.36V5.75A1.75 1.75 0 0 0 14.25 4h-8.5A1.75 1.75 0 0 0 4 5.75v8.5c0 .966.784 1.75 1.75 1.75h5.3q-.05.243-.05.5q0 .25.038.5H5.75A2.75 2.75 0 0 1 3 14.25v-8.5A2.75 2.75 0 0 1 5.75 3m3.75 7h3.764a3 3 0 0 0-.593 1H9.5a.5.5 0 0 1 0-1m0 3h3.17c.132.373.336.711.594 1H9.5a.5.5 0 0 1 0-1m-2-5.75a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0M6.75 11a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5m0 3a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5M9.5 7a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm8 5a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.5 4.5c0 1.245-1 2.5-3.5 2.5S12 17.75 12 16.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5"/>
+                </svg>
+            </div>
+            <div>
+              <div className="font-bold dark:text-gray-200 text-gray-700 text-lg">Personal Information</div>
+              <div className="dark:text-gray-400 text-gray-600">Enter the personal information here</div>
+            </div>
           </div>
-          <div>
-            <div className="font-bold dark:text-gray-200 text-gray-700 text-lg">Personal Information</div>
-            <div className="dark:text-gray-400 text-gray-600">Enter the personal information here</div>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEditor(true)}
+            className="text-xs"
+          >
+            ⚙️ Edit Form
+          </Button>
         </div>
         {!isCanvasMode && (
           <div
@@ -485,19 +540,45 @@ export default function CanvasForm({
             <h2 className="text-center text-lg font-semibold">Please fill out this form</h2>
           </div>
         )}
-        <div className={`grid grid-cols-12 relative z-[60] gap-6 ${!isCanvasMode ? "mt-16" : ""}`}>
+        <div className={`form-grid grid grid-cols-12 relative z-[60] gap-6 ${!isCanvasMode ? "mt-16" : ""}`}>
           {/* Add margin-top when not in canvas mode to account for header */}
-          {fields.map((field) => (
-            <div key={field.name} className="col-span-6">
-              {field.type !== 'selectable_table' && (
-                <label htmlFor={field.name} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}
-                </label>
-              )}
-              {renderField(field)}
-              {errors[field.name] && <span className="dark:text-red-400 text-red-500 text-sm mt-1">{errors[field.name]}</span>}
-            </div>
-          ))}
+          {editableFields.map((field) => {
+            // Calculate column span based on field width property
+            const getColSpan = (width: string | number | undefined) => {
+              if (!width) return 'col-span-6'; // default half width
+              if (typeof width === 'number') return `col-span-${Math.min(12, Math.max(1, width))}`;
+              switch (width) {
+                case 'full': return 'col-span-12';
+                case 'half': return 'col-span-6';
+                case 'third': return 'col-span-4';
+                case 'quarter': return 'col-span-3';
+                case 'two-thirds': return 'col-span-8';
+                case 'three-quarters': return 'col-span-9';
+                default: return 'col-span-6';
+              }
+            };
+
+            // Calculate row span for textarea-style inputs
+            const getRowSpan = (rows: number | undefined) => {
+              if (!rows || rows <= 1) return '';
+              return `row-span-${Math.min(6, Math.max(1, rows))}`;
+            };
+
+            const colSpan = getColSpan(field.width);
+            const rowSpan = getRowSpan(field.rows);
+
+            return (
+              <div key={field.name} className={`${colSpan} ${rowSpan}`}>
+                {field.type !== 'selectable_table' && (
+                  <label htmlFor={field.name} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}
+                  </label>
+                )}
+                {renderField(field)}
+                {errors[field.name] && <span className="dark:text-red-400 text-red-500 text-sm mt-1">{errors[field.name]}</span>}
+              </div>
+            );
+          })}
         </div>
         <div className="flex w-full gap-4 pt-0 relative justify-between z-[60] mt-5">
           <div className="flex justify-end space-x-2 w-full">
@@ -526,7 +607,16 @@ export default function CanvasForm({
   );
 
   return isCanvasMode ? (
-    formContent
+    <>
+      {formContent}
+      {showEditor && (
+        <FormFieldEditor
+          fields={editableFields}
+          onFieldsChange={handleFieldsChange}
+          onClose={() => setShowEditor(false)}
+        />
+      )}
+    </>
   ) : (
     <div
       className="fixed inset-0 flex items-center justify-center p-4 z-50 overflow-hidden
@@ -539,6 +629,13 @@ export default function CanvasForm({
       <div className="animate-blob animation-delay-2000 absolute -top-20 -right-20 h-72 w-72 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 opacity-50 mix-blend-multiply blur-3xl filter"></div>
       <div className="animate-blob animation-delay-4000 absolute -right-10 -bottom-10 h-80 w-80 rounded-full bg-gradient-to-br from-blue-500 to-green-500 opacity-50 mix-blend-multiply blur-3xl filter"></div>
       {formContent}
+      {showEditor && (
+        <FormFieldEditor
+          fields={editableFields}
+          onFieldsChange={handleFieldsChange}
+          onClose={() => setShowEditor(false)}
+        />
+      )}
     </div>
   );
-}; 
+};
