@@ -36,7 +36,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
   sessionStarted, 
 }) => {
   const [divider, setDivider] = useState(appConfig.hideCanvasInitially ? 1 : 0.4); // 1 = hidden, 0.4 = 60% right pane
-  const dragging = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [testPanelOpen, setTestPanelOpen] = useState(false);
 
   // Helper function to calculate minimum divider percentage based on 350px constraint
@@ -285,17 +285,17 @@ const CanvasView: React.FC<CanvasViewProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    dragging.current = true;
+    setIsDragging(true);
     document.body.style.cursor = 'col-resize';
   };
 
   const handleMouseUp = () => {
-    dragging.current = false;
+    setIsDragging(false);
     document.body.style.cursor = '';
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!dragging.current) return;
+    if (!isDragging) return;
     const container = document.getElementById('canvas-view-container');
     if (!container) return;
     const rect = container.getBoundingClientRect();
@@ -328,7 +328,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
       window.removeEventListener('mousemove', handleMouseMoveGlobal);
       window.removeEventListener('mouseup', handleMouseUpGlobal);
     };
-  }, []);
+  }, [isDragging]);
 
   // Track container width for accurate calculations
   useEffect(() => {
@@ -405,7 +405,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           style={{ minHeight: 0 }}
         >
           {/* Header/avatar section */}
-          <div style={chatOpen ? { flex: '0 0 auto', minHeight: 96, paddingTop: 24, paddingBottom: 8 } : { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }} className={cn(!chatOpen && 'bottom-6 md:bottom-6')}>
+          <div style={chatOpen ? { flex: '0 0 auto', minHeight: 96, paddingTop: 24, paddingBottom: 8 } : { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <MediaTiles chatOpen={chatOpen} leftSectionWidth={leftSectionWidth} />
           </div>
           {/* Chat area */}
@@ -478,7 +478,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         flex: 1,
         height: '100%',
         minWidth: 0,
-        userSelect: dragging.current ? 'none' : 'auto'
+        userSelect: isDragging ? 'none' : 'auto'
       }}>
         {/* Canvas content or title */}
         {canvasContent ? (
@@ -529,31 +529,31 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           position: 'absolute',
           left: `${divider * 100}%`,
           top: 0,
-          width: dragging.current ? 3 : 1,
+          width: isDragging ? 3 : 1,
           height: '100%',
           zIndex: 5,
           transform: 'translateX(-50%)',
           pointerEvents: 'none',
           transition: 'width 0.2s ease, background-color 0.2s ease',
-          backgroundColor: dragging.current ? '#ef4444' : undefined,
+          backgroundColor: isDragging ? '#ef4444' : undefined,
         }}
-        className={!dragging.current ? 'bg-[#7c7c7c] dark:!bg-[#6f7b8d]' : ''}
+        className={!isDragging ? 'bg-[#7c7c7c] dark:!bg-[#6f7b8d]' : ''}
       >
         {/* Three dots in the middle - always visible */}
         <div className="absolute top-[47%] left-1/2 flex translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1">
           <div
             className={`h-1 w-1 ml-0.5 rounded-full transition-colors duration-200 ease-in ${
-              dragging.current ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
+              isDragging ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
             }`}
           />
           <div
             className={`h-1 w-1 ml-0.5 rounded-full transition-colors duration-200 ease-in ${
-              dragging.current ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
+              isDragging ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
             }`}
           />
           <div
             className={`h-1 w-1 ml-0.5 rounded-full transition-colors duration-200 ease-in ${
-              dragging.current ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
+              isDragging ? 'bg-[#7c7c7c]' : 'bg-gray-400 dark:bg-gray-600'
             }`}
           />
         </div>
