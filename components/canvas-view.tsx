@@ -435,7 +435,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <h2 style={{ fontSize: '2rem', color: '#333', textAlign: 'center' }}>
+            <h2 className="text-foreground" style={{ fontSize: '2rem', textAlign: 'center' }}>
               {appConfig.canvasTitle || ''}
             </h2>
           </div>
