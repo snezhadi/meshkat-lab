@@ -232,48 +232,34 @@ export const CanvasContent: React.FC<CanvasContentProps> = ({
 
     case 'table':
       return (
-        <div style={{
-          padding: '2rem',
-          height: '100%',
-          overflowY: 'auto',
-        }}>
-          <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 600 }}>
+        <div className="p-8 h-full overflow-y-auto">
+          <h3 className="mb-4 text-xl font-semibold text-foreground">
             {data.title || 'Data Table'}
           </h3>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            border: '1px solid #e0e0e0',
-          }}>
-            <thead>
-              <tr style={{ background: '#f5f5f5' }}>
-                {data.headers?.map((header: string, index: number) => (
-                  <th key={index} style={{
-                    padding: '0.75rem',
-                    textAlign: 'left',
-                    border: '1px solid #e0e0e0',
-                    fontWeight: 600,
-                  }}>
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.rows?.map((row: any[], rowIndex: number) => (
-                <tr key={rowIndex}>
-                  {row.map((cell: any, cellIndex: number) => (
-                    <td key={cellIndex} style={{
-                      padding: '0.75rem',
-                      border: '1px solid #e0e0e0',
-                    }}>
-                      {cell}
-                    </td>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-border bg-background">
+              <thead>
+                <tr className="bg-muted">
+                  {data.headers?.map((header: string, index: number) => (
+                    <th key={index} className="p-3 text-left border border-border font-semibold text-foreground">
+                      {header}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.rows?.map((row: any[], rowIndex: number) => (
+                  <tr key={rowIndex} className="hover:bg-muted/50">
+                    {row.map((cell: any, cellIndex: number) => (
+                      <td key={cellIndex} className="p-3 border border-border text-foreground">
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       );
 

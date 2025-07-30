@@ -18,6 +18,7 @@ import useChatAndTranscription from '@/hooks/useChatAndTranscription';
 import { useDebugMode } from '@/hooks/useDebug';
 import { RoomEvent } from 'livekit-client';
 import { cn } from '@/lib/utils';
+import { SimpleThemeToggle } from '@/components/simple-theme-toggle';
 
 interface CanvasViewProps {
   appConfig: AppConfig;
@@ -352,17 +353,37 @@ const CanvasView: React.FC<CanvasViewProps> = ({
   };
 
   return (
-    <div
-      id="canvas-view-container"
-      style={{
-        display: 'flex',
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        position: 'relative',
-        paddingTop: '45px',
-      }}
-    >
+    <>
+      {/* Header - only show when session is started */}
+      <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between border-b border-gray-400/40 bg-[#F3F3F3] p-2 px-8 md:flex dark:border-gray-600 dark:bg-[#0A0A0A]">
+        <div className="flex items-center gap-x-5">
+          <img src="/lk-logo.svg" alt="Logo" className="w-26 dark:hidden" />
+          <img src="/lk-logo-dark.svg" alt="Logo" className="hidden w-26 dark:block" />
+          <div className="flex items-center">
+            <div className="mr-4 w-[1px] h-4 bg-gray-500"></div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Session: Employment Agreement</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-x-5">
+          <div className="flex items-center gap-x-2">
+            <span className="text-sm">Sayyad Nezhadi</span>
+            <img data-dropdown-toggle="userDropdown" data-dropdown-placement="bottom-start" id="avatarButton" className="w-7 h-7 p-[1px] rounded-full ring dark:ring-gray-600 ring-gray-400 hover:ring-gray-300 dark:ring-gray-300" src="/avatar.jpg" alt="Bordered avatar" />
+          </div>
+          <SimpleThemeToggle />
+        </div>
+      </header>
+
+      <div
+        id="canvas-view-container"
+        style={{
+          display: 'flex',
+          width: '100vw',
+          height: '100vh',
+          overflow: 'hidden',
+          position: 'relative',
+          paddingTop: '45px',
+        }}
+      >
       <div style={{
         width: `${divider * 100}%`,
         minWidth: 350,
@@ -1128,22 +1149,10 @@ Click the buttons below to test highlighting different components of this docume
             
             {/* Toggle button - always visible */}
             <button
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                background: testPanelOpen ? '#dc3545' : '#007bff',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                transition: 'all 0.2s ease',
-              }}
+              className={`w-12 h-12 rounded-full ${
+                testPanelOpen ? 'bg-red-600' :
+                  'bg-blue-700 hover:bg-blue-600/80 hover:ring-blue-700 dark:bg-blue-600/50 ring-[1px] hover:ring-blue-600 hover:ring-[2px] ring-blue-500 hover:dark:bg-blue-800'
+              } flex items-center justify-center text-lg font-bold cursor-pointer text-white shadow-md transition-all duration-200 ease-in-out`}
               onClick={() => setTestPanelOpen(!testPanelOpen)}
               title={testPanelOpen ? 'Hide Test Panel' : 'Show Test Panel'}
             >
@@ -1153,6 +1162,7 @@ Click the buttons below to test highlighting different components of this docume
         </div>
       )}
     </div>
+    </>
   );
 };
 

@@ -163,7 +163,7 @@ export function MediaTiles({ chatOpen, leftSectionWidth }: MediaTilesProps) {
                   transition={agentLayoutTransition}
                   state={agentState}
                   audioTrack={agentAudioTrack}
-                  className={cn(chatOpen ? 'h-[90px]' : 'h-auto w-full')}
+                  className={cn(chatOpen ? 'h-[90px]' : 'h-full w-full flex items-center justify-center')}
                 />
               )}
               {isAvatar && (
@@ -177,7 +177,7 @@ export function MediaTiles({ chatOpen, leftSectionWidth }: MediaTilesProps) {
                   videoTrack={agentVideoTrack}
                   chatOpen={chatOpen}
                   className={cn(
-                    chatOpen ? 'h-[90px] [&>video]:h-[90px] [&>video]:w-auto' : 'h-auto w-full'
+                    chatOpen ? 'h-[90px] [&>video]:h-[90px] [&>video]:w-auto' : 'h-full w-full flex items-center justify-center'
                   )}
                 />
               )}

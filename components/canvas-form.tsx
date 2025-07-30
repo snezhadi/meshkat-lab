@@ -500,24 +500,26 @@ export default function CanvasForm({
           ))}
         </div>
         <div className="flex w-full gap-4 pt-0 relative justify-between z-[60] mt-5">
-          <Button
-            type="button"
-            onClick={onCancel}
-            disabled={firstForm}
-            variant="outline"
-            size="lg"
-            className="px-8"
-          >
-            &lt;Back
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="px-8 flex-1"
-          >
-            Next &gt;
-          </Button>
+          <div className="flex justify-end space-x-2 w-full">
+            <Button
+              type="button"
+              onClick={onCancel}
+              disabled={firstForm}
+              variant="outline"
+              size="lg"
+              className="px-8 rounded-md"
+            >
+              Back
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="px-8  rounded-md"
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </form>
