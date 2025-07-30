@@ -379,30 +379,18 @@ export default function CanvasForm({
         );
       case 'selectable_table':
         return (
-          <div style={{ width: '100%' }}>
-            <h3 style={{ 
-              textAlign: 'center', 
-              marginBottom: '1rem', 
-              fontSize: '1.25rem', 
-              fontWeight: 600,
-              color: '#333'
-            }}>
+          <div className="w-full">
+            <h3 className="text-center mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
               {field.title || 'Select an Option'}
             </h3>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              border: '1px solid #e0e0e0',
-              borderRadius: 6,
-              overflow: 'hidden',
-            }}>
+            <table className="selectable-table w-full border-collapse border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
               <thead>
-                <tr style={{ background: '#f5f5f5' }}>
-                  <th style={{ padding: '0.75rem', textAlign: 'center', border: '1px solid #e0e0e0', fontWeight: 600, width: '40px' }}>
+                <tr className="bg-gray-100 dark:bg-gray-700">
+                  <th className="p-3 text-center border border-gray-300 dark:border-gray-600 font-semibold text-gray-800 dark:text-gray-200 w-10">
                     Select
                   </th>
                   {field.columns?.map((column: any, index: number) => (
-                    <th key={index} style={{ padding: '0.75rem', textAlign: 'center', border: '1px solid #e0e0e0', fontWeight: 600 }}>
+                    <th key={index} className="p-3 text-center border border-gray-300 dark:border-gray-600 font-semibold text-gray-800 dark:text-gray-200">
                       {column.header}
                     </th>
                   ))}
@@ -410,13 +398,17 @@ export default function CanvasForm({
               </thead>
               <tbody>
                 {field.options?.map((option: any, index: number) => (
-                  <tr 
+                  <tr
                     key={option.value}
-                    style={{
-                      background: selectedOptions[field.name] === option.value ? '#e3f2fd' : '#fff',
-                      cursor: option.disabled ? 'not-allowed' : 'pointer',
-                      opacity: option.disabled ? 0.5 : 1,
-                    }}
+                    className={cn(
+                      "transition-colors duration-200",
+                      selectedOptions[field.name] === option.value
+                        ? "bg-blue-50 dark:bg-blue-900/30"
+                        : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
+                      option.disabled
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    )}
                     onClick={() => {
                       if (!option.disabled) {
                         const newSelected = { ...selectedOptions, [field.name]: option.value };
@@ -425,7 +417,7 @@ export default function CanvasForm({
                       }
                     }}
                   >
-                    <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                    <td className="p-3 border border-gray-300 dark:border-gray-600 text-center">
                       <input
                         type="radio"
                         name={field.name}
@@ -439,18 +431,22 @@ export default function CanvasForm({
                             handleValueChange(field.name, option.value);
                           }
                         }}
-                        style={{
-                          cursor: option.disabled ? 'not-allowed' : 'pointer',
-                        }}
+                        className={cn(
+                          "w-4 h-4",
+                          option.disabled ? "cursor-not-allowed" : "cursor-pointer"
+                        )}
                       />
                     </td>
                     {field.columns?.map((column: any, colIndex: number) => (
-                      <td key={colIndex} style={{ 
-                        padding: '0.75rem', 
-                        border: '1px solid #e0e0e0',
-                        fontWeight: column.key === 'label' ? 500 : 'normal',
-                        textAlign: column.align || 'left'
-                      }}>
+                      <td
+                        key={colIndex}
+                        className={cn(
+                          "p-3 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200",
+                          column.key === 'label' ? "font-medium" : "font-normal",
+                          column.align === 'center' ? "text-center" :
+                          column.align === 'right' ? "text-right" : "text-left"
+                        )}
+                      >
                         {option[column.key]}
                       </td>
                     ))}
@@ -567,8 +563,11 @@ export default function CanvasForm({
             const colSpan = getColSpan(field.width);
             const rowSpan = getRowSpan(field.rows);
 
+            // For selectable_table, default to full width if no width specified
+            const finalColSpan = field.type === 'selectable_table' && !field.width ? 'col-span-12' : colSpan;
+
             return (
-              <div key={field.name} className={`${colSpan} ${rowSpan}`}>
+              <div key={field.name} className={`${finalColSpan} ${rowSpan}`}>
                 {field.type !== 'selectable_table' && (
                   <label htmlFor={field.name} className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}

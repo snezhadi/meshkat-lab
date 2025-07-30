@@ -17,6 +17,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
+/* Table styling enhancements */
+.selectable-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .selectable-table {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 :root {
   --fg0: #000000;
   --fg1: #3b3b3b;
