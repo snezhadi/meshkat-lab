@@ -342,7 +342,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
             <MediaTiles chatOpen={chatOpen} />
           </div>
           {/* Chat area */}
-          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: 'auto' }}>
+          <div className="scrollbar_fix" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: 'auto' }}>
             <ChatMessageView
               className={cn(
                 'mx-auto w-full max-w-2xl px-6 py-8 md:px-12 md:py-12 transition-[opacity,translate] duration-300 ease-out',
