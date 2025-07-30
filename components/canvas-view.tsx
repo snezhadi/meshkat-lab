@@ -317,6 +317,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         height: '100vh',
         overflow: 'hidden',
         position: 'relative',
+        paddingTop: '45px',
       }}
     >
       <div style={{ 

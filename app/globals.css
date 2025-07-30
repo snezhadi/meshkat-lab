@@ -245,3 +245,67 @@
     }
   }
 }
+
+
+.scrollbar_fix {
+  overflow-y: auto !important;
+  flex: 1;
+  min-height: 0;
+  display:flex;
+  justify-content: flex-start !important;
+}
+
+.scrollbar_fix::-webkit-scrollbar {
+  width: 8px;
+  background: var(--scrollbar-bg, #f3f3f3); /* fallback for light */
+}
+
+.scrollbar_fix::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, #cccccc); /* fallback for light */
+  border-radius: 8px;
+}
+
+/* Firefox */
+.scrollbar_fix {
+  scrollbar-color: var(--scrollbar-thumb, #cccccc) var(--scrollbar-bg, #f3f3f3);
+  scrollbar-width: thin;
+}
+
+/* Light mode */
+:root {
+  --scrollbar-bg: #f3f3f3;
+  --scrollbar-thumb: #cccccc;
+}
+
+/* Dark mode */
+.dark {
+  --scrollbar-bg: #131313;
+  --scrollbar-thumb: #444444;
+}
+
+/* Responsive video styling for left section expansion */
+.video-responsive-to-chat {
+  width: 100%;
+  max-width: min(512px, calc(100vw - 96px)); /* Match chat input container constraints */
+  height: auto;
+  object-fit: contain;
+}
+
+.video-container-expanded {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* MediaTiles scrollbar hiding for big mode */
+.media-tiles-big-mode {
+  /* Hide scrollbars in big mode while maintaining scrollability */
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.media-tiles-big-mode::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}

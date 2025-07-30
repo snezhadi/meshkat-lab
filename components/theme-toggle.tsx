@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MonitorIcon, MoonIcon, SunIcon } from '@phosphor-icons/react';
+import { MonitorIcon, MoonIcon, SunIcon, LightningIcon } from '@phosphor-icons/react';
 import type { ThemeMode } from '@/lib/types';
 import { THEME_MEDIA_QUERY, THEME_STORAGE_KEY, cn } from '@/lib/utils';
 
@@ -65,7 +65,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   return (
     <div
       className={cn(
-        'text-foreground bg-background flex w-full flex-row justify-end divide-x overflow-hidden rounded-full border',
+        'text-foreground bg-background flex w-full flex-row justify-end divide-x overflow-hidden rounded-full border group hover:shadow-lg transition-all duration-300',
         className
       )}
     >
@@ -73,26 +73,35 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       <button
         type="button"
         onClick={() => handleThemeChange('dark')}
-        className="cursor-pointer p-1 pl-1.5"
+        className="cursor-pointer p-1 pl-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 relative group/dark"
       >
         <span className="sr-only">Enable dark color scheme</span>
-        <MoonIcon size={16} weight="bold" className={cn(theme !== 'dark' && 'opacity-25')} />
+        <MoonIcon size={16} weight="bold" className={cn(theme !== 'dark' && 'opacity-25', 'group-hover/dark:scale-110 transition-transform duration-200')} />
+        {theme === 'dark' && (
+          <LightningIcon size={8} weight="bold" className="absolute -top-0.5 -right-0.5 text-yellow-400 animate-pulse" />
+        )}
       </button>
       <button
         type="button"
         onClick={() => handleThemeChange('light')}
-        className="cursor-pointer px-1.5 py-1"
+        className="cursor-pointer px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 relative group/light"
       >
         <span className="sr-only">Enable light color scheme</span>
-        <SunIcon size={16} weight="bold" className={cn(theme !== 'light' && 'opacity-25')} />
+        <SunIcon size={16} weight="bold" className={cn(theme !== 'light' && 'opacity-25', 'group-hover/light:scale-110 transition-transform duration-200')} />
+        {theme === 'light' && (
+          <LightningIcon size={8} weight="bold" className="absolute -top-0.5 -right-0.5 text-yellow-500 animate-pulse" />
+        )}
       </button>
       <button
         type="button"
         onClick={() => handleThemeChange('system')}
-        className="cursor-pointer p-1 pr-1.5"
+        className="cursor-pointer p-1 pr-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 relative group/system"
       >
         <span className="sr-only">Enable system color scheme</span>
-        <MonitorIcon size={16} weight="bold" className={cn(theme !== 'system' && 'opacity-25')} />
+        <MonitorIcon size={16} weight="bold" className={cn(theme !== 'system' && 'opacity-25', 'group-hover/system:scale-110 transition-transform duration-200')} />
+        {theme === 'system' && (
+          <LightningIcon size={8} weight="bold" className="absolute -top-0.5 -right-0.5 text-blue-400 animate-pulse" />
+        )}
       </button>
     </div>
   );
