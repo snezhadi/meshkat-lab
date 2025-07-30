@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between border-b border-gray-200 bg-white p-2 px-8 md:flex dark:border-gray-600 dark:bg-[#0A0A0A]">
+      <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between border-b border-gray-400/40 bg-[#F3F3F3] p-2 px-8 md:flex dark:border-gray-600 dark:bg-[#0A0A0A]">
         <div className="flex items-center gap-x-5">
           <img src="/lk-logo.svg" alt="Logo" className="w-26 dark:hidden" />
           <img src="/lk-logo-dark.svg" alt="Logo" className="hidden w-26 dark:block" />

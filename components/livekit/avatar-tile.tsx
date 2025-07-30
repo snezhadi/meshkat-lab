@@ -19,7 +19,7 @@ export const AvatarTile = ({
         trackRef={videoTrack}
         width={videoTrack?.publication.dimensions?.width ?? 0}
         height={videoTrack?.publication.dimensions?.height ?? 0}
-        className={cn(!chatOpen && "rounded-b-4xl")}
+        className={cn(!chatOpen ? "rounded-md" : "rounded-lg")}
       />
     </div>
   );

@@ -306,8 +306,9 @@ const CanvasView: React.FC<CanvasViewProps> = ({
     // Calculate minimum percentage based on 350px minimum width for left panel
     const minLeftWidthPercent = getMinDividerPercent(rect.width);
 
-    // Calculate maximum percentage to ensure right panel has reasonable minimum width
-    const maxPercent = 0.85;
+    // Calculate maximum percentage to ensure right panel has 450px minimum width
+    const minRightWidthPx = 450;
+    const maxPercent = Math.min(0.85, 1 - (minRightWidthPx / rect.width));
 
     // Apply constraints: respect 350px minimum for left panel and reasonable maximum
     const constrainedPercent = Math.max(minLeftWidthPercent, Math.min(maxPercent, percent));
@@ -377,7 +378,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
         <main
           inert={disabled}
           className={cn(
-            "flex flex-col flex-1 h-full w-full bg-background px-6",
+            "flex flex-col flex-1 h-full w-full bg-[#f3f3f3] dark:bg-[#0A0A0A] px-6",
             !chatOpen && "overflow-hidden"
           )}
           style={{ minHeight: 0 }}
@@ -452,7 +453,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
           </div>
         </main>
       </div>
-      <div className="dark:bg-transparent relative bg-[#f3f3f3]" style={{
+      <div className="relative bg-[#f3f3f3] dark:bg-[#0A0A0A]" style={{
         flex: 1,
         height: '100%',
         minWidth: 0,

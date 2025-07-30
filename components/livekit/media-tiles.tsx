@@ -136,9 +136,9 @@ export function MediaTiles({ chatOpen, leftSectionWidth }: MediaTilesProps) {
       <div className={cn(
         "relative h-full",
         // Hide scrollbars only in big mode (when chat is closed)
-        chatOpen ? "overflow-hidden" : "media-tiles-big-mode",
+        chatOpen ? "overflow-hidden" : "media-tiles-big-mode pt-6 rounded-md",
         shouldConstrainWidth
-          ? "mx-auto max-w-2xl px-4 md:px-0"
+          ? "mx-auto max-w-3xl px-4 md:px-0"
           : "w-full"
       )}>
         <div className={cn(chatOpen ? classNames.grid : 'h-full w-full')}>
