@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from 'sonner';
 import { DocumentTemplateAccordion } from './document-template-accordion';
 import { VersioningPanel } from './document-templates-versioning';
+import { Condition } from './condition-builder';
 
 interface DocumentTemplate {
   id: string;
@@ -23,13 +24,13 @@ interface DocumentTemplate {
     title: string;
     content: string;
     description: string | null;
-    condition?: string;
+    condition?: Condition | string;
     paragraphs: Array<{
       id: string;
       title: string;
       content: string;
       description: string | null;
-      condition?: string;
+      condition?: Condition | string;
     }>;
   }>;
 }
