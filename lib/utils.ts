@@ -14,7 +14,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
 export function getOrigin(headers: Headers): string {
   const host = headers.get('host');
   const proto = headers.get('x-forwarded-proto') || 'https';

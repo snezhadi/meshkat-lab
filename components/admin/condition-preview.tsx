@@ -11,11 +11,7 @@ interface ConditionPreviewProps {
 
 export function ConditionPreview({ condition, className = '' }: ConditionPreviewProps) {
   if (!condition) {
-    return (
-      <div className={`text-sm text-gray-500 italic ${className}`}>
-        No condition set
-      </div>
-    );
+    return <div className={`text-sm text-gray-500 italic ${className}`}>No condition set</div>;
   }
 
   const renderCondition = (cond: Condition): React.ReactNode => {
@@ -23,19 +19,22 @@ export function ConditionPreview({ condition, className = '' }: ConditionPreview
       case 'boolean':
         return (
           <span className="inline-flex items-center space-x-1">
-            <Badge variant="outline" className="text-[10px] px-1 py-0">BOOL</Badge>
+            <Badge variant="outline" className="px-1 py-0 text-[10px]">
+              BOOL
+            </Badge>
             <span className="font-mono text-xs">@{cond.parameter}</span>
           </span>
         );
 
-
       case 'in':
         return (
           <span className="inline-flex items-center space-x-1">
-            <Badge variant="outline" className="text-[10px] px-1 py-0">IN</Badge>
+            <Badge variant="outline" className="px-1 py-0 text-[10px]">
+              IN
+            </Badge>
             <span className="font-mono text-xs">@{cond.parameter}</span>
-            <span className="text-gray-500 text-xs">in</span>
-            <span className="bg-gray-100 px-1 py-0.5 rounded text-xs">
+            <span className="text-xs text-gray-500">in</span>
+            <span className="rounded bg-gray-100 px-1 py-0.5 text-xs">
               [{cond.values?.join(', ')}]
             </span>
           </span>
@@ -44,7 +43,9 @@ export function ConditionPreview({ condition, className = '' }: ConditionPreview
       case 'and':
         return (
           <div className="space-y-1">
-            <Badge variant="outline" className="text-[10px] px-1 py-0">AND</Badge>
+            <Badge variant="outline" className="px-1 py-0 text-[10px]">
+              AND
+            </Badge>
             <div className="ml-3 space-y-1">
               {cond.conditions?.map((subCondition, index) => (
                 <div key={index} className="flex items-center space-x-1">
@@ -59,7 +60,9 @@ export function ConditionPreview({ condition, className = '' }: ConditionPreview
       case 'or':
         return (
           <div className="space-y-1">
-            <Badge variant="outline" className="text-[10px] px-1 py-0">OR</Badge>
+            <Badge variant="outline" className="px-1 py-0 text-[10px]">
+              OR
+            </Badge>
             <div className="ml-3 space-y-1">
               {cond.conditions?.map((subCondition, index) => (
                 <div key={index} className="flex items-center space-x-1">
@@ -76,9 +79,5 @@ export function ConditionPreview({ condition, className = '' }: ConditionPreview
     }
   };
 
-  return (
-    <div className={`text-xs ${className}`}>
-      {renderCondition(condition)}
-    </div>
-  );
+  return <div className={`text-xs ${className}`}>{renderCondition(condition)}</div>;
 }

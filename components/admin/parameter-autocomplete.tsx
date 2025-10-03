@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface ParameterAutocompleteProps {
@@ -18,7 +18,7 @@ export function ParameterAutocomplete({
   onSearchChange,
   onSelect,
   onClose,
-  position
+  position,
 }: ParameterAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -33,14 +33,10 @@ export function ParameterAutocomplete({
         onClose();
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < parameters.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex((prev) => (prev < parameters.length - 1 ? prev + 1 : 0));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : parameters.length - 1
-        );
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : parameters.length - 1));
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (parameters[selectedIndex]) {
@@ -62,7 +58,7 @@ export function ParameterAutocomplete({
       if (selectedElement) {
         selectedElement.scrollIntoView({
           block: 'nearest',
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }
     }
@@ -74,13 +70,13 @@ export function ParameterAutocomplete({
 
   return (
     <div
-      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto min-w-64"
+      className="absolute z-50 max-h-60 min-w-64 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg"
       style={{
         top: position.top,
         left: position.left,
       }}
     >
-      <div className="p-2 border-b border-gray-200">
+      <div className="border-b border-gray-200 p-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700">Parameters</span>
           <span className="text-xs text-gray-500">
@@ -88,26 +84,26 @@ export function ParameterAutocomplete({
           </span>
         </div>
       </div>
-      
+
       <div ref={listRef} className="max-h-48 overflow-y-auto">
         {parameters.map((parameter, index) => (
           <button
             key={parameter}
             type="button"
-            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${
+            className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 ${
               index === selectedIndex ? 'bg-blue-100 text-blue-900' : 'text-gray-700'
             }`}
             onClick={() => onSelect(parameter)}
           >
             <div className="flex items-center justify-between">
               <span className="font-mono">{parameter}</span>
-              <span className="text-xs text-gray-500 ml-2">@</span>
+              <span className="ml-2 text-xs text-gray-500">@</span>
             </div>
           </button>
         ))}
       </div>
-      
-      <div className="p-2 border-t border-gray-200 bg-gray-50">
+
+      <div className="border-t border-gray-200 bg-gray-50 p-2">
         <div className="text-xs text-gray-600">
           <div className="flex items-center justify-between">
             <span>↑↓ to navigate</span>

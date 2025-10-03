@@ -19,8 +19,13 @@ async function ensureDataDirectories() {
 // Initialize with default data if files don't exist
 async function initializeDefaultData() {
   await ensureDataDirectories();
-  
-  if (!await fs.access(PARAMETERS_FILE).then(() => true).catch(() => false)) {
+
+  if (
+    !(await fs
+      .access(PARAMETERS_FILE)
+      .then(() => true)
+      .catch(() => false))
+  ) {
     const defaultParameters = [
       {
         id: 'employee_name',
@@ -32,27 +37,32 @@ async function initializeDefaultData() {
         description: 'Full name of the employee',
         condition: null,
         defaults: {
-          jurisdictions: []
-        }
-      }
+          jurisdictions: [],
+        },
+      },
     ];
-    
+
     await fs.writeFile(PARAMETERS_FILE, JSON.stringify(defaultParameters, null, 2));
   }
 
-  if (!await fs.access(CONFIG_FILE).then(() => true).catch(() => false)) {
+  if (
+    !(await fs
+      .access(CONFIG_FILE)
+      .then(() => true)
+      .catch(() => false))
+  ) {
     const defaultConfig = {
       groups: ['Employee Information', 'Company Information', 'Legal Terms'],
       subgroups: {
         'Employee Information': ['Personal Details', 'Contact Information'],
         'Company Information': ['Business Details', 'Address Information'],
-        'Legal Terms': ['Employment Terms', 'Termination Clauses']
+        'Legal Terms': ['Employment Terms', 'Termination Clauses'],
       },
       types: ['text', 'number', 'date', 'boolean', 'select', 'textarea'],
       priorities: [1, 2, 3, 4, 5],
-      inputs: ['text', 'number', 'date', 'checkbox', 'select', 'textarea']
+      inputs: ['text', 'number', 'date', 'checkbox', 'select', 'textarea'],
     };
-    
+
     await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
   }
 }
@@ -61,10 +71,10 @@ async function initializeDefaultData() {
 export async function GET() {
   try {
     await initializeDefaultData();
-    
+
     const [parametersData, configData] = await Promise.all([
       fs.readFile(PARAMETERS_FILE, 'utf8'),
-      fs.readFile(CONFIG_FILE, 'utf8')
+      fs.readFile(CONFIG_FILE, 'utf8'),
     ]);
 
     const parameters = JSON.parse(parametersData);
@@ -72,14 +82,11 @@ export async function GET() {
 
     return NextResponse.json({
       parameters,
-      config
+      config,
     });
   } catch (error) {
     console.error('Error loading parameters:', error);
-    return NextResponse.json(
-      { error: 'Failed to load parameters' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to load parameters' }, { status: 500 });
   }
 }
 
@@ -91,16 +98,13 @@ export async function POST(request: NextRequest) {
 
     // Validate the data
     if (!Array.isArray(parameters)) {
-      return NextResponse.json(
-        { error: 'Parameters must be an array' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Parameters must be an array' }, { status: 400 });
     }
 
     // Create backup before saving
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFile = path.join(DATA_DIR, `parameters-backup-${timestamp}.json`);
-    
+
     try {
       const currentData = await fs.readFile(PARAMETERS_FILE, 'utf8');
       await fs.writeFile(backupFile, currentData);
@@ -117,16 +121,13 @@ export async function POST(request: NextRequest) {
       await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Parameters saved successfully',
-      backupFile: backupFile
+      backupFile: backupFile,
     });
   } catch (error) {
     console.error('Error saving parameters:', error);
-    return NextResponse.json(
-      { error: 'Failed to save parameters' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to save parameters' }, { status: 500 });
   }
 }

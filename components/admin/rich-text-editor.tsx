@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Bold, Code, Eye, Italic, List, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, List, ListOrdered, Code, Eye } from 'lucide-react';
 
 interface RichTextEditorProps {
   content: string;
@@ -12,12 +12,12 @@ interface RichTextEditorProps {
   enableParameters?: boolean;
 }
 
-export function RichTextEditor({ 
-  content, 
-  onChange, 
-  availableParameters = [], 
-  placeholder = "Start typing...",
-  enableParameters = false 
+export function RichTextEditor({
+  content,
+  onChange,
+  availableParameters = [],
+  placeholder = 'Start typing...',
+  enableParameters = false,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isCodeMode, setIsCodeMode] = useState(false);
@@ -44,9 +44,17 @@ export function RichTextEditor({
     if (editorRef.current && !isCodeMode && !isModeSwitching) {
       const currentContent = editorRef.current.innerHTML;
       // Only update if the content is significantly different and we're not in the middle of editing
-      if (content && content.trim() && currentContent !== content && Math.abs(currentContent.length - content.length) > 50) {
+      if (
+        content &&
+        content.trim() &&
+        currentContent !== content &&
+        Math.abs(currentContent.length - content.length) > 50
+      ) {
         editorRef.current.innerHTML = content;
-      } else if ((!content || content.trim() === '') && (currentContent.trim() === '' || currentContent === '<p><br></p>')) {
+      } else if (
+        (!content || content.trim() === '') &&
+        (currentContent.trim() === '' || currentContent === '<p><br></p>')
+      ) {
         // Only clear if content is truly empty
         editorRef.current.innerHTML = '';
       }
@@ -55,7 +63,7 @@ export function RichTextEditor({
 
   const formatText = (command: string, value?: string) => {
     if (isCodeMode) return;
-    
+
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     updateToolbarState();
@@ -73,7 +81,7 @@ export function RichTextEditor({
     if (!html.trim()) {
       return '';
     }
-    
+
     // Replace div tags with p tags for better semantics
     let normalized = html
       .replace(/<div([^>]*)>/gi, '<p$1>')
@@ -81,28 +89,28 @@ export function RichTextEditor({
       .replace(/<p><br><\/p>/gi, '<p><br></p>') // Handle empty paragraphs with br
       .replace(/<p><\/p>/gi, '<p><br></p>') // Handle completely empty paragraphs
       .replace(/<p>\s*<\/p>/gi, '<p><br></p>'); // Handle paragraphs with only whitespace
-    
+
     // If content is just empty paragraphs or whitespace, return empty string
     if (normalized.replace(/<p><br><\/p>/gi, '').trim() === '') {
       return '';
     }
-    
+
     // If content doesn't start with a tag, wrap it in p tags
     if (normalized.trim() && !normalized.match(/^<[^>]+>/)) {
       normalized = `<p>${normalized}</p>`;
     }
-    
+
     return normalized;
   };
 
   const handleInput = () => {
     if (isCodeMode) return;
-    
+
     let newContent = editorRef.current?.innerHTML || '';
-    
+
     // Normalize the content to use proper paragraph tags
     newContent = normalizeContent(newContent);
-    
+
     onChange(newContent);
     updateToolbarState();
   };
@@ -110,34 +118,34 @@ export function RichTextEditor({
   // Handle key events
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isCodeMode) return;
-    
+
     // Handle Enter key to create proper paragraphs
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      
+
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        
+
         // Create a new paragraph
         const p = document.createElement('p');
         p.innerHTML = '<br>'; // Add line break for empty paragraph
-        
+
         // Insert the paragraph
         range.insertNode(p);
-        
+
         // Move cursor to the new paragraph
         range.setStart(p, 0);
         range.setEnd(p, 0);
         selection.removeAllRanges();
         selection.addRange(range);
-        
+
         // Update content
         handleInput();
         return;
       }
     }
-    
+
     updateToolbarState();
   };
 
@@ -150,7 +158,7 @@ export function RichTextEditor({
 
     const selection = window.getSelection();
     let range: Range;
-    
+
     // If no selection or range, create one at the end of the content
     if (!selection || selection.rangeCount === 0) {
       range = document.createRange();
@@ -158,7 +166,7 @@ export function RichTextEditor({
       range.collapse(false); // Move to end
     } else {
       range = selection.getRangeAt(0);
-      
+
       // Check if the range is still within our editor
       if (!editorRef.current.contains(range.commonAncestorContainer)) {
         // If cursor is outside editor, move to end
@@ -167,28 +175,28 @@ export function RichTextEditor({
         range.collapse(false); // Move to end
       }
     }
-    
+
     // Create a span element for the parameter placeholder
     const span = document.createElement('span');
     span.className = 'bg-gray-200 text-gray-800 px-1 py-0.5 rounded text-sm font-mono';
     span.textContent = `@${parameter}`;
     span.contentEditable = 'false'; // Make it non-editable as a single unit
-    
+
     range.insertNode(span);
-    
+
     // Move cursor after the parameter
     range.setStartAfter(span);
     range.setEndAfter(span);
-    
+
     // Clear selection and set the new range
     if (selection) {
       selection.removeAllRanges();
       selection.addRange(range);
     }
-    
+
     // Update content
     handleInput();
-    
+
     // Close dropdown
     setShowParameterDropdown(false);
     setParameterSearch('');
@@ -196,7 +204,7 @@ export function RichTextEditor({
 
   const handleCodeModeToggle = () => {
     setIsModeSwitching(true);
-    
+
     if (isCodeMode) {
       // Switching from code to visual mode
       const textarea = editorRef.current?.querySelector('textarea');
@@ -211,15 +219,14 @@ export function RichTextEditor({
       const currentContent = editorRef.current?.innerHTML || '';
       onChange(currentContent);
     }
-    
+
     setIsCodeMode(!isCodeMode);
-    
+
     // Reset mode switching flag after a short delay
     setTimeout(() => {
       setIsModeSwitching(false);
     }, 200);
   };
-
 
   // Close parameter dropdown when clicking outside
   const handleClickOutside = (e: React.MouseEvent) => {
@@ -232,14 +239,14 @@ export function RichTextEditor({
     }
   };
 
-  const filteredParameters = (availableParameters || []).filter(param =>
+  const filteredParameters = (availableParameters || []).filter((param) =>
     param.toLowerCase().includes(parameterSearch.toLowerCase())
   );
 
   return (
-    <div className="relative border border-gray-200 rounded-md">
+    <div className="relative rounded-md border border-gray-200">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gray-50 rounded-t-md">
+      <div className="flex items-center justify-between rounded-t-md border-b border-gray-200 bg-gray-50 p-2">
         <div className="flex items-center space-x-1">
           {!isCodeMode && (
             <>
@@ -279,63 +286,61 @@ export function RichTextEditor({
               >
                 <ListOrdered className="h-4 w-4" />
               </Button>
-              <div className="h-4 w-px bg-gray-300 mx-1" />
+              <div className="mx-1 h-4 w-px bg-gray-300" />
             </>
           )}
-                  {enableParameters && (
-                    <div className="relative parameter-dropdown">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          // Store current cursor position before opening dropdown
-                          if (editorRef.current) {
-                            editorRef.current.focus();
-                          }
-                          setShowParameterDropdown(!showParameterDropdown);
-                        }}
-                        className="h-8 text-xs"
+          {enableParameters && (
+            <div className="parameter-dropdown relative">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Store current cursor position before opening dropdown
+                  if (editorRef.current) {
+                    editorRef.current.focus();
+                  }
+                  setShowParameterDropdown(!showParameterDropdown);
+                }}
+                className="h-8 text-xs"
+              >
+                <span className="mr-1">@</span>
+                Add Parameter
+              </Button>
+
+              {showParameterDropdown && (
+                <div className="absolute top-full left-0 z-50 mt-1 w-80 rounded-md border border-gray-200 bg-white shadow-lg">
+                  <div className="p-2">
+                    <input
+                      type="text"
+                      placeholder="Search parameters..."
+                      value={parameterSearch}
+                      onChange={(e) => setParameterSearch(e.target.value)}
+                      className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto border-t border-gray-200">
+                    {filteredParameters.slice(0, 20).map((parameter) => (
+                      <button
+                        key={parameter}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                        onClick={() => insertParameter(parameter)}
                       >
-                        <span className="mr-1">@</span>
-                        Add Parameter
-                      </Button>
-                      
-                      {showParameterDropdown && (
-                        <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                          <div className="p-2">
-                            <input
-                              type="text"
-                              placeholder="Search parameters..."
-                              value={parameterSearch}
-                              onChange={(e) => setParameterSearch(e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              autoFocus
-                            />
-                          </div>
-                          <div className="max-h-48 overflow-y-auto border-t border-gray-200">
-                            {filteredParameters.slice(0, 20).map((parameter) => (
-                              <button
-                                key={parameter}
-                                className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
-                                onClick={() => insertParameter(parameter)}
-                              >
-                                @{parameter}
-                              </button>
-                            ))}
-                            {filteredParameters.length === 0 && (
-                              <div className="px-3 py-2 text-sm text-gray-500">
-                                No parameters found
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        @{parameter}
+                      </button>
+                    ))}
+                    {filteredParameters.length === 0 && (
+                      <div className="px-3 py-2 text-sm text-gray-500">No parameters found</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        
+
         <Button
           type="button"
           variant="ghost"
@@ -348,99 +353,97 @@ export function RichTextEditor({
       </div>
 
       {/* Editor */}
-              {isCodeMode ? (
-                <textarea
-                  value={content}
-                  onChange={(e) => onChange(e.target.value)}
-                  className="w-full min-h-[300px] p-4 font-mono text-sm border-0 focus:outline-none resize-none"
-                />
-              ) : (
+      {isCodeMode ? (
+        <textarea
+          value={content}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-h-[300px] w-full resize-none border-0 p-4 font-mono text-sm focus:outline-none"
+        />
+      ) : (
         <div
           ref={editorRef}
           contentEditable
-          className="min-h-[300px] p-4 focus:outline-none prose max-w-none rounded-b-md"
-                  onInput={handleInput}
-                  onKeyDown={handleKeyDown}
-                  onClick={(e) => {
-                    handleClickOutside(e);
-                    // Ensure editor has focus when clicked
-                    if (editorRef.current) {
-                      editorRef.current.focus();
-                    }
-                  }}
-                  onFocus={() => {
-                    // Ensure content is preserved when editor gains focus
-                    if (editorRef.current && !isModeSwitching) {
-                      const currentContent = editorRef.current.innerHTML;
-                      if (currentContent !== content && content && content.trim()) {
-                        editorRef.current.innerHTML = content;
-                      }
-                    }
-                  }}
-          style={{ 
+          className="prose min-h-[300px] max-w-none rounded-b-md p-4 focus:outline-none"
+          onInput={handleInput}
+          onKeyDown={handleKeyDown}
+          onClick={(e) => {
+            handleClickOutside(e);
+            // Ensure editor has focus when clicked
+            if (editorRef.current) {
+              editorRef.current.focus();
+            }
+          }}
+          onFocus={() => {
+            // Ensure content is preserved when editor gains focus
+            if (editorRef.current && !isModeSwitching) {
+              const currentContent = editorRef.current.innerHTML;
+              if (currentContent !== content && content && content.trim()) {
+                editorRef.current.innerHTML = content;
+              }
+            }
+          }}
+          style={{
             minHeight: '300px',
-            outline: 'none'
+            outline: 'none',
           }}
           suppressContentEditableWarning
         />
       )}
 
-
-
-              {/* CSS for proper list rendering and paragraph handling */}
-              <style jsx global>{`
-                .prose ul {
-                  list-style-type: disc;
-                  margin-left: 1.5rem;
-                  margin-bottom: 1rem;
-                }
-                .prose ol {
-                  list-style-type: decimal;
-                  margin-left: 1.5rem;
-                  margin-bottom: 1rem;
-                }
-                .prose li {
-                  margin-bottom: 0.25rem;
-                  display: list-item;
-                }
-                .prose p {
-                  margin-bottom: 1rem;
-                  margin-top: 1rem;
-                  line-height: 1.6;
-                }
-                .prose p:first-child {
-                  margin-top: 0;
-                }
-                .prose p:last-child {
-                  margin-bottom: 0;
-                }
-                .prose div {
-                  margin-bottom: 1rem;
-                }
-                /* br tags should have minimal spacing */
-                .prose br {
-                  line-height: 1;
-                }
-                .prose strong {
-                  font-weight: bold;
-                }
-                .prose em {
-                  font-style: italic;
-                }
-                .bg-gray-200.text-gray-800 {
-                  background-color: #e5e7eb;
-                  color: #374151;
-                  padding: 2px 4px;
-                  border-radius: 4px;
-                  font-family: monospace;
-                  font-size: 12px;
-                }
-                /* Force contentEditable to use p tags instead of div */
-                [contenteditable] div {
-                  display: block;
-                  margin: 1rem 0;
-                }
-              `}</style>
+      {/* CSS for proper list rendering and paragraph handling */}
+      <style jsx global>{`
+        .prose ul {
+          list-style-type: disc;
+          margin-left: 1.5rem;
+          margin-bottom: 1rem;
+        }
+        .prose ol {
+          list-style-type: decimal;
+          margin-left: 1.5rem;
+          margin-bottom: 1rem;
+        }
+        .prose li {
+          margin-bottom: 0.25rem;
+          display: list-item;
+        }
+        .prose p {
+          margin-bottom: 1rem;
+          margin-top: 1rem;
+          line-height: 1.6;
+        }
+        .prose p:first-child {
+          margin-top: 0;
+        }
+        .prose p:last-child {
+          margin-bottom: 0;
+        }
+        .prose div {
+          margin-bottom: 1rem;
+        }
+        /* br tags should have minimal spacing */
+        .prose br {
+          line-height: 1;
+        }
+        .prose strong {
+          font-weight: bold;
+        }
+        .prose em {
+          font-style: italic;
+        }
+        .bg-gray-200.text-gray-800 {
+          background-color: #e5e7eb;
+          color: #374151;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 12px;
+        }
+        /* Force contentEditable to use p tags instead of div */
+        [contenteditable] div {
+          display: block;
+          margin: 1rem 0;
+        }
+      `}</style>
     </div>
   );
 }

@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ConditionBuilder } from './condition-builder';
-import { ConditionPreview } from './condition-preview';
 import { Condition } from './condition-builder';
+import { ConditionPreview } from './condition-preview';
 
 interface ConditionEditorProps {
   condition: Condition | string | null;
@@ -22,7 +22,7 @@ export function ConditionEditor({
   availableParameters = [],
   label = 'Condition',
   description,
-  className = ''
+  className = '',
 }: ConditionEditorProps) {
   const [showBuilder, setShowBuilder] = useState(false);
 
@@ -33,7 +33,7 @@ export function ConditionEditor({
       // For backward compatibility, convert simple string conditions to boolean type
       return {
         type: 'boolean',
-        parameter: condition
+        parameter: condition,
       };
     }
     return condition;
@@ -43,7 +43,6 @@ export function ConditionEditor({
     onConditionChange(newCondition);
     // Don't automatically close the builder - let user continue editing
   };
-
 
   const currentCondition = getConditionObject();
 
@@ -58,7 +57,7 @@ export function ConditionEditor({
               // Create a basic boolean condition immediately
               const newCondition: Condition = {
                 type: 'boolean',
-                parameter: ''
+                parameter: '',
               };
               onConditionChange(newCondition);
               // Automatically show the builder for immediate editing
@@ -73,12 +72,8 @@ export function ConditionEditor({
         <>
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                {label}
-              </Label>
-              {description && (
-                <p className="text-xs text-gray-500 mt-1">{description}</p>
-              )}
+              <Label className="text-sm font-medium text-gray-700">{label}</Label>
+              {description && <p className="mt-1 text-xs text-gray-500">{description}</p>}
             </div>
             <div className="flex items-center space-x-1">
               <Button
@@ -98,7 +93,7 @@ export function ConditionEditor({
                     setShowBuilder(false);
                   }
                 }}
-                className="text-red-600 h-7 text-xs hover:text-red-700 hover:bg-red-50"
+                className="h-7 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
               >
                 Clear
               </Button>
@@ -106,13 +101,13 @@ export function ConditionEditor({
           </div>
 
           {!showBuilder && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <ConditionPreview condition={currentCondition} />
             </div>
           )}
 
           {showBuilder && (
-            <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="rounded-lg border border-gray-200 bg-white p-4">
               <ConditionBuilder
                 condition={currentCondition}
                 onConditionChange={handleConditionChange}

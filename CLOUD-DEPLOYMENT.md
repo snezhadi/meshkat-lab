@@ -155,6 +155,7 @@ docker-compose restart
 - **With Domain**: `https://yourdomain.com` (if SSL configured)
 
 ### Login Credentials:
+
 - **admin** / **admin123** (full access including export)
 - **admin2** / **MeshkatLab2025!** (limited access, no export)
 
@@ -186,6 +187,7 @@ docker-compose exec app sh
 ### Common Issues
 
 1. **Port already in use**:
+
    ```bash
    # Check what's using port 3000
    sudo netstat -tlnp | grep :3000
@@ -193,6 +195,7 @@ docker-compose exec app sh
    ```
 
 2. **Permission denied**:
+
    ```bash
    # Fix permissions
    sudo chown -R $USER:$USER /opt/meshkat-admin
@@ -200,6 +203,7 @@ docker-compose exec app sh
    ```
 
 3. **Docker not found**:
+
    ```bash
    # Log out and log back in
    # Or run: newgrp docker

@@ -98,6 +98,7 @@ This will start both the application and Nginx on ports 80 and 443.
 ## 📊 Monitoring
 
 The application includes health checks that monitor:
+
 - API endpoint availability
 - Application responsiveness
 - Container health status

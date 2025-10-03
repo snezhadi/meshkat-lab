@@ -14,6 +14,7 @@ This guide will help you create and push your MeshkatAI Admin Dashboard to GitHu
 ```
 
 This script will:
+
 - Initialize Git repository
 - Create .gitignore and README.md
 - Commit all files
@@ -39,7 +40,7 @@ git add .
 git commit -m "Initial commit: MeshkatAI Admin Dashboard
 
 - Multi-user authentication system
-- Document template management  
+- Document template management
 - Parameter configuration
 - Docker deployment setup
 - Cloud VPS deployment scripts
@@ -73,6 +74,7 @@ git push -u origin main
 ### Install Git (if not already installed)
 
 **macOS:**
+
 ```bash
 # Using Homebrew
 brew install git
@@ -81,6 +83,7 @@ brew install git
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt update
 sudo apt install git
@@ -92,11 +95,13 @@ Download from: https://git-scm.com/downloads
 ### Install GitHub CLI (Optional but Recommended)
 
 **macOS:**
+
 ```bash
 brew install gh
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt install gh
 ```
@@ -107,6 +112,7 @@ Download from: https://cli.github.com/
 ## 📁 What Gets Pushed to GitHub
 
 ### Included Files:
+
 - ✅ All source code (`app/`, `components/`, `lib/`, etc.)
 - ✅ Configuration files (`package.json`, `next.config.ts`, etc.)
 - ✅ Docker setup (`Dockerfile`, `docker-compose.yml`)
@@ -115,6 +121,7 @@ Download from: https://cli.github.com/
 - ✅ Git configuration (`.gitignore`)
 
 ### Excluded Files:
+
 - ❌ `node_modules/` (dependencies)
 - ❌ `.next/` (build output)
 - ❌ `.env*` (environment variables)
@@ -124,6 +131,7 @@ Download from: https://cli.github.com/
 ## 🔒 Security Considerations
 
 ### Data Files
+
 The `data/` directory containing your JSON files is **excluded** from Git for security reasons. This means:
 
 - ✅ **Your data stays private** on your local machine
@@ -131,7 +139,9 @@ The `data/` directory containing your JSON files is **excluded** from Git for se
 - ✅ **You control data access** completely
 
 ### Environment Variables
+
 All `.env*` files are excluded to prevent accidental exposure of:
+
 - API keys
 - Database credentials
 - Secret keys
@@ -139,11 +149,13 @@ All `.env*` files are excluded to prevent accidental exposure of:
 ## 🌐 After Pushing to GitHub
 
 ### Your Repository Will Be Available At:
+
 ```
 https://github.com/YOUR_USERNAME/meshkat-lab
 ```
 
 ### You Can Then:
+
 1. **Deploy from GitHub**: Use the repository URL in deployment scripts
 2. **Collaborate**: Share the repository with team members
 3. **Version Control**: Track changes and manage releases
@@ -203,6 +215,7 @@ git push origin main
 ### Common Issues:
 
 1. **"Repository already exists"**
+
    ```bash
    # Remove existing remote
    git remote remove origin
@@ -211,6 +224,7 @@ git push origin main
    ```
 
 2. **"Authentication failed"**
+
    ```bash
    # Use GitHub CLI to authenticate
    gh auth login

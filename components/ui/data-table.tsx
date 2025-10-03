@@ -1,37 +1,39 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  flexRender,
-  createColumnHelper,
-  ColumnDef,
-  SortingState,
-  ColumnResizeMode,
-  VisibilityState,
-} from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
-  ChevronUp, 
-  ChevronDown, 
-  Settings, 
   ArrowUpDown,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   MoreHorizontal,
+  Settings,
 } from 'lucide-react';
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import { Button } from '@/components/ui/button';
+
+// Define missing types locally
+type ColumnDef<TData, TValue = unknown> = any;
+type ColumnResizeMode = 'onChange' | 'onEnd';
+type SortingState = any[];
+type VisibilityState = Record<string, boolean>;
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export interface Column {
   key: string;
@@ -75,7 +77,7 @@ export function DataTable({
   selectable = true,
   onSelectionChange,
   selectedIds = [],
-  idField = 'id'
+  idField = 'id',
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -90,7 +92,7 @@ export function DataTable({
   React.useEffect(() => {
     const initialVisibility: VisibilityState = {};
     const initialSizes: Record<string, number> = {};
-    columns.forEach(col => {
+    columns.forEach((col) => {
       initialVisibility[col.key] = col.visible !== false;
       initialSizes[col.key] = col.width || 150;
     });
@@ -101,7 +103,7 @@ export function DataTable({
   // Convert our column format to TanStack Table format
   const tableColumns = useMemo(() => {
     const columnHelper = createColumnHelper<any>();
-    
+
     const tableCols: ColumnDef<any>[] = [];
 
     // Add selection column if needed
@@ -133,14 +135,14 @@ export function DataTable({
     }
 
     // Add data columns
-    columns.forEach(col => {
+    columns.forEach((col) => {
       tableCols.push(
         columnHelper.accessor(col.key, {
           header: col.label,
           cell: ({ getValue, row }) => {
             const value = getValue();
-            const displayValue = col.render ? col.render(value, row.original) : (value || '-');
-            
+            const displayValue = col.render ? col.render(value, row.original) : value || '-';
+
             // Handle tooltip text properly
             let tooltipText = '';
             if (React.isValidElement(displayValue)) {
@@ -156,18 +158,28 @@ export function DataTable({
                   tooltipText = children
                     .map((child: any) => {
                       if (typeof child === 'string') return child;
-                      if (child && typeof child === 'object' && child.props && child.props.children) {
+                      if (
+                        child &&
+                        typeof child === 'object' &&
+                        child.props &&
+                        child.props.children
+                      ) {
                         return child.props.children;
                       }
                       return '';
                     })
                     .filter((text: string) => text)
                     .join(' ');
-                } else if (children && typeof children === 'object' && children.props && children.props.children) {
+                } else if (
+                  children &&
+                  typeof children === 'object' &&
+                  children.props &&
+                  children.props.children
+                ) {
                   tooltipText = children.props.children;
                 }
               }
-              
+
               // Special handling for complex elements like Invite URL with copy button
               if (!tooltipText && props && props.className && props.className.includes('group')) {
                 // For group containers, try to find the first anchor tag or text content
@@ -187,10 +199,10 @@ export function DataTable({
                   }
                   return '';
                 };
-                
+
                 tooltipText = findTextInElement(displayValue);
               }
-              
+
               // If we couldn't extract meaningful text, fall back to the original value
               if (!tooltipText || tooltipText.includes('[object Object]')) {
                 tooltipText = String(value || '');
@@ -199,13 +211,10 @@ export function DataTable({
               // For strings and primitives, use the actual value
               tooltipText = String(displayValue);
             }
-            
+
             // Always show tooltip for every cell
             return (
-              <div 
-                className="truncate cursor-help max-w-full"
-                title={tooltipText}
-              >
+              <div className="max-w-full cursor-help truncate" title={tooltipText}>
                 {displayValue as React.ReactNode}
               </div>
             );
@@ -258,40 +267,46 @@ export function DataTable({
   React.useEffect(() => {
     if (onSelectionChange) {
       const selectedRows = table.getFilteredSelectedRowModel().rows;
-      const selectedIds = selectedRows.map(row => row.original[idField]);
+      const selectedIds = selectedRows.map((row) => row.original[idField]);
       onSelectionChange(selectedIds);
     }
   }, [rowSelection, table, onSelectionChange, idField]);
 
   // Custom resize handlers
-  const handleResizeStart = useCallback((e: React.MouseEvent, columnKey: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const currentWidth = columnSizes[columnKey] || 150;
-    setResizing(columnKey);
-    setResizeStartX(e.clientX);
-    setResizeStartWidth(currentWidth);
-  }, [columnSizes]);
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent, columnKey: string) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-  const handleResizeMove = useCallback((e: MouseEvent) => {
-    if (!resizing) return;
+      const currentWidth = columnSizes[columnKey] || 150;
+      setResizing(columnKey);
+      setResizeStartX(e.clientX);
+      setResizeStartWidth(currentWidth);
+    },
+    [columnSizes]
+  );
 
-    const column = columns.find(col => col.key === resizing);
-    if (!column) return;
+  const handleResizeMove = useCallback(
+    (e: MouseEvent) => {
+      if (!resizing) return;
 
-    const deltaX = e.clientX - resizeStartX;
-    let newWidth = resizeStartWidth + deltaX;
-    
-    // Apply min/max constraints
-    newWidth = Math.max(column.minWidth || 50, newWidth);
-    newWidth = Math.min(column.maxWidth || 800, newWidth);
+      const column = columns.find((col) => col.key === resizing);
+      if (!column) return;
 
-    setColumnSizes(prev => ({
-      ...prev,
-      [resizing]: newWidth
-    }));
-  }, [resizing, columns, resizeStartX, resizeStartWidth]);
+      const deltaX = e.clientX - resizeStartX;
+      let newWidth = resizeStartWidth + deltaX;
+
+      // Apply min/max constraints
+      newWidth = Math.max(column.minWidth || 50, newWidth);
+      newWidth = Math.min(column.maxWidth || 800, newWidth);
+
+      setColumnSizes((prev) => ({
+        ...prev,
+        [resizing]: newWidth,
+      }));
+    },
+    [resizing, columns, resizeStartX, resizeStartWidth]
+  );
 
   const handleResizeEnd = useCallback(() => {
     setResizing(null);
@@ -306,7 +321,7 @@ export function DataTable({
       document.addEventListener('mouseup', handleResizeEnd);
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
-      
+
       return () => {
         document.removeEventListener('mousemove', handleResizeMove);
         document.removeEventListener('mouseup', handleResizeEnd);
@@ -318,7 +333,7 @@ export function DataTable({
 
   const getSortIcon = (column: any) => {
     if (!column.getCanSort()) return null;
-    
+
     if (column.getIsSorted() === 'asc') {
       return <ChevronUp className="h-4 w-4" />;
     } else if (column.getIsSorted() === 'desc') {
@@ -330,10 +345,12 @@ export function DataTable({
   return (
     <div className="space-y-4">
       {/* Table Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         {searchable && (
-          <div className="flex-1 max-w-md">
-            <Label htmlFor="search" className="sr-only">Search</Label>
+          <div className="max-w-md flex-1">
+            <Label htmlFor="search" className="sr-only">
+              Search
+            </Label>
             <Input
               id="search"
               placeholder="Search..."
@@ -342,19 +359,20 @@ export function DataTable({
             />
           </div>
         )}
-        
+
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className="mr-2 h-4 w-4" />
                 Columns
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table.getAllLeafColumns()
-                .filter(column => column.id !== 'select')
-                .map(column => (
+              {table
+                .getAllLeafColumns()
+                .filter((column) => column.id !== 'select')
+                .map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={column.getIsVisible()}
@@ -369,35 +387,38 @@ export function DataTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <div className="overflow-auto">
-          <table className="w-full border-collapse table-fixed">
+          <table className="w-full table-fixed border-collapse">
             <thead className="bg-gray-50">
-              {table.getHeaderGroups().map(headerGroup => (
+              {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
+                  {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative border-b border-gray-200"
+                      className="relative border-b border-gray-200 px-3 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                       style={{
-                        width: header.id === 'select' ? 50 : columnSizes[header.id] || header.getSize(),
+                        width:
+                          header.id === 'select' ? 50 : columnSizes[header.id] || header.getSize(),
                         position: 'relative',
                       }}
                     >
                       <div className="flex items-center justify-between">
                         <button
                           className={`flex items-center space-x-1 ${
-                            header.column.getCanSort() ? 'hover:text-gray-700 cursor-pointer' : ''
+                            header.column.getCanSort() ? 'cursor-pointer hover:text-gray-700' : ''
                           }`}
                           onClick={header.column.getToggleSortingHandler()}
                         >
-                          <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+                          <span>
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </span>
                           {getSortIcon(header.column)}
                         </button>
                         {header.column.getCanResize() && header.id !== 'select' && (
                           <div
                             onMouseDown={(e) => handleResizeStart(e, header.id)}
-                            className={`absolute right-0 top-2 bottom-2 w-0.5 cursor-col-resize select-none touch-none ${
+                            className={`absolute top-2 right-0 bottom-2 w-0.5 cursor-col-resize touch-none select-none ${
                               resizing === header.id ? 'bg-gray-400' : 'bg-gray-200'
                             }`}
                           />
@@ -409,14 +430,17 @@ export function DataTable({
               ))}
             </thead>
             <tbody className="bg-white">
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="hover:bg-gray-50 border-b border-gray-100">
-                  {row.getVisibleCells().map(cell => (
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-3 py-4 text-sm text-gray-900 overflow-hidden"
+                      className="overflow-hidden px-3 py-4 text-sm text-gray-900"
                       style={{
-                        width: cell.column.id === 'select' ? 50 : columnSizes[cell.column.id] || cell.column.getSize(),
+                        width:
+                          cell.column.id === 'select'
+                            ? 50
+                            : columnSizes[cell.column.id] || cell.column.getSize(),
                       }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -430,7 +454,7 @@ export function DataTable({
 
         {/* Empty State */}
         {table.getRowModel().rows.length === 0 && (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <p className="text-gray-500">
               {globalFilter ? 'No results found for your search.' : 'No data available.'}
             </p>
@@ -438,24 +462,26 @@ export function DataTable({
         )}
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
           <div className="flex items-center space-x-2">
             <p className="text-sm text-gray-700">
               Showing{' '}
-              <span className="font-medium">{table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}</span>
-              {' '}to{' '}
+              <span className="font-medium">
+                {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
+              </span>{' '}
+              to{' '}
               <span className="font-medium">
                 {Math.min(
-                  (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                  (table.getState().pagination.pageIndex + 1) *
+                    table.getState().pagination.pageSize,
                   table.getFilteredRowModel().rows.length
                 )}
-              </span>
-              {' '}of{' '}
-              <span className="font-medium">{table.getFilteredRowModel().rows.length}</span>
-              {' '}results
+              </span>{' '}
+              of <span className="font-medium">{table.getFilteredRowModel().rows.length}</span>{' '}
+              results
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -478,13 +504,8 @@ export function DataTable({
 
         {/* Load More */}
         {hasMore && (
-          <div className="p-4 border-t border-gray-200">
-            <Button
-              onClick={onLoadMore}
-              disabled={loading}
-              variant="outline"
-              className="w-full"
-            >
+          <div className="border-t border-gray-200 p-4">
+            <Button onClick={onLoadMore} disabled={loading} variant="outline" className="w-full">
               {loading ? 'Loading...' : 'Load More'}
             </Button>
           </div>
@@ -498,4 +519,4 @@ export function DataTable({
       </div>
     </div>
   );
-} 
+}

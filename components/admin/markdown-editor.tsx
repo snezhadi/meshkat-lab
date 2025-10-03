@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import { AtSign, Edit, Eye } from 'lucide-react';
 import MDEditor from '@uiw/react-md-editor';
 import { Button } from '@/components/ui/button';
-import { AtSign, Eye, Edit } from 'lucide-react';
 import { ContentRenderer } from './content-renderer';
 
 interface MarkdownEditorProps {
@@ -14,33 +14,36 @@ interface MarkdownEditorProps {
   enableParameters?: boolean;
 }
 
-export function MarkdownEditor({ 
-  content, 
-  onChange, 
-  availableParameters = [], 
-  placeholder = "Start typing...",
-  enableParameters = false 
+export function MarkdownEditor({
+  content,
+  onChange,
+  availableParameters = [],
+  placeholder = 'Start typing...',
+  enableParameters = false,
 }: MarkdownEditorProps) {
   const [showParameterDropdown, setShowParameterDropdown] = useState(false);
   const [parameterSearch, setParameterSearch] = useState('');
   const [previewMode, setPreviewMode] = useState<'edit' | 'preview' | 'live'>('edit');
 
   // Insert parameter at cursor position
-  const insertParameter = useCallback((parameter: string) => {
-    const parameterText = `@${parameter}`;
-    
-    // Insert at the end of content for now
-    // TODO: In a full implementation, we'd need to get cursor position from MDEditor
-    const newContent = content + (content ? ' ' : '') + parameterText;
-    onChange(newContent);
-    
-    // Close dropdown
-    setShowParameterDropdown(false);
-    setParameterSearch('');
-  }, [content, onChange]);
+  const insertParameter = useCallback(
+    (parameter: string) => {
+      const parameterText = `@${parameter}`;
+
+      // Insert at the end of content for now
+      // TODO: In a full implementation, we'd need to get cursor position from MDEditor
+      const newContent = content + (content ? ' ' : '') + parameterText;
+      onChange(newContent);
+
+      // Close dropdown
+      setShowParameterDropdown(false);
+      setParameterSearch('');
+    },
+    [content, onChange]
+  );
 
   // Filter parameters based on search
-  const filteredParameters = availableParameters.filter(param =>
+  const filteredParameters = availableParameters.filter((param) =>
     param.toLowerCase().includes(parameterSearch.toLowerCase())
   );
 
@@ -48,9 +51,9 @@ export function MarkdownEditor({
   const addParameterCommand = {
     name: 'addParameter',
     keyCommand: 'addParameter',
-    buttonProps: { 
+    buttonProps: {
       'aria-label': 'Add Parameter',
-      title: 'Add Parameter'
+      title: 'Add Parameter',
     },
     icon: <AtSign className="h-4 w-4" />,
     execute: () => {
@@ -59,9 +62,9 @@ export function MarkdownEditor({
   };
 
   return (
-    <div className="relative border border-gray-200 rounded-md">
+    <div className="relative rounded-md border border-gray-200">
       {/* Custom Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gray-50 rounded-t-md">
+      <div className="flex items-center justify-between rounded-t-md border-b border-gray-200 bg-gray-50 p-2">
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium text-gray-700">Markdown Editor</span>
           {enableParameters && (
@@ -72,12 +75,12 @@ export function MarkdownEditor({
               onClick={() => setShowParameterDropdown(!showParameterDropdown)}
               className="h-8 text-xs"
             >
-              <AtSign className="h-4 w-4 mr-1" />
+              <AtSign className="mr-1 h-4 w-4" />
               Add Parameter
             </Button>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-1">
           <Button
             type="button"
@@ -102,14 +105,14 @@ export function MarkdownEditor({
 
       {/* Custom Parameter Dropdown */}
       {showParameterDropdown && enableParameters && (
-        <div className="absolute top-12 left-2 z-50 w-80 bg-white border border-gray-200 rounded-md shadow-lg">
+        <div className="absolute top-12 left-2 z-50 w-80 rounded-md border border-gray-200 bg-white shadow-lg">
           <div className="p-2">
             <input
               type="text"
               placeholder="Search parameters..."
               value={parameterSearch}
               onChange={(e) => setParameterSearch(e.target.value)}
-              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
               autoFocus
             />
           </div>
@@ -117,16 +120,14 @@ export function MarkdownEditor({
             {filteredParameters.slice(0, 20).map((parameter) => (
               <button
                 key={parameter}
-                className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
                 onClick={() => insertParameter(parameter)}
               >
                 @{parameter}
               </button>
             ))}
             {filteredParameters.length === 0 && (
-              <div className="px-3 py-2 text-sm text-gray-500">
-                No parameters found
-              </div>
+              <div className="px-3 py-2 text-sm text-gray-500">No parameters found</div>
             )}
           </div>
         </div>
@@ -135,7 +136,7 @@ export function MarkdownEditor({
       {/* Markdown Editor */}
       <div data-color-mode="light">
         {previewMode === 'preview' ? (
-          <div className="p-4 border border-gray-200 rounded-b-md" style={{ minHeight: '300px' }}>
+          <div className="rounded-b-md border border-gray-200 p-4" style={{ minHeight: '300px' }}>
             <ContentRenderer content={content} />
           </div>
         ) : (
@@ -154,8 +155,8 @@ export function MarkdownEditor({
 
       {/* Click outside to close dropdown */}
       {showParameterDropdown && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => {
             setShowParameterDropdown(false);
             setParameterSearch('');

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ParameterTable } from './parameter-table';
-import { ParameterFilters } from './parameter-filters';
-import { ConfigurationManager } from './configuration-manager';
+import { Download, Plus, RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Plus, Download, Settings } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
+import { ConfigurationManager } from './configuration-manager';
+import { ParameterFilters } from './parameter-filters';
+import { ParameterTable } from './parameter-table';
 
 interface Parameter {
   id: string;
@@ -52,10 +52,10 @@ interface FilterState {
   hasCondition: string;
 }
 
-export function DocumentParametersEditor({ 
-  parameters, 
-  config, 
-  onRefresh
+export function DocumentParametersEditor({
+  parameters,
+  config,
+  onRefresh,
 }: DocumentParametersEditorProps) {
   const router = useRouter();
   const { canExport } = usePermissions();
@@ -79,7 +79,7 @@ export function DocumentParametersEditor({
       subgroup: '',
       type: '',
       priority: '',
-      hasCondition: ''
+      hasCondition: '',
     };
   });
   const [localConfig, setLocalConfig] = useState<ParameterConfig>(config);
@@ -87,14 +87,14 @@ export function DocumentParametersEditor({
 
   // Apply filters
   const applyFilters = useMemo(() => {
-    return parameters.filter(param => {
+    return parameters.filter((param) => {
       // Search filter - only search in ID and name
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           param.id.toLowerCase().includes(searchLower) ||
           param.name.toLowerCase().includes(searchLower);
-        
+
         if (!matchesSearch) return false;
       }
 
@@ -118,7 +118,11 @@ export function DocumentParametersEditor({
         const priority = param.metadata?.priority ?? 0;
         if (filters.priority === 'has' && priority === 0) return false;
         if (filters.priority === 'none' && priority > 0) return false;
-        if (filters.priority !== 'has' && filters.priority !== 'none' && priority.toString() !== filters.priority) {
+        if (
+          filters.priority !== 'has' &&
+          filters.priority !== 'none' &&
+          priority.toString() !== filters.priority
+        ) {
           return false;
         }
       }
@@ -154,7 +158,7 @@ export function DocumentParametersEditor({
 
     // Handle browser refresh/close
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
     // Handle Next.js router navigation - clear filters when leaving this page
     const originalPush = router.push;
     router.push = (url: any, options?: any) => {
@@ -177,22 +181,19 @@ export function DocumentParametersEditor({
     router.push('/admin/document-parameters/create');
   };
 
-
-
   const handleReorderParameters = (reorderedParameters: Parameter[]) => {
     // Update the main parameters array with new order
-    const newParameters = parameters.map(param => {
-      const reorderedParam = reorderedParameters.find(rp => rp.id === param.id);
+    const newParameters = parameters.map((param) => {
+      const reorderedParam = reorderedParameters.find((rp) => rp.id === param.id);
       return reorderedParam || param;
     });
     setFilteredParameters(reorderedParameters);
   };
 
-
   const handleConfigChange = async (newConfig: ParameterConfig) => {
     try {
       setSavingConfig(true);
-      
+
       const response = await fetch('/api/admin/parameters', {
         method: 'POST',
         headers: {
@@ -200,7 +201,7 @@ export function DocumentParametersEditor({
         },
         body: JSON.stringify({
           parameters: parameters,
-          config: newConfig
+          config: newConfig,
         }),
       });
 
@@ -210,10 +211,9 @@ export function DocumentParametersEditor({
 
       const result = await response.json();
       console.log('Configuration save result:', result);
-      
+
       // Update localConfig to reflect saved state
       setLocalConfig(newConfig);
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       console.error('Error saving configuration:', errorMessage);
@@ -234,38 +234,39 @@ export function DocumentParametersEditor({
     URL.revokeObjectURL(url);
   };
 
-
   return (
     <div className="container mx-auto px-6 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Contract Parameters</h1>
-        <p className="text-gray-600">Manage employment contract parameters and their configurations</p>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">Contract Parameters</h1>
+        <p className="text-gray-600">
+          Manage employment contract parameters and their configurations
+        </p>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             <button
               onClick={() => setActiveTab('parameters')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`border-b-2 px-1 py-4 text-sm font-medium ${
                 activeTab === 'parameters'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
               📋 Parameters
             </button>
             <button
               onClick={() => setActiveTab('configuration')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`border-b-2 px-1 py-4 text-sm font-medium ${
                 activeTab === 'configuration'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
-              <Settings className="w-4 h-4 inline mr-2" />
+              <Settings className="mr-2 inline h-4 w-4" />
               Configuration
             </button>
           </nav>
@@ -273,45 +274,37 @@ export function DocumentParametersEditor({
       </div>
 
       {/* Action Bar - Show for both tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex flex-wrap gap-2">
             {activeTab === 'parameters' ? (
               <>
-                <Button 
+                <Button
                   onClick={handleCreateParameter}
                   variant="outline"
                   className="border-green-600 text-green-600 hover:bg-green-50"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Add Parameter
                 </Button>
-                
-                <Button 
-                  onClick={handleExport}
-                  variant="outline"
-                  disabled={!canExport}
-                >
-                  <Download className="w-4 h-4 mr-2" />
+
+                <Button onClick={handleExport} variant="outline" disabled={!canExport}>
+                  <Download className="mr-2 h-4 w-4" />
                   Export
                 </Button>
               </>
             ) : (
-              <>
-                {/* Configuration changes are now immediate - no save button needed */}
-              </>
+              <>{/* Configuration changes are now immediate - no save button needed */}</>
             )}
           </div>
-          
+
           <div className="text-sm text-gray-500">
             {activeTab === 'parameters' ? (
               <>
                 {filteredParameters.length} of {parameters.length} parameters
               </>
             ) : (
-              <>
-                Configuration settings • Changes saved automatically
-              </>
+              <>Configuration settings • Changes saved automatically</>
             )}
           </div>
         </div>
@@ -321,35 +314,30 @@ export function DocumentParametersEditor({
       {activeTab === 'parameters' ? (
         <>
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <ParameterFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              config={localConfig}
-            />
+          <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <ParameterFilters filters={filters} onFiltersChange={setFilters} config={localConfig} />
           </div>
 
           {/* Parameters Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <ParameterTable 
-                parameters={filteredParameters}
-                onReorder={handleReorderParameters}
-                config={localConfig}
-              />
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+            <ParameterTable
+              parameters={filteredParameters}
+              onReorder={handleReorderParameters}
+              config={localConfig}
+            />
           </div>
         </>
       ) : (
         /* Configuration Tab */
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <ConfigurationManager
-              config={localConfig}
-              parameters={parameters}
-              onConfigChange={handleConfigChange}
-              savingConfig={savingConfig}
-            />
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <ConfigurationManager
+            config={localConfig}
+            parameters={parameters}
+            onConfigChange={handleConfigChange}
+            savingConfig={savingConfig}
+          />
         </div>
       )}
-
     </div>
   );
 }

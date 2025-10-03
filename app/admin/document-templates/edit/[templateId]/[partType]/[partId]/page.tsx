@@ -1,17 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Condition, ConditionBuilder } from '@/components/admin/condition-builder';
+import { ConditionEditor } from '@/components/admin/condition-editor';
+import { MarkdownEditor } from '@/components/admin/markdown-editor';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { MarkdownEditor } from '@/components/admin/markdown-editor';
-import { ConditionBuilder, Condition } from '@/components/admin/condition-builder';
-import { ConditionEditor } from '@/components/admin/condition-editor';
-import { toast } from 'sonner';
 
 interface DocumentTemplate {
   id: string;
@@ -44,7 +51,6 @@ export default function DocumentPartEditPage() {
   const params = useParams();
   const router = useRouter();
   const { templateId, partType, partId } = params;
-  
 
   const [template, setTemplate] = useState<DocumentTemplate | null>(null);
   const [part, setPart] = useState<any>(null);
@@ -66,7 +72,9 @@ export default function DocumentPartEditPage() {
 
     const handleRouteChange = () => {
       if (hasUnsavedChanges) {
-        const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+        const confirmed = window.confirm(
+          'You have unsaved changes. Are you sure you want to leave?'
+        );
         if (!confirmed) {
           throw new Error('Route change cancelled');
         }
@@ -74,7 +82,7 @@ export default function DocumentPartEditPage() {
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
     // For Next.js router navigation, we'll handle this in the Cancel button and other navigation
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -89,14 +97,14 @@ export default function DocumentPartEditPage() {
           throw new Error('Failed to fetch document templates');
         }
         const result = await response.json();
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch document templates');
         }
-        
+
         const templates = result.data;
         const foundTemplate = templates.find((t: DocumentTemplate) => t.id === templateId);
-        
+
         if (!foundTemplate) {
           throw new Error(`Template not found: ${templateId}`);
         }
@@ -137,7 +145,6 @@ export default function DocumentPartEditPage() {
           console.warn('Failed to load parameters:', paramsErr);
           setAvailableParameters([]);
         }
-
       } catch (err) {
         console.error('Error in fetchTemplate:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -174,14 +181,14 @@ export default function DocumentPartEditPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch document templates');
       }
-      
+
       const result = await response.json();
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch document templates');
       }
-      
+
       const allTemplates = result.data;
-      
+
       // Update the specific template with the modified part
       const updatedTemplates = allTemplates.map((t: DocumentTemplate) => {
         if (t.id === templateId) {
@@ -190,18 +197,16 @@ export default function DocumentPartEditPage() {
           if (partType === 'introduction') {
             updatedTemplate.introduction = part;
           } else if (partType === 'clause') {
-            updatedTemplate.clauses = updatedTemplate.clauses.map(c =>
+            updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
               c.id === partId ? part : c
             );
           } else if (partType === 'paragraph') {
-            updatedTemplate.clauses = updatedTemplate.clauses.map(clause => ({
+            updatedTemplate.clauses = updatedTemplate.clauses.map((clause) => ({
               ...clause,
-              paragraphs: clause.paragraphs.map(p =>
-                p.id === partId ? part : p
-              )
+              paragraphs: clause.paragraphs.map((p) => (p.id === partId ? part : p)),
             }));
           }
-          
+
           return updatedTemplate;
         }
         return t;
@@ -213,9 +218,9 @@ export default function DocumentPartEditPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           documentTemplates: updatedTemplates,
-          createCheckpoint: false 
+          createCheckpoint: false,
         }),
       });
 
@@ -230,7 +235,7 @@ export default function DocumentPartEditPage() {
 
       toast.success('Changes saved successfully!');
       setHasUnsavedChanges(false);
-      
+
       // Navigate based on the save action
       if (shouldExit) {
         router.push(`/admin/document-templates/edit/${templateId}`);
@@ -269,9 +274,9 @@ export default function DocumentPartEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
           <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -280,16 +285,17 @@ export default function DocumentPartEditPage() {
 
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center text-red-600">
           <p className="text-lg">Error: {error}</p>
           <div className="mt-4 space-x-2">
-                    <Button onClick={() => handleNavigation(`/admin/document-templates/edit/${templateId}`)} variant="outline">
-                      Back to Template Editor
-                    </Button>
-            <Button onClick={() => window.location.reload()}>
-              Retry
+            <Button
+              onClick={() => handleNavigation(`/admin/document-templates/edit/${templateId}`)}
+              variant="outline"
+            >
+              Back to Template Editor
             </Button>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
         </div>
       </div>
@@ -298,12 +304,15 @@ export default function DocumentPartEditPage() {
 
   if (!template || !part) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center text-red-600">
           <p className="text-lg">Error: Template or part not found</p>
-                  <Button onClick={() => handleNavigation(`/admin/document-templates/edit/${templateId}`)} className="mt-4">
-                    Back to Template Editor
-                  </Button>
+          <Button
+            onClick={() => handleNavigation(`/admin/document-templates/edit/${templateId}`)}
+            className="mt-4"
+          >
+            Back to Template Editor
+          </Button>
         </div>
       </div>
     );
@@ -315,7 +324,7 @@ export default function DocumentPartEditPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink 
+            <BreadcrumbLink
               href="/admin/document-templates"
               onClick={(e) => {
                 e.preventDefault();
@@ -327,7 +336,7 @@ export default function DocumentPartEditPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink 
+            <BreadcrumbLink
               href={`/admin/document-templates/edit/${templateId}`}
               onClick={(e) => {
                 e.preventDefault();
@@ -345,11 +354,11 @@ export default function DocumentPartEditPage() {
       </Breadcrumb>
 
       {/* Header */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{getPartTitle()}</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="mt-1 text-sm text-gray-600">
               {template.title} • {part.title}
             </p>
           </div>
@@ -367,20 +376,17 @@ export default function DocumentPartEditPage() {
             >
               {saving ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                  <div className="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-b-2"></div>
                   Saving...
                 </>
               ) : (
                 'Save'
               )}
             </Button>
-            <Button
-              onClick={() => handleSave(true)}
-              disabled={saving || !hasUnsavedChanges}
-            >
+            <Button onClick={() => handleSave(true)} disabled={saving || !hasUnsavedChanges}>
               {saving ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                   Saving...
                 </>
               ) : (
@@ -391,9 +397,9 @@ export default function DocumentPartEditPage() {
         </div>
 
         {hasUnsavedChanges && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
+          <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
             <div className="flex items-center">
-              <div className="text-yellow-600 text-sm">⚠️</div>
+              <div className="text-sm text-yellow-600">⚠️</div>
               <span className="ml-2 text-sm text-yellow-800">
                 You have unsaved changes. Don't forget to save your work!
               </span>
@@ -403,50 +409,39 @@ export default function DocumentPartEditPage() {
       </div>
 
       {/* Edit Form */}
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="rounded-lg border border-gray-200 bg-white">
         <CardContent className="space-y-6 p-6">
           {/* ID Field (Read-only) */}
           <div className="space-y-2">
-            <Label htmlFor="id">
-              ID
-            </Label>
-            <Input 
-              id="id" 
-              value={part.id} 
-              className="w-full" 
-              disabled 
-            />
+            <Label htmlFor="id">ID</Label>
+            <Input id="id" value={part.id} className="w-full" disabled />
           </div>
 
           {/* Title Field */}
           <div className="space-y-2">
-            <Label htmlFor="title">
-              Title
-            </Label>
-            <Input 
-              id="title" 
-              value={part.title} 
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={part.title}
               onChange={(e) => handleChange('title', e.target.value)}
-              className="w-full" 
+              className="w-full"
             />
           </div>
 
-                  {/* Description Field (for clauses and paragraphs) */}
-                  {(partType === 'clause' || partType === 'paragraph') && (
-                    <div className="space-y-2">
-                      <Label htmlFor="description">
-                        Description
-                      </Label>
-                      <div className="w-full">
-                        <MarkdownEditor
-                          content={part.description || ''}
-                          onChange={(content) => handleChange('description', content)}
-                          placeholder="Enter description..."
-                          enableParameters={false}
-                        />
-                      </div>
-                    </div>
-                  )}
+          {/* Description Field (for clauses and paragraphs) */}
+          {(partType === 'clause' || partType === 'paragraph') && (
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <div className="w-full">
+                <MarkdownEditor
+                  content={part.description || ''}
+                  onChange={(content) => handleChange('description', content)}
+                  placeholder="Enter description..."
+                  enableParameters={false}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Condition Field (for clauses and paragraphs) */}
           {(partType === 'clause' || partType === 'paragraph') && (
@@ -458,21 +453,19 @@ export default function DocumentPartEditPage() {
             />
           )}
 
-                  {/* Content Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="content">
-                      Content
-                    </Label>
-                    <div className="w-full">
-                      <MarkdownEditor
-                        content={part.content || ''}
-                        onChange={handleContentChange}
-                        availableParameters={availableParameters}
-                        placeholder="Start typing your content..."
-                        enableParameters={true}
-                      />
-                    </div>
-                  </div>
+          {/* Content Field */}
+          <div className="space-y-2">
+            <Label htmlFor="content">Content</Label>
+            <div className="w-full">
+              <MarkdownEditor
+                content={part.content || ''}
+                onChange={handleContentChange}
+                availableParameters={availableParameters}
+                placeholder="Start typing your content..."
+                enableParameters={true}
+              />
+            </div>
+          </div>
         </CardContent>
       </div>
     </div>

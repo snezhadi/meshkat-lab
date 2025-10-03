@@ -24,7 +24,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       try {
         const response = await fetch('/api/auth/session');
         const data = await response.json();
-        
+
         if (data.authenticated) {
           setIsAuthenticated(true);
           setUserPermissions(data.user.permissions);
@@ -50,9 +50,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   // Show loading while checking authentication
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
           <p className="mt-2 text-gray-600">Checking authentication...</p>
         </div>
       </div>

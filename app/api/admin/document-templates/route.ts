@@ -20,7 +20,7 @@ function ensureDataDirectories() {
 // Initialize with default data if file doesn't exist
 function initializeDefaultData() {
   ensureDataDirectories();
-  
+
   if (!fs.existsSync(DOCUMENT_TEMPLATES_FILE)) {
     const defaultTemplates = [
       {
@@ -35,12 +35,12 @@ function initializeDefaultData() {
             content: 'In this Agreement, the following terms have the meanings set out below...',
             description: 'Define key terms used in the agreement',
             condition: null,
-            paragraphs: []
-          }
-        ]
-      }
+            paragraphs: [],
+          },
+        ],
+      },
     ];
-    
+
     fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, JSON.stringify(defaultTemplates, null, 2), 'utf8');
   }
 }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     if (createCheckpoint) {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const backupFile = path.join(BACKUP_DIR, `document-templates-checkpoint-${timestamp}.json`);
-      
+
       try {
         const currentTemplates = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
         fs.writeFileSync(backupFile, currentTemplates, 'utf8');
@@ -88,12 +88,13 @@ export async function POST(request: NextRequest) {
     // Write the new document templates
     fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, JSON.stringify(documentTemplates, null, 2), 'utf8');
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Document templates saved successfully',
-      checkpoint: createCheckpoint ? `document-templates-checkpoint-${new Date().toISOString().replace(/[:.]/g, '-')}.json` : null
+      checkpoint: createCheckpoint
+        ? `document-templates-checkpoint-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+        : null,
     });
-
   } catch (error) {
     console.error('Error saving document templates:', error);
     return NextResponse.json(
@@ -116,21 +117,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     const checkpointFile = path.join(BACKUP_DIR, checkpointName);
-    
+
     if (!fs.existsSync(checkpointFile)) {
-      return NextResponse.json(
-        { success: false, error: 'Checkpoint not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Checkpoint not found' }, { status: 404 });
     }
 
     fs.unlinkSync(checkpointFile);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Checkpoint deleted successfully' 
+    return NextResponse.json({
+      success: true,
+      message: 'Checkpoint deleted successfully',
     });
-
   } catch (error) {
     console.error('Error deleting checkpoint:', error);
     return NextResponse.json(

@@ -18,7 +18,7 @@ export function usePermissions() {
     if (typeof window !== 'undefined') {
       const storedPermissions = localStorage.getItem('userPermissions');
       const storedUsername = localStorage.getItem('username');
-      
+
       if (storedPermissions) {
         setPermissions(JSON.parse(storedPermissions));
       }

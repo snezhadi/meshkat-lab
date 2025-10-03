@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { DocumentTemplatesEditor } from '@/components/admin/document-templates-editor';
+import { useEffect, useState } from 'react';
 import { Condition } from '@/components/admin/condition-builder';
+import { DocumentTemplatesEditor } from '@/components/admin/document-templates-editor';
 
 interface DocumentTemplate {
   id: string;
@@ -39,13 +39,13 @@ export default function DocumentTemplatesPage() {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/document-templates');
-      
+
       if (!response.ok) {
         throw new Error('Failed to load document templates');
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setDocumentTemplates(result.data);
       } else {
@@ -60,7 +60,10 @@ export default function DocumentTemplatesPage() {
     }
   };
 
-  const handleSave = async (updatedTemplates: DocumentTemplate[], createCheckpoint: boolean = false) => {
+  const handleSave = async (
+    updatedTemplates: DocumentTemplate[],
+    createCheckpoint: boolean = false
+  ) => {
     try {
       const response = await fetch('/api/admin/document-templates', {
         method: 'POST',
@@ -69,7 +72,7 @@ export default function DocumentTemplatesPage() {
         },
         body: JSON.stringify({
           documentTemplates: updatedTemplates,
-          createCheckpoint
+          createCheckpoint,
         }),
       });
 
@@ -78,7 +81,7 @@ export default function DocumentTemplatesPage() {
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setDocumentTemplates(updatedTemplates);
         return { success: true, checkpoint: result.checkpoint };
@@ -104,7 +107,7 @@ export default function DocumentTemplatesPage() {
         </div>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
             <p className="mt-2 text-gray-600">Loading document templates...</p>
           </div>
         </div>
@@ -118,10 +121,10 @@ export default function DocumentTemplatesPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <div className="text-red-600 text-lg">⚠️</div>
+              <div className="text-lg text-red-600">⚠️</div>
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800">Error Loading Document Templates</h3>
@@ -131,7 +134,7 @@ export default function DocumentTemplatesPage() {
               <div className="mt-4">
                 <button
                   onClick={loadDocumentTemplates}
-                  className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 transition-colors hover:bg-red-200"
                 >
                   Try Again
                 </button>
@@ -145,10 +148,7 @@ export default function DocumentTemplatesPage() {
 
   return (
     <div>
-      <DocumentTemplatesEditor
-        documentTemplates={documentTemplates}
-        onSave={handleSave}
-      />
+      <DocumentTemplatesEditor documentTemplates={documentTemplates} onSave={handleSave} />
     </div>
   );
 }

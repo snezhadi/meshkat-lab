@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import React from 'react';
+import { Filter, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Search, Filter, X } from 'lucide-react';
 
 interface FilterState {
   search: string;
@@ -31,7 +31,7 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
@@ -42,11 +42,11 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
       subgroup: '',
       type: '',
       priority: '',
-      hasCondition: ''
+      hasCondition: '',
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== '');
+  const hasActiveFilters = Object.values(filters).some((value) => value !== '');
 
   // Get subgroups for selected group
   const availableSubgroups = filters.group ? config.subgroups[filters.group] || [] : [];
@@ -54,33 +54,33 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <Filter className="w-5 h-5 mr-2" />
+        <h3 className="flex items-center text-lg font-semibold text-gray-900">
+          <Filter className="mr-2 h-5 w-5" />
           Filters
         </h3>
         <button
           onClick={clearFilters}
-          className={`text-sm flex items-center transition-colors ${
-            hasActiveFilters 
-              ? 'text-red-600 hover:text-red-700' 
+          className={`flex items-center text-sm transition-colors ${
+            hasActiveFilters
+              ? 'text-red-600 hover:text-red-700'
               : 'text-gray-400 hover:text-gray-600'
           }`}
         >
-          <X className="w-4 h-4 mr-1" />
+          <X className="mr-1 h-4 w-4" />
           Clear all
         </button>
       </div>
 
       <div className="space-y-4">
         {/* First Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Search */}
           <div className="space-y-2">
             <Label htmlFor="search" className="text-sm font-medium text-gray-700">
               Search
             </Label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
                 id="search"
                 placeholder="Search parameters..."
@@ -100,11 +100,13 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               id="group"
               value={filters.group}
               onChange={(e) => handleFilterChange('group', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">All Groups</option>
-              {config.groups.map(group => (
-                <option key={group} value={group}>{group}</option>
+              {config.groups.map((group) => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
               ))}
             </select>
           </div>
@@ -119,18 +121,20 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               value={filters.subgroup}
               onChange={(e) => handleFilterChange('subgroup', e.target.value)}
               disabled={!filters.group}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
             >
               <option value="">All Subgroups</option>
-              {availableSubgroups.map(subgroup => (
-                <option key={subgroup} value={subgroup}>{subgroup}</option>
+              {availableSubgroups.map((subgroup) => (
+                <option key={subgroup} value={subgroup}>
+                  {subgroup}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Second Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Type */}
           <div className="space-y-2">
             <Label htmlFor="type" className="text-sm font-medium text-gray-700">
@@ -140,11 +144,13 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               id="type"
               value={filters.type}
               onChange={(e) => handleFilterChange('type', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">All Types</option>
-              {config.types.map(type => (
-                <option key={type} value={type}>{type}</option>
+              {config.types.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
               ))}
             </select>
           </div>
@@ -158,13 +164,15 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               id="priority"
               value={filters.priority}
               onChange={(e) => handleFilterChange('priority', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">All Priorities</option>
               <option value="none">No Priority (0)</option>
               <option value="has">Has Priority (1+)</option>
-              {config.priorities.slice(1).map(priority => (
-                <option key={priority} value={priority.toString()}>Priority {priority}</option>
+              {config.priorities.slice(1).map((priority) => (
+                <option key={priority} value={priority.toString()}>
+                  Priority {priority}
+                </option>
               ))}
             </select>
           </div>
@@ -178,7 +186,7 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               id="hasCondition"
               value={filters.hasCondition}
               onChange={(e) => handleFilterChange('hasCondition', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">All</option>
               <option value="yes">Yes</option>
@@ -192,32 +200,37 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 pt-2">
           {filters.search && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
               Search: {filters.search}
             </span>
           )}
           {filters.group && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
               Group: {filters.group}
             </span>
           )}
           {filters.subgroup && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
               Subgroup: {filters.subgroup}
             </span>
           )}
           {filters.type && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
               Type: {filters.type}
             </span>
           )}
           {filters.priority && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-              Priority: {filters.priority === 'none' ? 'None' : filters.priority === 'has' ? 'Has Priority' : `Priority ${filters.priority}`}
+            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+              Priority:{' '}
+              {filters.priority === 'none'
+                ? 'None'
+                : filters.priority === 'has'
+                  ? 'Has Priority'
+                  : `Priority ${filters.priority}`}
             </span>
           )}
           {filters.hasCondition && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
               Condition: {filters.hasCondition === 'yes' ? 'Yes' : 'No'}
             </span>
           )}

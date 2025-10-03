@@ -9,11 +9,11 @@
 }
 
 /* Date input calendar icon styling for dark mode */
-input[type="date"]::-webkit-calendar-picker-indicator {
+input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(0);
 }
 
-.dark input[type="date"]::-webkit-calendar-picker-indicator {
+.dark input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
@@ -57,11 +57,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .chat-prose code {
-  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono;
+  @apply rounded bg-gray-100 px-1 py-0.5 font-mono text-xs text-gray-800;
 }
 
 .chat-prose pre {
-  @apply bg-gray-100 p-3 rounded-lg overflow-x-auto mb-3;
+  @apply mb-3 overflow-x-auto rounded-lg bg-gray-100 p-3;
 }
 
 .chat-prose pre code {
@@ -69,11 +69,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .chat-prose ul {
-  @apply list-disc list-inside mb-2 space-y-1;
+  @apply mb-2 list-inside list-disc space-y-1;
 }
 
 .chat-prose ol {
-  @apply list-decimal list-inside mb-2 space-y-1;
+  @apply mb-2 list-inside list-decimal space-y-1;
 }
 
 .chat-prose li {
@@ -81,11 +81,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .chat-prose blockquote {
-  @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-3;
+  @apply mb-3 border-l-4 border-gray-300 pl-4 text-gray-600 italic;
 }
 
-.chat-prose h1, .chat-prose h2, .chat-prose h3, .chat-prose h4, .chat-prose h5, .chat-prose h6 {
-  @apply font-semibold text-gray-900 mb-2;
+.chat-prose h1,
+.chat-prose h2,
+.chat-prose h3,
+.chat-prose h4,
+.chat-prose h5,
+.chat-prose h6 {
+  @apply mb-2 font-semibold text-gray-900;
 }
 
 .chat-prose h1 {
@@ -121,7 +126,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   @apply border-gray-600 text-gray-400;
 }
 
-.dark .chat-prose h1, .dark .chat-prose h2, .dark .chat-prose h3, .dark .chat-prose h4, .dark .chat-prose h5, .dark .chat-prose h6 {
+.dark .chat-prose h1,
+.dark .chat-prose h2,
+.dark .chat-prose h3,
+.dark .chat-prose h4,
+.dark .chat-prose h5,
+.dark .chat-prose h6 {
   @apply text-gray-100;
 }
 
@@ -372,7 +382,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   overflow-y: auto !important;
   flex: 1;
   min-height: 0;
-  display:flex;
+  display: flex;
   justify-content: flex-start !important;
 }
 

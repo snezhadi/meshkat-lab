@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Bold, Code, Eye, FileText, Italic, List, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, List, ListOrdered, Code, Eye, FileText } from 'lucide-react';
 
 interface HtmlEditorProps {
   content: string;
@@ -12,12 +12,12 @@ interface HtmlEditorProps {
   enableParameters?: boolean; // New prop to control parameter functionality
 }
 
-export function HtmlEditor({ 
-  content, 
-  onChange, 
-  availableParameters, 
-  placeholder = "Start typing...",
-  enableParameters = false 
+export function HtmlEditor({
+  content,
+  onChange,
+  availableParameters,
+  placeholder = 'Start typing...',
+  enableParameters = false,
 }: HtmlEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isCodeMode, setIsCodeMode] = useState(false);
@@ -37,7 +37,7 @@ export function HtmlEditor({
 
   const formatText = (command: string, value?: string) => {
     if (isCodeMode) return;
-    
+
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     updateToolbarState();
@@ -51,7 +51,7 @@ export function HtmlEditor({
 
   const handleInput = () => {
     if (isCodeMode) return;
-    
+
     const newContent = editorRef.current?.innerHTML || '';
     onChange(newContent);
     updateToolbarState();
@@ -74,9 +74,9 @@ export function HtmlEditor({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isCodeMode) return;
-    
+
     updateToolbarState();
-    
+
     if (enableParameters) {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
@@ -90,11 +90,11 @@ export function HtmlEditor({
             setSearchTerm(query);
             const rect = range.getBoundingClientRect();
             const editorRect = editorRef.current?.getBoundingClientRect();
-            
+
             if (editorRect) {
               setAutocompletePosition({
                 top: rect.bottom - editorRect.top + window.scrollY,
-                left: rect.left - editorRect.left + window.scrollX
+                left: rect.left - editorRect.left + window.scrollX,
               });
               setShowAutocomplete(true);
             }
@@ -108,7 +108,7 @@ export function HtmlEditor({
 
   const handleParameterSelect = (parameter: string) => {
     if (!enableParameters) return;
-    
+
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
@@ -120,15 +120,15 @@ export function HtmlEditor({
         range.setStart(range.startContainer, atIndex);
         range.deleteContents();
       }
-      
+
       // Create a span element for the parameter placeholder
       const span = document.createElement('span');
       span.className = 'bg-gray-200 text-gray-800 px-1 py-0.5 rounded text-sm font-mono';
       span.textContent = `@${parameter}`;
       span.contentEditable = 'false'; // Make it non-editable as a single unit
-      
+
       range.insertNode(span);
-      
+
       // Move cursor after the parameter
       range.setStartAfter(span);
       range.setEndAfter(span);
@@ -140,14 +140,14 @@ export function HtmlEditor({
     handleInput();
   };
 
-  const filteredParameters = (availableParameters || []).filter(param =>
+  const filteredParameters = (availableParameters || []).filter((param) =>
     param.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="relative border border-gray-200 rounded-md">
+    <div className="relative rounded-md border border-gray-200">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gray-50 rounded-t-md">
+      <div className="flex items-center justify-between rounded-t-md border-b border-gray-200 bg-gray-50 p-2">
         <div className="flex items-center space-x-1">
           {!isCodeMode && (
             <>
@@ -187,14 +187,14 @@ export function HtmlEditor({
               >
                 <ListOrdered className="h-4 w-4" />
               </Button>
-              <div className="h-4 w-px bg-gray-300 mx-1" />
+              <div className="mx-1 h-4 w-px bg-gray-300" />
             </>
           )}
           {enableParameters && (
             <span className="text-xs text-gray-600">Type @ to insert parameters</span>
           )}
         </div>
-        
+
         <Button
           type="button"
           variant="ghost"
@@ -211,27 +211,27 @@ export function HtmlEditor({
         <textarea
           value={content}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full min-h-[300px] p-4 font-mono text-sm border-0 focus:outline-none resize-none"
+          className="min-h-[300px] w-full resize-none border-0 p-4 font-mono text-sm focus:outline-none"
           placeholder={placeholder}
         />
       ) : (
         <div
           ref={editorRef}
           contentEditable
-          className="min-h-[300px] p-4 focus:outline-none prose max-w-none"
+          className="prose min-h-[300px] max-w-none p-4 focus:outline-none"
           dangerouslySetInnerHTML={{ __html: content }}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
-          style={{ 
+          style={{
             minHeight: '300px',
-            outline: 'none'
+            outline: 'none',
           }}
           suppressContentEditableWarning
         />
       )}
 
       {!content && !isCodeMode && (
-        <div className="absolute top-[60px] left-4 text-gray-400 pointer-events-none">
+        <div className="pointer-events-none absolute top-[60px] left-4 text-gray-400">
           {placeholder}
         </div>
       )}
@@ -239,17 +239,17 @@ export function HtmlEditor({
       {/* Parameter Autocomplete */}
       {showAutocomplete && enableParameters && filteredParameters.length > 0 && (
         <div
-          className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto"
+          className="absolute z-10 max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
           style={{
             top: autocompletePosition.top + 20,
             left: autocompletePosition.left,
-            minWidth: '200px'
+            minWidth: '200px',
           }}
         >
           {filteredParameters.slice(0, 10).map((parameter, index) => (
             <button
               key={parameter}
-              className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
               onClick={() => handleParameterSelect(parameter)}
             >
               @{parameter}

@@ -21,13 +21,13 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
 
   return (
     <div className={`content-renderer ${className}`} data-color-mode="light">
-      <MDEditor.Markdown 
-        source={processContent(content)} 
-        style={{ 
+      <MDEditor.Markdown
+        source={processContent(content)}
+        style={{
           backgroundColor: 'transparent',
           color: 'inherit',
           fontSize: 'inherit',
-          lineHeight: 'inherit'
+          lineHeight: 'inherit',
         }}
       />
       <style jsx global>{`

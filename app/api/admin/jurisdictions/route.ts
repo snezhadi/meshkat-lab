@@ -18,8 +18,13 @@ async function ensureDataDirectories() {
 // Initialize with default data if file doesn't exist
 async function initializeDefaultData() {
   await ensureDataDirectories();
-  
-  if (!await fs.access(JURISDICTIONS_FILE).then(() => true).catch(() => false)) {
+
+  if (
+    !(await fs
+      .access(JURISDICTIONS_FILE)
+      .then(() => true)
+      .catch(() => false))
+  ) {
     const defaultJurisdictions = [
       {
         id: 'CA',
@@ -29,8 +34,8 @@ async function initializeDefaultData() {
           { id: 'ON', name: 'Ontario' },
           { id: 'BC', name: 'British Columbia' },
           { id: 'AB', name: 'Alberta' },
-          { id: 'QC', name: 'Quebec' }
-        ]
+          { id: 'QC', name: 'Quebec' },
+        ],
       },
       {
         id: 'US',
@@ -39,11 +44,11 @@ async function initializeDefaultData() {
         states: [
           { id: 'CA', name: 'California' },
           { id: 'NY', name: 'New York' },
-          { id: 'TX', name: 'Texas' }
-        ]
-      }
+          { id: 'TX', name: 'Texas' },
+        ],
+      },
     ];
-    
+
     await fs.writeFile(JURISDICTIONS_FILE, JSON.stringify(defaultJurisdictions, null, 2));
   }
 }
@@ -54,13 +59,10 @@ export async function GET() {
     await initializeDefaultData();
     const jurisdictionsData = await fs.readFile(JURISDICTIONS_FILE, 'utf8');
     const jurisdictions = JSON.parse(jurisdictionsData);
-    
+
     return NextResponse.json(jurisdictions);
   } catch (error) {
     console.error('Error loading jurisdictions:', error);
-    return NextResponse.json(
-      { error: 'Failed to load jurisdictions' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to load jurisdictions' }, { status: 500 });
   }
 }

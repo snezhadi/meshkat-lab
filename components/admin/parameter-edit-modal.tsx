@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
+import { Plus, Save, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { X, Save, Plus, Trash2 } from 'lucide-react';
-import { ConditionEditor } from './condition-editor';
 import { Condition } from './condition-builder';
+import { ConditionEditor } from './condition-editor';
 
 interface Parameter {
   id: string;
@@ -46,30 +46,30 @@ interface ParameterEditModalProps {
   onClose: () => void;
 }
 
-export function ParameterEditModal({ 
-  parameter, 
+export function ParameterEditModal({
+  parameter,
   config,
   allParameters,
-  onSave, 
-  onClose 
+  onSave,
+  onClose,
 }: ParameterEditModalProps) {
   const [editedParameter, setEditedParameter] = useState<Parameter>({ ...parameter });
   const [activeTab, setActiveTab] = useState<'basic' | 'metadata' | 'display' | 'options'>('basic');
 
   // Extract available parameter IDs (only boolean and enum types for condition editor)
   const availableParameterIds = allParameters
-    .filter(param => param.type === 'boolean' || param.type === 'enum')
-    .map(param => param.id);
+    .filter((param) => param.type === 'boolean' || param.type === 'enum')
+    .map((param) => param.id);
 
   const handleSave = () => {
     onSave(editedParameter);
   };
 
   const handleChange = (path: string, value: any) => {
-    setEditedParameter(prev => {
+    setEditedParameter((prev) => {
       const newParam = { ...prev };
       const keys = path.split('.');
-      
+
       if (keys.length === 1) {
         (newParam as any)[keys[0]] = value;
       } else if (keys.length === 2) {
@@ -78,7 +78,7 @@ export function ParameterEditModal({
         }
         (newParam[keys[0] as keyof Parameter] as any)[keys[1]] = value;
       }
-      
+
       return newParam;
     });
   };
@@ -100,27 +100,25 @@ export function ParameterEditModal({
   };
 
   // Get subgroups for selected group
-  const availableSubgroups = editedParameter.display.group ? config.subgroups[editedParameter.display.group] || [] : [];
+  const availableSubgroups = editedParameter.display.group
+    ? config.subgroups[editedParameter.display.group] || []
+    : [];
 
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: '📝' },
     { id: 'metadata', label: 'Metadata', icon: '⚙️' },
     { id: 'display', label: 'Display', icon: '🎨' },
-    { id: 'options', label: 'Options', icon: '📋' }
+    { id: 'options', label: 'Options', icon: '📋' },
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between border-b border-gray-200 p-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Edit Parameter
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {editedParameter.id}
-            </p>
+            <h2 className="text-xl font-semibold text-gray-900">Edit Parameter</h2>
+            <p className="mt-1 text-sm text-gray-600">{editedParameter.id}</p>
           </div>
           <Button
             variant="ghost"
@@ -128,21 +126,21 @@ export function ParameterEditModal({
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`border-b-2 px-1 py-4 text-sm font-medium ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
                 <span className="mr-2">{tab.icon}</span>
@@ -153,7 +151,7 @@ export function ParameterEditModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="max-h-[calc(90vh-200px)] overflow-y-auto p-6">
           {activeTab === 'basic' && (
             <div className="space-y-6">
               <div>
@@ -204,17 +202,19 @@ export function ParameterEditModal({
                     id="type"
                     value={editedParameter.type}
                     onChange={(e) => handleChange('type', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
-                    {config.types.map(type => (
-                      <option key={type} value={type}>{type}</option>
+                    {config.types.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <ConditionEditor
-                    condition={editedParameter.condition}
+                    condition={editedParameter.condition || null}
                     onConditionChange={(condition) => handleChange('condition', condition)}
                     availableParameters={availableParameterIds}
                     label="Condition"
@@ -235,10 +235,12 @@ export function ParameterEditModal({
                   id="priority"
                   value={editedParameter.metadata?.priority ?? 0}
                   onChange={(e) => handleChange('metadata.priority', parseInt(e.target.value))}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.priorities.map(priority => (
-                    <option key={priority} value={priority}>Priority {priority}</option>
+                  {config.priorities.map((priority) => (
+                    <option key={priority} value={priority}>
+                      Priority {priority}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -285,10 +287,12 @@ export function ParameterEditModal({
                       handleChange('display.group', e.target.value);
                       handleChange('display.subgroup', ''); // Reset subgroup
                     }}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
-                    {config.groups.map(group => (
-                      <option key={group} value={group}>{group}</option>
+                    {config.groups.map((group) => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -302,11 +306,13 @@ export function ParameterEditModal({
                     value={editedParameter.display.subgroup}
                     onChange={(e) => handleChange('display.subgroup', e.target.value)}
                     disabled={!editedParameter.display.group}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
                   >
                     <option value="">Select subgroup...</option>
-                    {availableSubgroups.map(subgroup => (
-                      <option key={subgroup} value={subgroup}>{subgroup}</option>
+                    {availableSubgroups.map((subgroup) => (
+                      <option key={subgroup} value={subgroup}>
+                        {subgroup}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -333,10 +339,12 @@ export function ParameterEditModal({
                   id="input"
                   value={editedParameter.display.input}
                   onChange={(e) => handleChange('display.input', e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.inputs.map(input => (
-                    <option key={input} value={input}>{input}</option>
+                  {config.inputs.map((input) => (
+                    <option key={input} value={input}>
+                      {input}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -346,16 +354,14 @@ export function ParameterEditModal({
           {activeTab === 'options' && editedParameter.type === 'enum' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">
-                  Enum Options
-                </Label>
+                <Label className="text-sm font-medium text-gray-700">Enum Options</Label>
                 <Button
                   onClick={addOption}
                   size="sm"
                   variant="outline"
-                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
+                  <Plus className="mr-1 h-4 w-4" />
                   Add Option
                 </Button>
               </div>
@@ -375,15 +381,15 @@ export function ParameterEditModal({
                       variant="ghost"
                       className="text-red-600 hover:text-red-900"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
               </div>
 
               {(!editedParameter.options || editedParameter.options.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  <div className="text-4xl mb-2">📋</div>
+                <div className="py-8 text-center text-gray-500">
+                  <div className="mb-2 text-4xl">📋</div>
                   <p>No options defined. Add options for this enum parameter.</p>
                 </div>
               )}
@@ -391,26 +397,20 @@ export function ParameterEditModal({
           )}
 
           {activeTab === 'options' && editedParameter.type !== 'enum' && (
-            <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-2">ℹ️</div>
+            <div className="py-8 text-center text-gray-500">
+              <div className="mb-2 text-4xl">ℹ️</div>
               <p>Options are only available for enum type parameters.</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
+        <div className="flex items-center justify-end space-x-3 border-t border-gray-200 bg-gray-50 p-6">
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
+          <Button onClick={handleSave} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Save className="mr-2 h-4 w-4" />
             Save Changes
           </Button>
         </div>

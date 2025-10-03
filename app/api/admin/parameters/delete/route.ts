@@ -10,10 +10,7 @@ export async function POST(request: NextRequest) {
     const { parameterId } = await request.json();
 
     if (!parameterId) {
-      return NextResponse.json(
-        { error: 'Parameter ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Parameter ID is required' }, { status: 400 });
     }
 
     // Read current parameters
@@ -23,16 +20,17 @@ export async function POST(request: NextRequest) {
     // Check if parameter exists
     const parameterExists = parameters.some((p: any) => p.id === parameterId);
     if (!parameterExists) {
-      return NextResponse.json(
-        { error: 'Parameter not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Parameter not found' }, { status: 404 });
     }
 
     // Create backup before deleting
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupFile = path.join(process.cwd(), 'data', `parameters-backup-before-delete-${timestamp}.json`);
-    
+    const backupFile = path.join(
+      process.cwd(),
+      'data',
+      `parameters-backup-before-delete-${timestamp}.json`
+    );
+
     try {
       await fs.writeFile(backupFile, parametersData);
       console.log(`Backup created: ${backupFile}`);
@@ -46,16 +44,13 @@ export async function POST(request: NextRequest) {
     // Save updated parameters
     await fs.writeFile(PARAMETERS_FILE, JSON.stringify(updatedParameters, null, 2));
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: `Parameter ${parameterId} deleted successfully`,
-      backupFile: backupFile
+      backupFile: backupFile,
     });
   } catch (error) {
     console.error('Error deleting parameter:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete parameter' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete parameter' }, { status: 500 });
   }
 }

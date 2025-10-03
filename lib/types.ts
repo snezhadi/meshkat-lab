@@ -1,9 +1,10 @@
-import type { TranscriptionSegment } from 'livekit-client';
-
-export interface CombinedTranscription extends TranscriptionSegment {
+export interface CombinedTranscription {
   role: 'assistant' | 'user';
   receivedAtMediaTimestamp: number;
   receivedAt: number;
+  text: string;
+  startTime: number;
+  endTime: number;
 }
 export type ThemeMode = 'dark' | 'light' | 'system';
 

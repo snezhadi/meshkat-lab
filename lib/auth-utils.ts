@@ -22,11 +22,10 @@ export function isTokenExpired(token: string): boolean {
 export function maskEmail(email: string): string {
   const [local, domain] = email.split('@');
   if (!local || !domain) return email;
-  
-  const maskedLocal = local.length > 2 
-    ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1]
-    : local;
-  
+
+  const maskedLocal =
+    local.length > 2 ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1] : local;
+
   return `${maskedLocal}@${domain}`;
 }
 
@@ -38,7 +37,10 @@ export const AUTH_ERRORS = {
 } as const;
 
 export class AuthError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string
+  ) {
     super(message);
     this.name = 'AuthError';
   }

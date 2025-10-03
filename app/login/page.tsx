@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -44,11 +44,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+            <CardTitle className="text-center text-2xl font-bold">Admin Login</CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access the admin dashboard
             </CardDescription>
@@ -77,14 +77,8 @@ export default function LoginPage() {
                   disabled={loading}
                 />
               </div>
-              {error && (
-                <div className="text-red-600 text-sm text-center">{error}</div>
-              )}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
+              {error && <div className="text-center text-sm text-red-600">{error}</div>}
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>

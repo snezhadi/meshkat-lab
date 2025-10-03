@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,7 +26,7 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
     title: part.title || '',
     content: part.content || '',
     description: part.description || '',
-    condition: part.condition || ''
+    condition: part.condition || '',
   });
 
   const [availableParameters, setAvailableParameters] = useState<string[]>([]);
@@ -39,7 +39,9 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
-            const params = result.data.map((p: any) => p.id).filter((id: string) => id.startsWith('employment_'));
+            const params = result.data
+              .map((p: any) => p.id)
+              .filter((id: string) => id.startsWith('employment_'));
             setAvailableParameters(params);
           }
         }
@@ -53,28 +55,33 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const updatedPart = {
       ...part,
       title: formData.title,
       content: formData.content,
       description: formData.description || null,
-      condition: formData.condition || undefined
+      condition: formData.condition || undefined,
     };
 
     onSave(updatedPart);
   };
 
   const handleContentChange = (content: string) => {
-    setFormData(prev => ({ ...prev, content }));
+    setFormData((prev) => ({ ...prev, content }));
   };
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Edit {part.type === 'introduction' ? 'Introduction' : part.type === 'clause' ? 'Clause' : 'Paragraph'}
+            Edit{' '}
+            {part.type === 'introduction'
+              ? 'Introduction'
+              : part.type === 'clause'
+                ? 'Clause'
+                : 'Paragraph'}
           </DialogTitle>
         </DialogHeader>
 
@@ -85,7 +92,7 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="Enter title..."
               required
             />
@@ -98,7 +105,7 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder="Enter description (optional)..."
                 rows={3}
               />
@@ -112,7 +119,7 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
               <Input
                 id="condition"
                 value={formData.condition}
-                onChange={(e) => setFormData(prev => ({ ...prev, condition: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, condition: e.target.value }))}
                 placeholder="Enter condition (optional, e.g., employment_mobility_relocation)..."
               />
               <p className="text-xs text-gray-600">
@@ -124,7 +131,7 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
           {/* Content */}
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
-            <div className="border border-gray-200 rounded-lg">
+            <div className="rounded-lg border border-gray-200">
               <RichTextEditor
                 content={formData.content}
                 onChange={handleContentChange}
@@ -133,18 +140,17 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
               />
             </div>
             <p className="text-xs text-gray-600">
-              Use @ to insert parameters. The editor supports HTML formatting including bold, italic, and lists.
+              Use @ to insert parameters. The editor supports HTML formatting including bold,
+              italic, and lists.
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t">
+          <div className="flex justify-end space-x-3 border-t pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button type="submit">
-              Save Changes
-            </Button>
+            <Button type="submit">Save Changes</Button>
           </div>
         </form>
       </DialogContent>

@@ -14,11 +14,13 @@ A comprehensive admin dashboard for managing document templates, parameters, and
 ## 👥 User Accounts
 
 ### Admin (Full Access)
+
 - **Username**: `admin`
 - **Password**: `admin123`
 - **Permissions**: Create, Edit, Delete, Export
 
 ### Admin2 (Limited Access)
+
 - **Username**: `admin2`
 - **Password**: `MeshkatLab2025!`
 - **Permissions**: Create, Edit, Delete (No Export)
@@ -26,6 +28,7 @@ A comprehensive admin dashboard for managing document templates, parameters, and
 ## 🛠️ Local Development
 
 ### Prerequisites
+
 - Node.js 18+
 - pnpm (recommended) or npm
 
@@ -48,6 +51,7 @@ The application will be available at `http://localhost:3000`
 ## 🐳 Docker Deployment
 
 ### Local Docker
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up -d --build
@@ -57,6 +61,7 @@ open http://localhost:3000
 ```
 
 ### Cloud VPS Deployment
+
 ```bash
 # Quick deployment
 ./scripts/quick-deploy.sh
@@ -89,10 +94,12 @@ meshkat-lab/
 ## 🔧 Configuration
 
 ### Environment Variables
+
 - `NODE_ENV`: Environment (development/production)
 - `PORT`: Server port (default: 3000)
 
 ### Data Files
+
 - `data/parameters.json`: Document parameters
 - `data/document-templates.json`: Document templates
 - `data/jurisdictions.json`: Legal jurisdictions
@@ -101,14 +108,17 @@ meshkat-lab/
 ## 🚀 Deployment Options
 
 ### 1. Docker (Recommended)
+
 - **Local**: `docker-compose up -d`
 - **Cloud**: Use deployment scripts in `scripts/` directory
 
 ### 2. Vercel
+
 - Connect your GitHub repository
 - Deploy automatically on push
 
 ### 3. Manual Server
+
 - Build: `pnpm run build`
 - Start: `pnpm start`
 
@@ -142,6 +152,7 @@ This project is proprietary software. All rights reserved.
 ## 🆘 Support
 
 For support and questions:
+
 - Check the documentation in `CLOUD-DEPLOYMENT.md`
 - Review deployment scripts in `scripts/` directory
 - Check application logs: `docker-compose logs -f`

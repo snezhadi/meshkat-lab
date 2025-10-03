@@ -1,18 +1,24 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { MarkdownEditor } from '@/components/admin/markdown-editor';
 import { ConditionEditor } from '@/components/admin/condition-editor';
+import { MarkdownEditor } from '@/components/admin/markdown-editor';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Parameter {
   id: string;
@@ -59,9 +65,15 @@ export default function CreateParameterPage() {
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [allParameters, setAllParameters] = useState<Parameter[]>([]);
-  const [config, setConfig] = useState<Config>({ groups: [], subgroups: {}, types: [], priorities: [], inputs: [] });
+  const [config, setConfig] = useState<Config>({
+    groups: [],
+    subgroups: {},
+    types: [],
+    priorities: [],
+    inputs: [],
+  });
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
-  
+
   const [parameter, setParameter] = useState<Parameter>({
     id: '',
     name: '',
@@ -70,19 +82,19 @@ export default function CreateParameterPage() {
     metadata: {
       llm_instructions: '',
       priority: 0,
-      format: ''
+      format: '',
     },
     condition: null,
     display: {
       group: '',
       subgroup: '',
-      label: ''
+      label: '',
     },
     options: [],
     defaults: {
       global_default: null,
-      jurisdictions: []
-    }
+      jurisdictions: [],
+    },
   });
 
   const loadData = async () => {
@@ -90,7 +102,7 @@ export default function CreateParameterPage() {
       setLoading(true);
       const [parametersResponse, jurisdictionsResponse] = await Promise.all([
         fetch('/api/admin/parameters'),
-        fetch('/api/admin/jurisdictions')
+        fetch('/api/admin/jurisdictions'),
       ]);
 
       if (!parametersResponse.ok || !jurisdictionsResponse.ok) {
@@ -99,7 +111,7 @@ export default function CreateParameterPage() {
 
       const [parametersData, jurisdictionsData] = await Promise.all([
         parametersResponse.json(),
-        jurisdictionsResponse.json()
+        jurisdictionsResponse.json(),
       ]);
 
       const { parameters: parametersList, config: configData } = parametersData;
@@ -133,9 +145,11 @@ export default function CreateParameterPage() {
       if (hasUnsavedChanges) {
         const target = e.target as HTMLElement;
         const link = target.closest('a[href]');
-        
+
         if (link) {
-          const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+          const confirmed = window.confirm(
+            'You have unsaved changes. Are you sure you want to leave?'
+          );
           if (!confirmed) {
             e.preventDefault();
             e.stopPropagation();
@@ -147,7 +161,7 @@ export default function CreateParameterPage() {
 
     // Handle browser refresh/close
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
     // Handle link clicks (including Next.js Link components)
     document.addEventListener('click', handleLinkClick, true);
 
@@ -158,18 +172,18 @@ export default function CreateParameterPage() {
   }, [hasUnsavedChanges]);
 
   const handleChange = (field: string, value: any) => {
-    setParameter(prev => {
+    setParameter((prev) => {
       const newParam = { ...prev };
       const keys = field.split('.');
       let current: any = newParam;
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         if (!current[keys[i]]) {
           current[keys[i]] = {};
         }
         current = current[keys[i]];
       }
-      
+
       current[keys[keys.length - 1]] = value;
       return newParam;
     });
@@ -179,14 +193,14 @@ export default function CreateParameterPage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       // Validate required fields
       if (!parameter.id.trim()) {
         toast.error('Parameter ID is required');
         setSaving(false);
         return;
       }
-      
+
       if (!parameter.name.trim()) {
         toast.error('Parameter name is required');
         setSaving(false);
@@ -202,14 +216,14 @@ export default function CreateParameterPage() {
       }
 
       // Check if ID already exists
-      if (allParameters.some(p => p.id === parameter.id)) {
+      if (allParameters.some((p) => p.id === parameter.id)) {
         toast.error('Parameter ID already exists');
         setSaving(false);
         return;
       }
 
       const updatedParameters = [...allParameters, parameter];
-      
+
       const response = await fetch('/api/admin/parameters', {
         method: 'POST',
         headers: {
@@ -217,7 +231,7 @@ export default function CreateParameterPage() {
         },
         body: JSON.stringify({
           parameters: updatedParameters,
-          config: config
+          config: config,
         }),
       });
 
@@ -260,13 +274,17 @@ export default function CreateParameterPage() {
     }
     updatedParameter.defaults.jurisdictions = [
       ...(updatedParameter.defaults.jurisdictions || []),
-      { jurisdiction: '', default: '' }
+      { jurisdiction: '', default: '' },
     ];
     setParameter(updatedParameter);
     setHasUnsavedChanges(true);
   };
 
-  const handleUpdateJurisdictionDefault = (index: number, jurisdiction: string, defaultValue: string | number | boolean) => {
+  const handleUpdateJurisdictionDefault = (
+    index: number,
+    jurisdiction: string,
+    defaultValue: string | number | boolean
+  ) => {
     if (!parameter.defaults) return;
     const updatedParameter = { ...parameter };
     if (updatedParameter.defaults && updatedParameter.defaults.jurisdictions) {
@@ -280,7 +298,9 @@ export default function CreateParameterPage() {
     if (!parameter.defaults) return;
     const updatedParameter = { ...parameter };
     if (updatedParameter.defaults && updatedParameter.defaults.jurisdictions) {
-      updatedParameter.defaults.jurisdictions = updatedParameter.defaults.jurisdictions.filter((_, i) => i !== index);
+      updatedParameter.defaults.jurisdictions = updatedParameter.defaults.jurisdictions.filter(
+        (_, i) => i !== index
+      );
     }
     setParameter(updatedParameter);
     setHasUnsavedChanges(true);
@@ -309,7 +329,12 @@ export default function CreateParameterPage() {
     }
   };
 
-  const renderDefaultInput = (id: string, value: any, onChange: (value: any) => void, placeholder: string) => {
+  const renderDefaultInput = (
+    id: string,
+    value: any,
+    onChange: (value: any) => void,
+    placeholder: string
+  ) => {
     if (!parameter) return null;
 
     const inputType = getInputTypeFromParameterType(parameter.type);
@@ -325,7 +350,7 @@ export default function CreateParameterPage() {
               onCheckedChange={(checked) => onChange(checked === true)}
             />
             <Label htmlFor={id} className="text-sm">
-              {(value === true || value === 'true') ? 'Enabled' : 'Disabled'}
+              {value === true || value === 'true' ? 'Enabled' : 'Disabled'}
             </Label>
           </div>
         );
@@ -385,7 +410,7 @@ export default function CreateParameterPage() {
                 const currentValue = value ? value.replace(/[^0-9]/g, '') : '';
                 onChange(currentValue ? `${currentValue}${e.target.value}` : null);
               }}
-              className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="H">Hours</option>
               <option value="D">Days</option>
@@ -402,11 +427,13 @@ export default function CreateParameterPage() {
               id={id}
               value={value || ''}
               onChange={(e) => onChange(e.target.value || null)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">Select option...</option>
               {parameter.options.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
           );
@@ -445,9 +472,9 @@ export default function CreateParameterPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -456,36 +483,26 @@ export default function CreateParameterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="mx-auto max-w-4xl p-6">
         {/* Header */}
         <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-semibold">Create Parameter</CardTitle>
-                <p className="text-sm text-gray-600 mt-1">Create a new contract parameter</p>
+                <p className="mt-1 text-sm text-gray-600">Create a new contract parameter</p>
               </div>
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  <X className="w-4 h-4 mr-2" />
+                <Button variant="outline" onClick={handleCancel} disabled={saving}>
+                  <X className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                >
-                  <Save className="w-4 h-4 mr-2" />
+                <Button onClick={handleSave} disabled={saving}>
+                  <Save className="mr-2 h-4 w-4" />
                   {saving ? 'Saving...' : 'Save'}
                 </Button>
-                <Button
-                  onClick={handleSaveAndExit}
-                  disabled={saving}
-                >
-                  <Save className="w-4 h-4 mr-2" />
+                <Button onClick={handleSaveAndExit} disabled={saving}>
+                  <Save className="mr-2 h-4 w-4" />
                   Save & Exit
                 </Button>
               </div>
@@ -494,12 +511,12 @@ export default function CreateParameterPage() {
         </Card>
 
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+        <nav className="mb-6 flex items-center space-x-2 text-sm text-gray-600">
           <button
             onClick={() => router.push('/admin/document-parameters')}
-            className="hover:text-blue-600 flex items-center"
+            className="flex items-center hover:text-blue-600"
           >
-            <ArrowLeft className="w-4 h-4 mr-1" />
+            <ArrowLeft className="mr-1 h-4 w-4" />
             Document Parameters
           </button>
           <span>/</span>
@@ -557,7 +574,6 @@ export default function CreateParameterPage() {
               </div>
             </div>
 
-
             <div>
               <Label htmlFor="type" className="text-sm font-medium text-gray-700">
                 Type
@@ -566,10 +582,12 @@ export default function CreateParameterPage() {
                 id="type"
                 value={parameter.type}
                 onChange={(e) => handleChange('type', e.target.value)}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
-                {config.types.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                {config.types.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
             </div>
@@ -605,7 +623,7 @@ export default function CreateParameterPage() {
             <ConditionEditor
               condition={parameter.condition}
               onConditionChange={(condition: any) => handleChange('condition', condition)}
-              availableParameters={allParameters.map(p => p.name)}
+              availableParameters={allParameters.map((p) => p.name)}
             />
           </CardContent>
         </Card>
@@ -616,7 +634,7 @@ export default function CreateParameterPage() {
             <CardTitle>Display Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="group" className="text-sm font-medium text-gray-700">
                   Group
@@ -625,10 +643,12 @@ export default function CreateParameterPage() {
                   id="group"
                   value={parameter.display.group}
                   onChange={(e) => handleChange('display.group', e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.groups.map(group => (
-                    <option key={group} value={group}>{group}</option>
+                  {config.groups.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -641,10 +661,12 @@ export default function CreateParameterPage() {
                   id="subgroup"
                   value={parameter.display.subgroup}
                   onChange={(e) => handleChange('display.subgroup', e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.subgroups[parameter.display.group]?.map(subgroup => (
-                    <option key={subgroup} value={subgroup}>{subgroup}</option>
+                  {config.subgroups[parameter.display.group]?.map((subgroup) => (
+                    <option key={subgroup} value={subgroup}>
+                      {subgroup}
+                    </option>
                   )) || <option value="">No subgroups available</option>}
                 </select>
               </div>
@@ -675,15 +697,18 @@ export default function CreateParameterPage() {
               <Label htmlFor="global_default" className="text-sm font-medium text-gray-700">
                 Global Default
               </Label>
-              {renderDefaultInput('global_default', parameter.defaults?.global_default, (value) => handleChange('defaults.global_default', value), 'Enter global default value...')}
+              {renderDefaultInput(
+                'global_default',
+                parameter.defaults?.global_default,
+                (value) => handleChange('defaults.global_default', value),
+                'Enter global default value...'
+              )}
             </div>
 
             {/* Jurisdiction Defaults */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-sm font-medium text-gray-700">
-                  Jurisdiction Defaults
-                </Label>
+              <div className="mb-3 flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Jurisdiction Defaults</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -695,13 +720,22 @@ export default function CreateParameterPage() {
               </div>
 
               {parameter.defaults?.jurisdictions?.map((jurisdictionDefault, index) => (
-                <div key={index} className="flex items-center space-x-2 mb-2 p-3 border border-gray-200 rounded-lg">
+                <div
+                  key={index}
+                  className="mb-2 flex items-center space-x-2 rounded-lg border border-gray-200 p-3"
+                >
                   <div className="flex-1">
                     <Label className="text-xs text-gray-500">Jurisdiction</Label>
                     <select
                       value={jurisdictionDefault.jurisdiction}
-                      onChange={(e) => handleUpdateJurisdictionDefault(index, e.target.value, jurisdictionDefault.default)}
-                      className="mt-1 w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      onChange={(e) =>
+                        handleUpdateJurisdictionDefault(
+                          index,
+                          e.target.value,
+                          jurisdictionDefault.default
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
                     >
                       <option value="">Select jurisdiction...</option>
                       {jurisdictions.map((jurisdiction) => (
@@ -717,7 +751,12 @@ export default function CreateParameterPage() {
                       {renderDefaultInput(
                         `jurisdiction_default_${index}`,
                         jurisdictionDefault.default,
-                        (value) => handleUpdateJurisdictionDefault(index, jurisdictionDefault.jurisdiction, value),
+                        (value) =>
+                          handleUpdateJurisdictionDefault(
+                            index,
+                            jurisdictionDefault.jurisdiction,
+                            value
+                          ),
                         'Default value...'
                       )}
                     </div>
@@ -734,8 +773,9 @@ export default function CreateParameterPage() {
                 </div>
               ))}
 
-              {(!parameter.defaults?.jurisdictions || parameter.defaults.jurisdictions.length === 0) && (
-                <div className="text-center py-4 text-gray-500 text-sm">
+              {(!parameter.defaults?.jurisdictions ||
+                parameter.defaults.jurisdictions.length === 0) && (
+                <div className="py-4 text-center text-sm text-gray-500">
                   No jurisdiction-specific defaults set
                 </div>
               )}
@@ -749,7 +789,7 @@ export default function CreateParameterPage() {
             <CardTitle>Metadata</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="priority" className="text-sm font-medium text-gray-700">
                   Priority
@@ -758,10 +798,12 @@ export default function CreateParameterPage() {
                   id="priority"
                   value={parameter.metadata?.priority || 0}
                   onChange={(e) => handleChange('metadata.priority', parseInt(e.target.value))}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.priorities.map(priority => (
-                    <option key={priority} value={priority}>{priority}</option>
+                  {config.priorities.map((priority) => (
+                    <option key={priority} value={priority}>
+                      {priority}
+                    </option>
                   ))}
                 </select>
               </div>

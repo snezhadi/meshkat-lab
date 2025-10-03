@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, GripVertical } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Edit, GripVertical, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface Parameter {
   id: string;
@@ -40,11 +40,7 @@ interface ParameterTableProps {
   config: ParameterConfig;
 }
 
-export function ParameterTable({ 
-  parameters, 
-  onReorder, 
-  config 
-}: ParameterTableProps) {
+export function ParameterTable({ parameters, onReorder, config }: ParameterTableProps) {
   const router = useRouter();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -61,7 +57,7 @@ export function ParameterTable({
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    
+
     if (draggedIndex === null || draggedIndex === dropIndex) {
       setDraggedIndex(null);
       return;
@@ -69,13 +65,13 @@ export function ParameterTable({
 
     const newParameters = [...parameters];
     const draggedParameter = newParameters[draggedIndex];
-    
+
     // Remove the dragged item
     newParameters.splice(draggedIndex, 1);
-    
+
     // Insert it at the new position
     newParameters.splice(dropIndex, 0, draggedParameter);
-    
+
     onReorder(newParameters);
     setDraggedIndex(null);
   };
@@ -112,7 +108,7 @@ export function ParameterTable({
       currency: 'bg-yellow-100 text-yellow-800',
       duration: 'bg-orange-100 text-orange-800',
       date: 'bg-pink-100 text-pink-800',
-      enum: 'bg-indigo-100 text-indigo-800'
+      enum: 'bg-indigo-100 text-indigo-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   };
@@ -124,7 +120,7 @@ export function ParameterTable({
       textarea: 'bg-blue-100 text-blue-800',
       numberbox: 'bg-purple-100 text-purple-800',
       datepicker: 'bg-pink-100 text-pink-800',
-      dropdown: 'bg-indigo-100 text-indigo-800'
+      dropdown: 'bg-indigo-100 text-indigo-800',
     };
     return colors[input] || 'bg-gray-100 text-gray-800';
   };
@@ -132,8 +128,8 @@ export function ParameterTable({
   if (parameters.length === 0) {
     return (
       <div className="p-8 text-center">
-        <div className="text-gray-400 text-6xl mb-4">📋</div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Parameters Found</h3>
+        <div className="mb-4 text-6xl text-gray-400">📋</div>
+        <h3 className="mb-2 text-lg font-semibold text-gray-900">No Parameters Found</h3>
         <p className="text-gray-600">Try adjusting your filters or add a new parameter.</p>
       </div>
     );
@@ -144,36 +140,36 @@ export function ParameterTable({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="w-8 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="w-8 px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Drag
             </th>
-            <th className="w-20 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="w-20 px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Actions
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               ID
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Label/Name
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Type
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Input
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Priority
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Group / Subgroup
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Condition
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-200 bg-white">
           {parameters.map((parameter, index) => (
             <tr
               key={parameter.id}
@@ -181,12 +177,12 @@ export function ParameterTable({
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, index)}
-              className={`hover:bg-gray-50 transition-colors ${
+              className={`transition-colors hover:bg-gray-50 ${
                 draggedIndex === index ? 'opacity-50' : ''
               }`}
             >
               <td className="px-4 py-4 whitespace-nowrap">
-                <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
+                <GripVertical className="h-4 w-4 cursor-grab text-gray-400" />
               </td>
               <td className="px-4 py-4 whitespace-nowrap">
                 <div className="flex justify-start space-x-2">
@@ -196,7 +192,7 @@ export function ParameterTable({
                     onClick={() => router.push(`/admin/document-parameters/edit/${parameter.id}`)}
                     className="text-blue-600 hover:text-blue-900"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -208,18 +204,18 @@ export function ParameterTable({
                         : 'text-red-400 hover:text-red-600'
                     }`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
                 {showDeleteConfirm === parameter.id && (
-                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
-                    <div className="text-red-800 font-medium mb-1">Confirm Delete?</div>
+                  <div className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-xs">
+                    <div className="mb-1 font-medium text-red-800">Confirm Delete?</div>
                     <div className="flex space-x-2">
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => handleDelete(parameter.id)}
-                        className="text-xs px-2 py-1 bg-red-600 hover:bg-red-700 text-white"
+                        className="bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700"
                       >
                         Yes, Delete
                       </Button>
@@ -227,7 +223,7 @@ export function ParameterTable({
                         size="sm"
                         variant="ghost"
                         onClick={() => setShowDeleteConfirm(null)}
-                        className="text-xs px-2 py-1"
+                        className="px-2 py-1 text-xs"
                       >
                         Cancel
                       </Button>
@@ -236,22 +232,16 @@ export function ParameterTable({
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-mono text-gray-900 max-w-xs truncate">
+                <div className="max-w-xs truncate font-mono text-sm text-gray-900">
                   {parameter.id}
                 </div>
               </td>
               <td className="px-6 py-4">
-                <div className="text-sm font-medium text-gray-900">
-                  {parameter.display.label}
-                </div>
-                <div className="text-sm text-gray-500 max-w-xs truncate">
-                  {parameter.name}
-                </div>
+                <div className="text-sm font-medium text-gray-900">{parameter.display.label}</div>
+                <div className="max-w-xs truncate text-sm text-gray-500">{parameter.name}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <Badge className={getTypeBadgeColor(parameter.type)}>
-                  {parameter.type}
-                </Badge>
+                <Badge className={getTypeBadgeColor(parameter.type)}>{parameter.type}</Badge>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <Badge className={getInputBadgeColor(parameter.display.input)}>
@@ -259,23 +249,15 @@ export function ParameterTable({
                 </Badge>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="text-sm text-gray-900">
-                  {parameter.metadata?.priority ?? 0}
-                </span>
+                <span className="text-sm text-gray-900">{parameter.metadata?.priority ?? 0}</span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {parameter.display.group}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {parameter.display.subgroup}
-                </div>
+                <div className="text-sm text-gray-900">{parameter.display.group}</div>
+                <div className="text-sm text-gray-500">{parameter.display.subgroup}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {parameter.condition ? (
-                  <Badge className="bg-orange-100 text-orange-800">
-                    Yes
-                  </Badge>
+                  <Badge className="bg-orange-100 text-orange-800">Yes</Badge>
                 ) : (
                   <span className="text-sm text-gray-400">No</span>
                 )}

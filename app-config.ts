@@ -29,8 +29,8 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
         canExport: true,
         canDelete: true,
         canCreate: true,
-        canEdit: true
-      }
+        canEdit: true,
+      },
     },
     {
       username: 'admin2',
@@ -39,8 +39,8 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
         canExport: false,
         canDelete: true,
         canCreate: true,
-        canEdit: true
-      }
-    }
-  ]
+        canEdit: true,
+      },
+    },
+  ],
 };

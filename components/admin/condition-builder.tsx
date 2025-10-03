@@ -1,16 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { X, Check, ChevronsUpDown, Plus } from 'lucide-react';
-import { toast } from 'sonner';
 import { ConditionPreview } from './condition-preview';
 
 export interface Condition {
@@ -36,12 +42,12 @@ interface ConditionBuilderProps {
   hideHeader?: boolean;
 }
 
-export function ConditionBuilder({ 
-  condition, 
-  onConditionChange, 
+export function ConditionBuilder({
+  condition,
+  onConditionChange,
   availableParameters,
   className = '',
-  hideHeader = false
+  hideHeader = false,
 }: ConditionBuilderProps) {
   const [localCondition, setLocalCondition] = useState<Condition | null>(condition);
   const [showBuilder, setShowBuilder] = useState(false);
@@ -65,8 +71,8 @@ export function ConditionBuilder({
         const data = await response.json();
         const allParams = data.parameters;
         // Filter to only boolean and enum parameters
-        const filteredParams = allParams.filter((param: any) => 
-          param.type === 'boolean' || param.type === 'enum'
+        const filteredParams = allParams.filter(
+          (param: any) => param.type === 'boolean' || param.type === 'enum'
         );
         setParameters(filteredParams);
       } catch (error) {
@@ -75,7 +81,6 @@ export function ConditionBuilder({
     };
     loadParameters();
   }, []);
-
 
   const updateCondition = (newCondition: Condition | null) => {
     console.log('=== updateCondition CALLED ===');
@@ -87,23 +92,27 @@ export function ConditionBuilder({
   };
 
   // Helper function to update a nested condition in the root condition
-  const updateNestedCondition = (rootCondition: Condition, path: string, updatedCondition: Condition): Condition => {
+  const updateNestedCondition = (
+    rootCondition: Condition,
+    path: string,
+    updatedCondition: Condition
+  ): Condition => {
     console.log('=== updateNestedCondition DEBUG ===');
     console.log('rootCondition:', rootCondition);
     console.log('path:', path);
     console.log('updatedCondition:', updatedCondition);
-    
-    const pathParts = path.split('.').map(p => parseInt(p));
+
+    const pathParts = path.split('.').map((p) => parseInt(p));
     console.log('pathParts:', pathParts);
-    
+
     // Deep clone the root condition
     const newRootCondition = JSON.parse(JSON.stringify(rootCondition));
-    
+
     // For a path like "0.1", we want to update the root condition's conditions array at index 1
     // We only need to navigate if the path has more than 2 parts (e.g., "0.1.0" for nested conditions)
     let current = newRootCondition;
     console.log('Starting navigation from root condition:', current);
-    
+
     if (pathParts.length === 2) {
       // Simple case: path like "0.1" - update root.conditions[1]
       console.log('Simple path detected - updating root condition directly');
@@ -111,7 +120,7 @@ export function ConditionBuilder({
       // Complex case: path like "0.2.1" - need to navigate deeper
       // For path "0.2.1": navigate to root.conditions[2], then update conditions[1]
       console.log('Complex path detected - navigating deeper');
-      
+
       // For complex paths like "0.2.1", navigate directly to the parent condition
       // Skip all intermediate indices except the second-to-last one
       const parentIndex = pathParts[pathParts.length - 2];
@@ -123,7 +132,7 @@ export function ConditionBuilder({
       console.log('Root condition has conditions array:', !!current.conditions);
       console.log('Root conditions array length:', current.conditions?.length || 0);
       console.log('Root conditions structure:', current.conditions);
-      
+
       if (current.conditions && current.conditions[parentIndex]) {
         current = current.conditions[parentIndex];
         console.log(`Successfully navigated to parent condition at index ${parentIndex}`);
@@ -132,28 +141,38 @@ export function ConditionBuilder({
         console.log('Parent conditions array length:', current.conditions?.length || 0);
         console.log('Parent conditions structure:', current.conditions);
       } else {
-        console.error('Invalid path - parent condition not found at index:', parentIndex, 'available conditions:', current.conditions?.length || 0);
+        console.error(
+          'Invalid path - parent condition not found at index:',
+          parentIndex,
+          'available conditions:',
+          current.conditions?.length || 0
+        );
         console.error('Current condition structure:', current);
         console.log('=== END COMPLEX PATH NAVIGATION DEBUG (ERROR) ===');
         return rootCondition;
       }
       console.log('=== END COMPLEX PATH NAVIGATION DEBUG ===');
     }
-    
+
     // Update the target condition
     const finalIndex = pathParts[pathParts.length - 1];
     console.log('Final index to update:', finalIndex);
     console.log('Current conditions array length:', current.conditions?.length);
     console.log('Current conditions:', current.conditions);
-    
+
     if (current.conditions && current.conditions[finalIndex] !== undefined) {
       current.conditions[finalIndex] = updatedCondition;
       console.log('Updated condition at path:', path);
     } else {
-      console.error('Invalid path - final condition not found at index:', finalIndex, 'available conditions:', current.conditions?.length || 0);
+      console.error(
+        'Invalid path - final condition not found at index:',
+        finalIndex,
+        'available conditions:',
+        current.conditions?.length || 0
+      );
       return rootCondition;
     }
-    
+
     console.log('Final newRootCondition:', newRootCondition);
     console.log('=== END updateNestedCondition DEBUG ===');
     return newRootCondition;
@@ -173,19 +192,29 @@ export function ConditionBuilder({
     }
   };
 
-  const convertToComplexCondition = (existingCondition: Condition, newType: 'and' | 'or', updateFn: (condition: Condition) => void) => {
+  const convertToComplexCondition = (
+    existingCondition: Condition,
+    newType: 'and' | 'or',
+    updateFn: (condition: Condition) => void
+  ) => {
     const newComplexCondition: Condition = {
       type: newType,
-      conditions: [existingCondition] // Preserve the existing condition
+      conditions: [existingCondition], // Preserve the existing condition
     };
     updateFn(newComplexCondition);
   };
 
-  const filteredParameters = parameters.filter(param => 
+  const filteredParameters = parameters.filter((param) =>
     param.id.toLowerCase().includes(parameterSearch.toLowerCase())
   );
 
-  const renderCondition = (condition: Condition, path: string = '0', parentCondition?: Condition, parentIndex?: number, rootCondition?: Condition): React.ReactNode => {
+  const renderCondition = (
+    condition: Condition,
+    path: string = '0',
+    parentCondition?: Condition,
+    parentIndex?: number,
+    rootCondition?: Condition
+  ): React.ReactNode => {
     const updateThisCondition = (updatedCondition: Condition) => {
       console.log('=== updateThisCondition DEBUG ===');
       console.log('updatedCondition:', updatedCondition);
@@ -193,7 +222,7 @@ export function ConditionBuilder({
       console.log('parentIndex:', parentIndex);
       console.log('path:', path);
       console.log('rootCondition:', rootCondition);
-      
+
       if (rootCondition && path !== '0') {
         // Update nested condition using the root condition
         console.log('Updating nested condition in root');
@@ -212,10 +241,12 @@ export function ConditionBuilder({
     if (condition.type === 'and' || condition.type === 'or') {
       return (
         <Card className="border">
-          <CardHeader className="pb-1 pt-2">
-            <CardTitle className="text-xs flex items-center justify-between">
+          <CardHeader className="pt-2 pb-1">
+            <CardTitle className="flex items-center justify-between text-xs">
               <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="text-xs px-1 py-0">{condition.type.toUpperCase()}</Badge>
+                <Badge variant="outline" className="px-1 py-0 text-xs">
+                  {condition.type.toUpperCase()}
+                </Badge>
                 <span>{condition.type.toUpperCase()} Condition</span>
               </div>
               <div className="flex items-center space-x-1">
@@ -246,23 +277,31 @@ export function ConditionBuilder({
                         console.log('=== REMOVE CONDITION DEBUG (First Button) ===');
                         console.log('Removing condition at parentIndex:', parentIndex);
                         console.log('Parent condition before removal:', parentCondition);
-                        const newConditions = parentCondition.conditions?.filter((_, i) => i !== parentIndex) || [];
+                        const newConditions =
+                          parentCondition.conditions?.filter((_, i) => i !== parentIndex) || [];
                         console.log('New conditions after removal:', newConditions);
                         // Update the parent condition with the new conditions array
                         // Create a new parent condition with the updated conditions array
-                        const updatedParentCondition = { ...parentCondition, conditions: newConditions };
+                        const updatedParentCondition = {
+                          ...parentCondition,
+                          conditions: newConditions,
+                        };
                         console.log('Updated parent condition:', updatedParentCondition);
-                        
+
                         // Always update the root condition with the updated parent condition
                         if (rootCondition && path !== '0') {
                           // Find the parent's path by removing the last part of the current path
                           const parentPath = path.substring(0, path.lastIndexOf('.'));
                           console.log('Updating parent condition at path:', parentPath);
-                          
+
                           // For simple paths like "0.2", we can update directly
                           if (parentPath.includes('.')) {
                             // Complex nested path - use updateNestedCondition
-                            const newRootCondition = updateNestedCondition(rootCondition, parentPath, updatedParentCondition);
+                            const newRootCondition = updateNestedCondition(
+                              rootCondition,
+                              parentPath,
+                              updatedParentCondition
+                            );
                             updateCondition(newRootCondition);
                           } else {
                             // Simple path like "0" - this means we're updating the root condition itself
@@ -293,14 +332,18 @@ export function ConditionBuilder({
           <CardContent className="space-y-2 pb-2">
             <div className="space-y-2">
               {(condition.conditions || []).map((subCondition, index) => (
-                <div key={`${path}-${index}-${subCondition.parameter || 'empty'}`} className="relative">
-                  <div className="flex items-center space-x-2 mb-1">
+                <div
+                  key={`${path}-${index}-${subCondition.parameter || 'empty'}`}
+                  className="relative"
+                >
+                  <div className="mb-1 flex items-center space-x-2">
                     <span className="text-[10px] text-gray-400">#{index + 1}</span>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        const newConditions = condition.conditions?.filter((_, i) => i !== index) || [];
+                        const newConditions =
+                          condition.conditions?.filter((_, i) => i !== index) || [];
                         updateThisCondition({ ...condition, conditions: newConditions });
                       }}
                       className="h-5 w-5 p-0 text-red-600"
@@ -308,10 +351,16 @@ export function ConditionBuilder({
                       <X className="h-3 w-3" />
                     </Button>
                   </div>
-                  {renderCondition(subCondition, `${path}.${index}`, condition, index, rootCondition || localCondition || undefined)}
+                  {renderCondition(
+                    subCondition,
+                    `${path}.${index}`,
+                    condition,
+                    index,
+                    rootCondition || localCondition || undefined
+                  )}
                 </div>
               ))}
-              
+
               {/* Add Condition Button */}
               <div className="flex justify-center pt-2">
                 <Button
@@ -327,7 +376,7 @@ export function ConditionBuilder({
                     newCondition.conditions = [...(newCondition.conditions || []), emptyCondition];
                     updateThisCondition(newCondition);
                   }}
-                  className="h-8 text-xs flex items-center space-x-1"
+                  className="flex h-8 items-center space-x-1 text-xs"
                 >
                   <Plus className="h-3 w-3" />
                   <span>Add Condition</span>
@@ -340,17 +389,19 @@ export function ConditionBuilder({
     }
 
     // Handle simple conditions (boolean/in)
-    const currentParameter = condition.parameter ? parameters.find(p => p.id === condition.parameter) : null;
+    const currentParameter = condition.parameter
+      ? parameters.find((p) => p.id === condition.parameter)
+      : null;
     // Use a more robust unique ID that includes the condition structure
     const conditionId = `condition-${path}-${condition.parameter || 'empty'}-${condition.value || 'novalue'}-${JSON.stringify(condition.values || [])}`;
     const isOpen = openDropdowns.has(conditionId);
-    
+
     const toggleDropdown = () => {
       console.log('=== toggleDropdown DEBUG ===');
       console.log('conditionId:', conditionId);
       console.log('isOpen:', isOpen);
       console.log('current openDropdowns:', Array.from(openDropdowns));
-      
+
       const newOpenDropdowns = new Set(openDropdowns);
       if (isOpen) {
         newOpenDropdowns.delete(conditionId);
@@ -363,14 +414,14 @@ export function ConditionBuilder({
       setOpenDropdowns(newOpenDropdowns);
       console.log('=== END toggleDropdown DEBUG ===');
     };
-    
+
     return (
       <Card className="border">
-        <CardHeader className="pb-1 pt-2">
+        <CardHeader className="pt-2 pb-1">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-xs">
               {currentParameter && (
-                <Badge variant="outline" className="text-xs px-1 py-0">
+                <Badge variant="outline" className="px-1 py-0 text-xs">
                   {currentParameter.type === 'boolean' ? 'BOOLEAN' : 'ENUM'}
                 </Badge>
               )}
@@ -403,34 +454,42 @@ export function ConditionBuilder({
                       console.log('=== REMOVE CONDITION DEBUG ===');
                       console.log('Removing condition at parentIndex:', parentIndex);
                       console.log('Parent condition before removal:', parentCondition);
-                      const newConditions = parentCondition.conditions?.filter((_, i) => i !== parentIndex) || [];
+                      const newConditions =
+                        parentCondition.conditions?.filter((_, i) => i !== parentIndex) || [];
                       console.log('New conditions after removal:', newConditions);
-                        // Update the parent condition with the new conditions array
-                        // Create a new parent condition with the updated conditions array
-                        const updatedParentCondition = { ...parentCondition, conditions: newConditions };
-                        console.log('Updated parent condition:', updatedParentCondition);
-                        
-                        // Always update the root condition with the updated parent condition
-                        if (rootCondition && path !== '0') {
-                          // Find the parent's path by removing the last part of the current path
-                          const parentPath = path.substring(0, path.lastIndexOf('.'));
-                          console.log('Updating parent condition at path:', parentPath);
-                          
-                          // For simple paths like "0.2", we can update directly
-                          if (parentPath.includes('.')) {
-                            // Complex nested path - use updateNestedCondition
-                            const newRootCondition = updateNestedCondition(rootCondition, parentPath, updatedParentCondition);
-                            updateCondition(newRootCondition);
-                          } else {
-                            // Simple path like "0" - this means we're updating the root condition itself
-                            console.log('Before update - root condition:', rootCondition);
-                            console.log('Updating root condition with updated parent condition');
-                            updateCondition(updatedParentCondition);
-                          }
+                      // Update the parent condition with the new conditions array
+                      // Create a new parent condition with the updated conditions array
+                      const updatedParentCondition = {
+                        ...parentCondition,
+                        conditions: newConditions,
+                      };
+                      console.log('Updated parent condition:', updatedParentCondition);
+
+                      // Always update the root condition with the updated parent condition
+                      if (rootCondition && path !== '0') {
+                        // Find the parent's path by removing the last part of the current path
+                        const parentPath = path.substring(0, path.lastIndexOf('.'));
+                        console.log('Updating parent condition at path:', parentPath);
+
+                        // For simple paths like "0.2", we can update directly
+                        if (parentPath.includes('.')) {
+                          // Complex nested path - use updateNestedCondition
+                          const newRootCondition = updateNestedCondition(
+                            rootCondition,
+                            parentPath,
+                            updatedParentCondition
+                          );
+                          updateCondition(newRootCondition);
                         } else {
-                          // This parent condition is the root condition - update it directly
+                          // Simple path like "0" - this means we're updating the root condition itself
+                          console.log('Before update - root condition:', rootCondition);
+                          console.log('Updating root condition with updated parent condition');
                           updateCondition(updatedParentCondition);
                         }
+                      } else {
+                        // This parent condition is the root condition - update it directly
+                        updateCondition(updatedParentCondition);
+                      }
                       console.log('=== END REMOVE CONDITION DEBUG ===');
                     } else {
                       // Remove the entire root condition
@@ -451,23 +510,26 @@ export function ConditionBuilder({
           {/* Searchable Parameter Selector */}
           <div className="space-y-1">
             <Label className="text-xs">Parameter</Label>
-            <Popover open={isOpen} onOpenChange={(open) => {
-              console.log('=== Popover onOpenChange DEBUG ===');
-              console.log('conditionId:', conditionId);
-              console.log('open:', open);
-              console.log('isOpen:', isOpen);
-              
-              if (!open) {
-                const newOpenDropdowns = new Set(openDropdowns);
-                newOpenDropdowns.delete(conditionId);
-                setOpenDropdowns(newOpenDropdowns);
-                console.log('Popover closing dropdown for:', conditionId);
-              } else {
-                toggleDropdown();
-                console.log('Popover opening dropdown for:', conditionId);
-              }
-              console.log('=== END Popover onOpenChange DEBUG ===');
-            }}>
+            <Popover
+              open={isOpen}
+              onOpenChange={(open) => {
+                console.log('=== Popover onOpenChange DEBUG ===');
+                console.log('conditionId:', conditionId);
+                console.log('open:', open);
+                console.log('isOpen:', isOpen);
+
+                if (!open) {
+                  const newOpenDropdowns = new Set(openDropdowns);
+                  newOpenDropdowns.delete(conditionId);
+                  setOpenDropdowns(newOpenDropdowns);
+                  console.log('Popover closing dropdown for:', conditionId);
+                } else {
+                  toggleDropdown();
+                  console.log('Popover opening dropdown for:', conditionId);
+                }
+                console.log('=== END Popover onOpenChange DEBUG ===');
+              }}
+            >
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -485,9 +547,9 @@ export function ConditionBuilder({
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command shouldFilter={false}>
-                  <CommandInput 
-                    placeholder="Search parameters..." 
-                    className="h-8" 
+                  <CommandInput
+                    placeholder="Search parameters..."
+                    className="h-8"
                     value={parameterSearch}
                     onValueChange={setParameterSearch}
                   />
@@ -521,11 +583,11 @@ export function ConditionBuilder({
                       >
                         <Check
                           className={`mr-2 h-3 w-3 ${
-                            currentParameter?.id === param.id ? "opacity-100" : "opacity-0"
+                            currentParameter?.id === param.id ? 'opacity-100' : 'opacity-0'
                           }`}
                         />
                         <span className="font-medium">
-                          <span className="text-blue-600 text-[10px] mr-1">
+                          <span className="mr-1 text-[10px] text-blue-600">
                             {param.type === 'boolean' ? 'BOOL' : 'ENUM'}
                           </span>
                           @{param.id}
@@ -552,7 +614,9 @@ export function ConditionBuilder({
                     onChange={() => updateThisCondition({ ...condition, value: 'true' })}
                     className="h-3 w-3"
                   />
-                  <Label htmlFor={`boolean-true-${conditionId}`} className="text-xs">True</Label>
+                  <Label htmlFor={`boolean-true-${conditionId}`} className="text-xs">
+                    True
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
@@ -563,7 +627,9 @@ export function ConditionBuilder({
                     onChange={() => updateThisCondition({ ...condition, value: 'false' })}
                     className="h-3 w-3"
                   />
-                  <Label htmlFor={`boolean-false-${conditionId}`} className="text-xs">False</Label>
+                  <Label htmlFor={`boolean-false-${conditionId}`} className="text-xs">
+                    False
+                  </Label>
                 </div>
               </div>
             </div>
@@ -583,12 +649,14 @@ export function ConditionBuilder({
                         const currentValues = condition.values || [];
                         const newValues = checked
                           ? [...currentValues, option]
-                          : currentValues.filter(v => v !== option);
+                          : currentValues.filter((v) => v !== option);
                         updateThisCondition({ ...condition, values: newValues });
                       }}
                       className="h-3 w-3"
                     />
-                    <Label htmlFor={`enum-${option}-${conditionId}`} className="text-xs">{option}</Label>
+                    <Label htmlFor={`enum-${option}-${conditionId}`} className="text-xs">
+                      {option}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -613,36 +681,42 @@ export function ConditionBuilder({
                 className="h-7 text-xs"
               >
                 {showBuilder ? 'Done' : 'Edit'}
-            </Button>
-          )}
-          {localCondition && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (window.confirm('Are you sure you want to clear this condition?')) {
-                  updateCondition(null);
-                  setShowBuilder(false);
-                }
-              }}
-              className="text-red-600 h-7 text-xs"
-            >
-              Clear
-            </Button>
-          )}
+              </Button>
+            )}
+            {localCondition && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to clear this condition?')) {
+                    updateCondition(null);
+                    setShowBuilder(false);
+                  }
+                }}
+                className="h-7 text-xs text-red-600"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       {localCondition && !showBuilder && (
-        <div className="p-2 bg-gray-50 rounded border">
+        <div className="rounded border bg-gray-50 p-2">
           <ConditionPreview condition={localCondition} />
         </div>
       )}
 
       {showBuilder && (
         <div className="space-y-2">
-          {renderCondition(localCondition || createNewCondition('boolean'), '0', undefined, undefined, localCondition || undefined)}
+          {renderCondition(
+            localCondition || createNewCondition('boolean'),
+            '0',
+            undefined,
+            undefined,
+            localCondition || undefined
+          )}
         </div>
       )}
     </div>

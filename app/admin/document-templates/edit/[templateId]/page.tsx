@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { toast } from 'sonner';
 import { DocumentTemplateAccordion } from '@/components/admin/document-template-accordion';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
 
 interface DocumentTemplate {
@@ -40,7 +47,7 @@ export default function TemplateEditorPage() {
   const router = useRouter();
   const { templateId } = params;
   const { canExport } = usePermissions();
-  
+
   const [template, setTemplate] = useState<DocumentTemplate | null>(null);
   const [allTemplates, setAllTemplates] = useState<DocumentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +66,7 @@ export default function TemplateEditorPage() {
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -85,21 +92,20 @@ export default function TemplateEditorPage() {
           throw new Error('Failed to fetch document templates');
         }
         const result = await response.json();
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch document templates');
         }
-        
+
         const templates = result.data;
         const foundTemplate = templates.find((t: DocumentTemplate) => t.id === templateId);
-        
+
         if (!foundTemplate) {
           throw new Error(`Template not found: ${templateId}`);
         }
 
         setTemplate(foundTemplate);
         setAllTemplates(templates);
-
       } catch (err) {
         console.error('Error in fetchTemplate:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -121,17 +127,15 @@ export default function TemplateEditorPage() {
     setSaving(true);
     try {
       // Update the specific template in the all templates array
-      const updatedTemplates = allTemplates.map(t =>
-        t.id === templateId ? template : t
-      );
+      const updatedTemplates = allTemplates.map((t) => (t.id === templateId ? template : t));
 
       const response = await fetch('/api/admin/document-templates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          documentTemplates: updatedTemplates
+        body: JSON.stringify({
+          documentTemplates: updatedTemplates,
         }),
       });
 
@@ -154,11 +158,11 @@ export default function TemplateEditorPage() {
 
   const handleExport = () => {
     if (!template) return;
-    
+
     const dataStr = JSON.stringify(template, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `document-templates.json`;
@@ -166,7 +170,7 @@ export default function TemplateEditorPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     toast.success('Document templates exported successfully!');
   };
 
@@ -177,9 +181,9 @@ export default function TemplateEditorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
           <p className="mt-2 text-gray-600">Loading template...</p>
         </div>
       </div>
@@ -188,16 +192,14 @@ export default function TemplateEditorPage() {
 
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center text-red-600">
           <p className="text-lg">Error: {error}</p>
           <div className="mt-4 space-x-2">
             <Button onClick={() => handleNavigation('/admin/document-templates')} variant="outline">
               Back to Templates
             </Button>
-            <Button onClick={() => window.location.reload()}>
-              Retry
-            </Button>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
         </div>
       </div>
@@ -206,7 +208,7 @@ export default function TemplateEditorPage() {
 
   if (!template) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center text-red-600">
           <p className="text-lg">Error: Template not found</p>
           <Button onClick={() => handleNavigation('/admin/document-templates')} className="mt-4">
@@ -223,7 +225,7 @@ export default function TemplateEditorPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink 
+            <BreadcrumbLink
               href="/admin/document-templates"
               onClick={(e) => {
                 e.preventDefault();
@@ -241,13 +243,11 @@ export default function TemplateEditorPage() {
       </Breadcrumb>
 
       {/* Header with Save/Cancel */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Template Editor</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Editing: {template.title}
-            </p>
+            <p className="mt-1 text-sm text-gray-600">Editing: {template.title}</p>
           </div>
           <div className="flex items-center space-x-3">
             <Button
@@ -274,7 +274,7 @@ export default function TemplateEditorPage() {
             >
               {saving ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                   <span>Saving...</span>
                 </>
               ) : (
@@ -288,9 +288,9 @@ export default function TemplateEditorPage() {
         </div>
 
         {hasUnsavedChanges && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
             <div className="flex items-center">
-              <div className="text-yellow-600 text-sm">⚠️</div>
+              <div className="text-sm text-yellow-600">⚠️</div>
               <span className="ml-2 text-sm text-yellow-800">
                 You have unsaved changes. Don't forget to save your work!
               </span>
@@ -300,12 +300,9 @@ export default function TemplateEditorPage() {
       </div>
 
       {/* Template Editor */}
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="rounded-lg border border-gray-200 bg-white">
         <div className="p-6">
-          <DocumentTemplateAccordion
-            template={template}
-            onTemplateChange={handleTemplateChange}
-          />
+          <DocumentTemplateAccordion template={template} onTemplateChange={handleTemplateChange} />
         </div>
       </div>
     </div>
