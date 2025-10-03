@@ -22,10 +22,17 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/session');
+        console.log('Checking authentication...');
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include', // Ensure cookies are sent
+        });
+        
+        console.log('Session response status:', response.status);
         const data = await response.json();
+        console.log('Session response data:', data);
 
         if (data.authenticated) {
+          console.log('User authenticated:', data.user.username);
           setIsAuthenticated(true);
           setUserPermissions(data.user.permissions);
           // Store permissions in a global context or localStorage for easy access
@@ -34,6 +41,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             localStorage.setItem('username', data.user.username);
           }
         } else {
+          console.log('User not authenticated, redirecting to login');
           setIsAuthenticated(false);
           router.push('/login');
         }

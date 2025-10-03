@@ -6,6 +6,8 @@ import { getAppConfig } from '@/lib/utils';
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
+    
+    console.log('Login attempt for user:', username);
 
     if (!username || !password) {
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
@@ -29,8 +31,11 @@ export async function POST(request: NextRequest) {
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
+      console.log('Invalid password for user:', username);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
+    
+    console.log('Login successful for user:', username);
 
     // Create session token (simple approach using timestamp + random)
     const sessionToken = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -53,13 +58,21 @@ export async function POST(request: NextRequest) {
     );
 
     // Set session cookie with user data (expires in 24 hours)
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHttps = request.url.startsWith('https://');
+    
+    console.log('Setting cookie - Production:', isProduction, 'HTTPS:', isHttps);
+    
     response.cookies.set('admin-session', JSON.stringify(sessionData), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProduction && isHttps,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60, // 24 hours
       path: '/',
+      domain: isProduction ? undefined : undefined, // Let browser handle domain
     });
+    
+    console.log('Cookie set successfully');
 
     return response;
   } catch (error) {
