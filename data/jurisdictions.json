@@ -1,0 +1,86 @@
+[
+  {
+    "jurisdiction": "Ontario",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Quebec",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "British Columbia",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Alberta",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Manitoba",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Saskatchewan",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Nova Scotia",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "New Brunswick",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Newfoundland and Labrador",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Prince Edward Island",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Northwest Territories",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Yukon",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Nunavut",
+    "country": "Canada"
+  },
+  {
+    "jurisdiction": "Abu Dhabi",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Dubai",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Sharjah",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Ajman",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Ras Al Khaimah",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Fujairah",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Umm Al Quwain",
+    "country": "UAE"
+  },
+  {
+    "jurisdiction": "Singapore",
+    "country": "Singapore"
+  }
+]

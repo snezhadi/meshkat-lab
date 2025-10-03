@@ -1,0 +1,108 @@
+{
+  "groups": [
+    "General Parameters",
+    "Contract Parties",
+    "Employment Term",
+    "Place and Time",
+    "Base Salary",
+    "Salary and Bonus",
+    "Commision and Equity",
+    "Benefit and Expenses",
+    "Leave and Sickness",
+    "Termination",
+    "Employee Obligations",
+    "Restrictive Covenants",
+    "Intellectual Property",
+    "Miscellaneous"
+  ],
+  "subgroups": {
+    "General Parameters": [
+      "Basic",
+      "Job",
+      "Collective Agreement"
+    ],
+    "Contract Parties": [
+      "Employer",
+      "Employee"
+    ],
+    "Employment Term": [
+      "Term",
+      "Probation"
+    ],
+    "Place and Time": [
+      "Workplace",
+      "Time",
+      "Place"
+    ],
+    "Base Salary": [
+      "Salary"
+    ],
+    "Salary and Bonus": [
+      "Salary",
+      "Bonus"
+    ],
+    "Commision and Equity": [
+      "Commision",
+      "Equity"
+    ],
+    "Benefit and Expenses": [
+      "Benefits",
+      "Expenses"
+    ],
+    "Leave and Sickness": [
+      "Leave Days",
+      "Leave Procedure",
+      "Leave Taking Procedure",
+      "Untaken Leave",
+      "Excess Leave",
+      "Sickness"
+    ],
+    "Termination": [
+      "Termination Notice",
+      "Immediate Termination",
+      "Garden Leave",
+      "Severance"
+    ],
+    "Employee Obligations": [
+      "R&W",
+      "Integrity",
+      "IT Social Media and Internet",
+      "Confidentiality",
+      "Employer Property",
+      "Conflict of Interests"
+    ],
+    "Restrictive Covenants": [
+      "Non-Compete",
+      "Non-solicit",
+      "Non-Disparagement"
+    ],
+    "Intellectual Property": [
+      "IP Ownership & Assignment",
+      "Waiver of Moral Rights",
+      "Pre-Existing IP",
+      "Personal IP Discolsure"
+    ],
+    "Miscellaneous": [
+      "Assignment",
+      "Force majeure",
+      "Jurisdiction",
+      "Change of Terms"
+    ]
+  },
+  "types": [
+    "boolean",
+    "short-text",
+    "long-text",
+    "number",
+    "currency",
+    "duration",
+    "date",
+    "enum"
+  ],
+  "priorities": [
+    0,
+    1,
+    2,
+    3
+  ]
+}

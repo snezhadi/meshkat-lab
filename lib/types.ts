@@ -25,6 +25,19 @@ export interface AppConfig {
   accentDark?: string;
   hideCanvasInitially?: boolean;
   canvasTitle?: string;
+  hideFormHeader?: boolean; // Hide form headers globally
+
+  // Admin authentication
+  adminUsers?: Array<{
+    username: string;
+    passwordHash: string;
+    permissions: {
+      canExport: boolean;
+      canDelete: boolean;
+      canCreate: boolean;
+      canEdit: boolean;
+    };
+  }>;
 }
 
 export interface SandboxConfig {

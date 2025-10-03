@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+// Use local data directory for development
+const DATA_DIR = path.join(process.cwd(), 'data');
+const DOCUMENT_TEMPLATES_FILE = path.join(DATA_DIR, 'document-templates.json');
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+
+// Ensure directories exist
+function ensureDataDirectories() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+  }
+}
+
+// Initialize with default data if file doesn't exist
+function initializeDefaultData() {
+  ensureDataDirectories();
+  
+  if (!fs.existsSync(DOCUMENT_TEMPLATES_FILE)) {
+    const defaultTemplates = [
+      {
+        id: 'employment_agreement',
+        name: 'Employment Agreement',
+        description: 'Standard employment agreement template',
+        jurisdiction: 'CA',
+        clauses: [
+          {
+            id: 'definitions',
+            title: 'Definitions',
+            content: 'In this Agreement, the following terms have the meanings set out below...',
+            description: 'Define key terms used in the agreement',
+            condition: null,
+            paragraphs: []
+          }
+        ]
+      }
+    ];
+    
+    fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, JSON.stringify(defaultTemplates, null, 2), 'utf8');
+  }
+}
+
+export async function GET() {
+  try {
+    initializeDefaultData();
+    const documentTemplates = JSON.parse(fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8'));
+    return NextResponse.json({ success: true, data: documentTemplates });
+  } catch (error) {
+    console.error('Error reading document templates:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to read document templates' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    initializeDefaultData();
+    const { documentTemplates, createCheckpoint } = await request.json();
+
+    if (!documentTemplates) {
+      return NextResponse.json(
+        { success: false, error: 'Document templates data is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create backup if requested
+    if (createCheckpoint) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupFile = path.join(BACKUP_DIR, `document-templates-checkpoint-${timestamp}.json`);
+      
+      try {
+        const currentTemplates = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
+        fs.writeFileSync(backupFile, currentTemplates, 'utf8');
+        console.log(`Created checkpoint: ${backupFile}`);
+      } catch (backupError) {
+        console.warn('Failed to create backup:', backupError);
+      }
+    }
+
+    // Write the new document templates
+    fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, JSON.stringify(documentTemplates, null, 2), 'utf8');
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Document templates saved successfully',
+      checkpoint: createCheckpoint ? `document-templates-checkpoint-${new Date().toISOString().replace(/[:.]/g, '-')}.json` : null
+    });
+
+  } catch (error) {
+    console.error('Error saving document templates:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to save document templates' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { url } = request;
+    const checkpointName = new URL(url).searchParams.get('checkpoint');
+
+    if (!checkpointName) {
+      return NextResponse.json(
+        { success: false, error: 'Checkpoint name is required' },
+        { status: 400 }
+      );
+    }
+
+    const checkpointFile = path.join(BACKUP_DIR, checkpointName);
+    
+    if (!fs.existsSync(checkpointFile)) {
+      return NextResponse.json(
+        { success: false, error: 'Checkpoint not found' },
+        { status: 404 }
+      );
+    }
+
+    fs.unlinkSync(checkpointFile);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Checkpoint deleted successfully' 
+    });
+
+  } catch (error) {
+    console.error('Error deleting checkpoint:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete checkpoint' },
+      { status: 500 }
+    );
+  }
+}

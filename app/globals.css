@@ -39,6 +39,92 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border-color: #3d3d3e;
 }
 
+/* Chat Markdown Styling */
+.chat-prose {
+  @apply text-sm leading-relaxed;
+}
+
+.chat-prose p {
+  @apply mb-2 last:mb-0;
+}
+
+.chat-prose strong {
+  @apply font-semibold text-gray-900;
+}
+
+.chat-prose em {
+  @apply italic;
+}
+
+.chat-prose code {
+  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono;
+}
+
+.chat-prose pre {
+  @apply bg-gray-100 p-3 rounded-lg overflow-x-auto mb-3;
+}
+
+.chat-prose pre code {
+  @apply bg-transparent p-0;
+}
+
+.chat-prose ul {
+  @apply list-disc list-inside mb-2 space-y-1;
+}
+
+.chat-prose ol {
+  @apply list-decimal list-inside mb-2 space-y-1;
+}
+
+.chat-prose li {
+  @apply text-gray-700;
+}
+
+.chat-prose blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-3;
+}
+
+.chat-prose h1, .chat-prose h2, .chat-prose h3, .chat-prose h4, .chat-prose h5, .chat-prose h6 {
+  @apply font-semibold text-gray-900 mb-2;
+}
+
+.chat-prose h1 {
+  @apply text-lg;
+}
+
+.chat-prose h2 {
+  @apply text-base;
+}
+
+.chat-prose h3 {
+  @apply text-sm;
+}
+
+/* Dark mode chat markdown */
+.dark .chat-prose strong {
+  @apply text-gray-100;
+}
+
+.dark .chat-prose code {
+  @apply bg-gray-800 text-gray-200;
+}
+
+.dark .chat-prose pre {
+  @apply bg-gray-800;
+}
+
+.dark .chat-prose li {
+  @apply text-gray-300;
+}
+
+.dark .chat-prose blockquote {
+  @apply border-gray-600 text-gray-400;
+}
+
+.dark .chat-prose h1, .dark .chat-prose h2, .dark .chat-prose h3, .dark .chat-prose h4, .dark .chat-prose h5, .dark .chat-prose h6 {
+  @apply text-gray-100;
+}
+
 :root {
   --fg0: #000000;
   --fg1: #3b3b3b;
@@ -281,7 +367,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
   }
 }
-
 
 .scrollbar_fix {
   overflow-y: auto !important;

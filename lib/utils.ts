@@ -1,8 +1,6 @@
 import { cache } from 'react';
 import { type ClassValue, clsx } from 'clsx';
-import { Room } from 'livekit-client';
 import { twMerge } from 'tailwind-merge';
-import type { ReceivedChatMessage, TextStreamData } from '@livekit/components-react';
 import { APP_CONFIG_DEFAULTS } from '@/app-config';
 import type { AppConfig, SandboxConfig } from './types';
 
@@ -16,22 +14,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function transcriptionToChatMessage(
-  textStream: TextStreamData,
-  room: Room
-): ReceivedChatMessage {
-  return {
-    id: textStream.streamInfo.id,
-    timestamp: textStream.streamInfo.timestamp,
-    message: textStream.text,
-    from:
-      textStream.participantInfo.identity === room.localParticipant.identity
-        ? room.localParticipant
-        : Array.from(room.remoteParticipants.values()).find(
-            (p) => p.identity === textStream.participantInfo.identity
-          ),
-  };
-}
 
 export function getOrigin(headers: Headers): string {
   const host = headers.get('host');
