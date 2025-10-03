@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DocumentTemplatesEditor } from '@/components/admin/document-templates-editor';
+import { Condition } from '@/components/admin/condition-builder';
 
 interface DocumentTemplate {
   id: string;
@@ -18,13 +19,13 @@ interface DocumentTemplate {
     title: string;
     content: string;
     description: string | null;
-    condition?: string;
+    condition?: Condition | string;
     paragraphs: Array<{
       id: string;
       title: string;
       content: string;
       description: string | null;
-      condition?: string;
+      condition?: Condition | string;
     }>;
   }>;
 }
