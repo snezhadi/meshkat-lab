@@ -74,12 +74,15 @@ export function DocumentTemplatesEditor({
         if (result.checkpoint) {
           toast.info(`Checkpoint created: ${result.checkpoint}`);
         }
+        return result; // Return the result for template creation
       } else {
         toast.error(result.error || 'Failed to save document templates');
+        return result; // Return the result even on failure
       }
     } catch (error) {
       console.error('Error saving document templates:', error);
       toast.error('An unexpected error occurred while saving');
+      return { success: false, error: 'An unexpected error occurred while saving' };
     } finally {
       setSaving(false);
     }
@@ -89,7 +92,7 @@ export function DocumentTemplatesEditor({
     handleSave(true);
   };
 
-  const handleCreateNewTemplate = () => {
+  const handleCreateNewTemplate = async () => {
     const newTemplateId = `new_template_${Date.now()}`;
     const newTemplate: DocumentTemplate = {
       id: newTemplateId,
@@ -109,11 +112,23 @@ export function DocumentTemplatesEditor({
     setTemplates(updatedTemplates);
     setHasUnsavedChanges(true);
     
-    // Save the template first, then redirect to the dedicated editor
-    handleSave(false).then(() => {
-      // Navigate to the dedicated template editor page
-      window.location.href = `/admin/document-templates/edit/${newTemplateId}`;
-    });
+    try {
+      // Save the template first
+      const saveResult = await handleSave(false);
+      
+      if (saveResult.success) {
+        // Add a small delay to ensure database write is complete
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Navigate to the dedicated template editor page using Next.js router
+        window.location.href = `/admin/document-templates/edit/${newTemplateId}`;
+      } else {
+        toast.error('Failed to create new template. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating new template:', error);
+      toast.error('Failed to create new template. Please try again.');
+    }
   };
 
   const handleDeactivateTemplate = (templateId: string) => {

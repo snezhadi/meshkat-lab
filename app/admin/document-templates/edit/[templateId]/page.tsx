@@ -84,7 +84,7 @@ export default function TemplateEditorPage() {
   };
 
   useEffect(() => {
-    async function fetchTemplate() {
+    async function fetchTemplate(retryCount = 0) {
       try {
         setLoading(true);
         const response = await fetch('/api/admin/document-templates');
@@ -101,11 +101,19 @@ export default function TemplateEditorPage() {
         const foundTemplate = templates.find((t: DocumentTemplate) => t.id === templateId);
 
         if (!foundTemplate) {
-          throw new Error(`Template not found: ${templateId}`);
+          // If this is a new template (starts with 'new_template_') and we haven't retried yet, wait and retry
+          const templateIdStr = Array.isArray(templateId) ? templateId[0] : templateId;
+          if (templateIdStr && templateIdStr.startsWith('new_template_') && retryCount < 3) {
+            console.log(`Template not found, retrying... (attempt ${retryCount + 1}/3)`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            return fetchTemplate(retryCount + 1);
+          }
+          throw new Error(`Template not found: ${templateIdStr}`);
         }
 
         setTemplate(foundTemplate);
         setAllTemplates(templates);
+        setError(null); // Clear any previous errors
       } catch (err) {
         console.error('Error in fetchTemplate:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
