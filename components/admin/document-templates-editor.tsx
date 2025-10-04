@@ -109,25 +109,44 @@ export function DocumentTemplatesEditor({
     };
 
     const updatedTemplates = [...templates, newTemplate];
-    setTemplates(updatedTemplates);
-    setHasUnsavedChanges(true);
     
     try {
-      // Save the template first
-      const saveResult = await handleSave(false);
+      // Save directly to API without going through the handleSave function
+      const response = await fetch('/api/admin/document-templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentTemplates: updatedTemplates,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save new template');
+      }
+
+      const result = await response.json();
       
-      if (saveResult.success) {
-        // Add a longer delay to ensure database write is complete and file system is consistent
-        await new Promise(resolve => setTimeout(resolve, 1500));
+      if (result.success) {
+        console.log(`New template created successfully: ${newTemplateId}`);
+        toast.success('New template created successfully!');
         
-        // Navigate to the dedicated template editor page using Next.js router
+        // Update local state
+        setTemplates(updatedTemplates);
+        setHasUnsavedChanges(false);
+        
+        // Wait a bit longer and then redirect
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Navigate to the dedicated template editor page
         window.location.href = `/admin/document-templates/edit/${newTemplateId}`;
       } else {
-        toast.error('Failed to create new template. Please try again.');
+        throw new Error(result.error || 'Failed to save new template');
       }
     } catch (error) {
       console.error('Error creating new template:', error);
-      toast.error('Failed to create new template. Please try again.');
+      toast.error(`Failed to create new template: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

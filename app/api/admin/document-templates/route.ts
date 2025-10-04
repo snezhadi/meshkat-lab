@@ -49,6 +49,12 @@ export async function GET() {
   try {
     initializeDefaultData();
     const documentTemplates = JSON.parse(fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8'));
+    
+    console.log(`GET request - Returning ${documentTemplates.length} templates`);
+    if (documentTemplates.length > 0) {
+      console.log(`Template IDs in file: ${documentTemplates.map(t => t.id).join(', ')}`);
+    }
+    
     return NextResponse.json({ success: true, data: documentTemplates });
   } catch (error) {
     console.error('Error reading document templates:', error);
@@ -63,6 +69,11 @@ export async function POST(request: NextRequest) {
   try {
     initializeDefaultData();
     const { documentTemplates, createCheckpoint } = await request.json();
+
+    console.log(`POST request received - Templates count: ${documentTemplates?.length || 0}`);
+    if (documentTemplates && documentTemplates.length > 0) {
+      console.log(`Template IDs: ${documentTemplates.map(t => t.id).join(', ')}`);
+    }
 
     if (!documentTemplates) {
       return NextResponse.json(
