@@ -117,8 +117,8 @@ export function DocumentTemplatesEditor({
       const saveResult = await handleSave(false);
       
       if (saveResult.success) {
-        // Add a small delay to ensure database write is complete
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Add a longer delay to ensure database write is complete and file system is consistent
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Navigate to the dedicated template editor page using Next.js router
         window.location.href = `/admin/document-templates/edit/${newTemplateId}`;

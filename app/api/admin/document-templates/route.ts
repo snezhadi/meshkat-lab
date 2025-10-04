@@ -86,7 +86,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Write the new document templates
-    fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, JSON.stringify(documentTemplates, null, 2), 'utf8');
+    const jsonData = JSON.stringify(documentTemplates, null, 2);
+    fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
+    
+    // Verify the write was successful by reading it back
+    const verifyData = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
+    const parsedData = JSON.parse(verifyData);
+    
+    console.log(`Document templates saved successfully. Count: ${parsedData.length}`);
+    if (documentTemplates.length > 0) {
+      console.log(`Latest template ID: ${documentTemplates[documentTemplates.length - 1].id}`);
+    }
 
     return NextResponse.json({
       success: true,
@@ -94,6 +104,7 @@ export async function POST(request: NextRequest) {
       checkpoint: createCheckpoint
         ? `document-templates-checkpoint-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
         : null,
+      templateCount: documentTemplates.length,
     });
   } catch (error) {
     console.error('Error saving document templates:', error);

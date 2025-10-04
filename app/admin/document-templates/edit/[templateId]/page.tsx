@@ -103,9 +103,11 @@ export default function TemplateEditorPage() {
         if (!foundTemplate) {
           // If this is a new template (starts with 'new_template_') and we haven't retried yet, wait and retry
           const templateIdStr = Array.isArray(templateId) ? templateId[0] : templateId;
-          if (templateIdStr && templateIdStr.startsWith('new_template_') && retryCount < 3) {
-            console.log(`Template not found, retrying... (attempt ${retryCount + 1}/3)`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+          if (templateIdStr && templateIdStr.startsWith('new_template_') && retryCount < 5) {
+            console.log(`Template not found, retrying... (attempt ${retryCount + 1}/5)`);
+            // Increase delay with each retry
+            const delay = (retryCount + 1) * 1000; // 1s, 2s, 3s, 4s, 5s
+            await new Promise(resolve => setTimeout(resolve, delay));
             return fetchTemplate(retryCount + 1);
           }
           throw new Error(`Template not found: ${templateIdStr}`);
