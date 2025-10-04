@@ -302,20 +302,9 @@ export default function TemplateEditorPage() {
       {/* Header with Save/Cancel */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
-          <div className="flex-1">
+          <div>
             <h2 className="text-lg font-semibold text-gray-900">Template Editor</h2>
-            <div className="mt-3 space-y-2">
-              <Label htmlFor="template-title" className="text-sm font-medium text-gray-700">
-                Template Name
-              </Label>
-              <Input
-                id="template-title"
-                value={template.title}
-                onChange={(e) => handleTemplateTitleChange(e.target.value)}
-                className="max-w-md"
-                placeholder="Enter template name..."
-              />
-            </div>
+            <p className="mt-1 text-sm text-gray-600">Editing: {template.title}</p>
           </div>
           <div className="flex items-center space-x-3">
             <Button
@@ -372,6 +361,39 @@ export default function TemplateEditorPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Template Name Editor */}
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Template Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="template-title" className="text-sm font-medium text-gray-700">
+                Template Name
+              </Label>
+              <Input
+                id="template-title"
+                value={template.title}
+                onChange={(e) => handleTemplateTitleChange(e.target.value)}
+                className="w-full"
+                placeholder="Enter template name..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="template-description" className="text-sm font-medium text-gray-700">
+                Description
+              </Label>
+              <Input
+                id="template-description"
+                value={template.description}
+                onChange={(e) => handleTemplateChange({ ...template, description: e.target.value })}
+                className="w-full"
+                placeholder="Enter template description..."
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Template Editor */}
