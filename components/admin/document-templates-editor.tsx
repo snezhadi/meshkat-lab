@@ -107,9 +107,13 @@ export function DocumentTemplatesEditor({
 
     const updatedTemplates = [...templates, newTemplate];
     setTemplates(updatedTemplates);
-    setSelectedTemplateId(newTemplateId);
-    setShowTemplateList(false);
     setHasUnsavedChanges(true);
+    
+    // Save the template first, then redirect to the dedicated editor
+    handleSave(false).then(() => {
+      // Navigate to the dedicated template editor page
+      window.location.href = `/admin/document-templates/edit/${newTemplateId}`;
+    });
   };
 
   const handleDeactivateTemplate = (templateId: string) => {
