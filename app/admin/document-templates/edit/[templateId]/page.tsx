@@ -13,6 +13,8 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { usePermissions } from '@/hooks/usePermissions';
 
 interface DocumentTemplate {
@@ -189,6 +191,18 @@ export default function TemplateEditorPage() {
     setHasUnsavedChanges(true);
   };
 
+  const handleTemplateTitleChange = (newTitle: string) => {
+    if (!template) return;
+    
+    const updatedTemplate = {
+      ...template,
+      title: newTitle
+    };
+    
+    setTemplate(updatedTemplate);
+    setHasUnsavedChanges(true);
+  };
+
   const handleAddClause = () => {
     if (!template) return;
     
@@ -288,9 +302,20 @@ export default function TemplateEditorPage() {
       {/* Header with Save/Cancel */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
-          <div>
+          <div className="flex-1">
             <h2 className="text-lg font-semibold text-gray-900">Template Editor</h2>
-            <p className="mt-1 text-sm text-gray-600">Editing: {template.title}</p>
+            <div className="mt-3 space-y-2">
+              <Label htmlFor="template-title" className="text-sm font-medium text-gray-700">
+                Template Name
+              </Label>
+              <Input
+                id="template-title"
+                value={template.title}
+                onChange={(e) => handleTemplateTitleChange(e.target.value)}
+                className="max-w-md"
+                placeholder="Enter template name..."
+              />
+            </div>
           </div>
           <div className="flex items-center space-x-3">
             <Button
@@ -304,7 +329,7 @@ export default function TemplateEditorPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => router.push('/admin/document-templates')}
+              onClick={() => handleNavigation('/admin/document-templates')}
               className="flex items-center space-x-2"
             >
               <span>←</span>
