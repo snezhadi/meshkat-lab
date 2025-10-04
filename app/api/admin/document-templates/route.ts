@@ -98,15 +98,40 @@ export async function POST(request: NextRequest) {
 
     // Write the new document templates
     const jsonData = JSON.stringify(documentTemplates, null, 2);
-    fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
     
-    // Verify the write was successful by reading it back
-    const verifyData = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
-    const parsedData = JSON.parse(verifyData);
-    
-    console.log(`Document templates saved successfully. Count: ${parsedData.length}`);
-    if (documentTemplates.length > 0) {
-      console.log(`Latest template ID: ${documentTemplates[documentTemplates.length - 1].id}`);
+    try {
+      // Check if data directory exists
+      if (!fs.existsSync(DATA_DIR)) {
+        console.error(`Data directory does not exist: ${DATA_DIR}`);
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        console.log(`Created data directory: ${DATA_DIR}`);
+      }
+      
+      // Check write permissions
+      fs.accessSync(DATA_DIR, fs.constants.W_OK);
+      console.log(`Data directory is writable: ${DATA_DIR}`);
+      
+      // Write the file
+      fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
+      console.log(`File written successfully: ${DOCUMENT_TEMPLATES_FILE}`);
+      
+      // Verify the write was successful by reading it back
+      const verifyData = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
+      const parsedData = JSON.parse(verifyData);
+      
+      console.log(`Document templates saved successfully. Count: ${parsedData.length}`);
+      if (documentTemplates.length > 0) {
+        console.log(`Latest template ID: ${documentTemplates[documentTemplates.length - 1].id}`);
+      }
+    } catch (writeError) {
+      console.error('Error writing document templates:', writeError);
+      console.error('Error details:', {
+        code: writeError.code,
+        errno: writeError.errno,
+        syscall: writeError.syscall,
+        path: writeError.path
+      });
+      throw writeError;
     }
 
     return NextResponse.json({
