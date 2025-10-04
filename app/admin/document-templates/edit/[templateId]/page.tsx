@@ -199,6 +199,17 @@ export default function TemplateEditorPage() {
     setTemplate(updatedTemplate);
     setHasUnsavedChanges(true);
     toast.success('New clause added!');
+    
+    // Scroll to the newly added clause after a short delay to allow DOM update
+    setTimeout(() => {
+      const newClauseElement = document.getElementById(`clause-${newClause.id}`);
+      if (newClauseElement) {
+        newClauseElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 100);
   };
 
   if (loading) {
@@ -289,13 +300,13 @@ export default function TemplateEditorPage() {
               <span>←</span>
               <span>Back to Templates</span>
             </Button>
-            <Button
-              onClick={handleAddClause}
-              className="flex items-center space-x-2"
-            >
-              <span>➕</span>
-              <span>Add Clause</span>
-            </Button>
+                   <Button
+                     onClick={handleAddClause}
+                     className="flex items-center space-x-2"
+                   >
+                     <span className="flex items-center justify-center w-5 h-5 text-white text-base font-bold">+</span>
+                     <span>Add Clause</span>
+                   </Button>
             <Button
               onClick={() => handleSave()}
               disabled={saving || !hasUnsavedChanges}

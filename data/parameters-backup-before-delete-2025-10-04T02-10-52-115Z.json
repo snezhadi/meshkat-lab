@@ -298,9 +298,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "pure-fixed-term"
-      ]
+      "values": ["pure-fixed-term"]
     },
     "display": {
       "group": "Employment Term",
@@ -325,9 +323,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "fixed-term-with-notice"
-      ]
+      "values": ["fixed-term-with-notice"]
     },
     "display": {
       "group": "Employment Term",
@@ -352,9 +348,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "initial-fixed-then-notice"
-      ]
+      "values": ["initial-fixed-then-notice"]
     },
     "display": {
       "group": "Employment Term",
@@ -495,10 +489,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "true",
-      "false"
-    ],
+    "options": ["true", "false"],
     "display": {
       "group": "Employment Term",
       "subgroup": "Term",
@@ -562,11 +553,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "onsite",
-      "remote",
-      "hybrid"
-    ],
+    "options": ["onsite", "remote", "hybrid"],
     "display": {
       "group": "Place and Time",
       "subgroup": "Workplace",
@@ -589,9 +576,7 @@
       "type": "in",
       "parameter": "employment_place_work",
       "value": "",
-      "values": [
-        "hybrid"
-      ]
+      "values": ["hybrid"]
     },
     "display": {
       "group": "Place and Time",
@@ -615,9 +600,7 @@
       "type": "in",
       "parameter": "employment_place_work",
       "value": "",
-      "values": [
-        "onsite"
-      ]
+      "values": ["onsite"]
     },
     "display": {
       "group": "Place and Time",
@@ -637,17 +620,12 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "true",
-      "false"
-    ],
+    "options": ["true", "false"],
     "condition": {
       "type": "in",
       "parameter": "employment_place_work",
       "value": "",
-      "values": [
-        "remote"
-      ]
+      "values": ["remote"]
     },
     "display": {
       "group": "Place and Time",
@@ -671,9 +649,7 @@
       "type": "in",
       "parameter": "employment_place_work",
       "value": "",
-      "values": [
-        "hybrid"
-      ]
+      "values": ["hybrid"]
     },
     "display": {
       "group": "Place and Time",
@@ -697,9 +673,7 @@
       "type": "in",
       "parameter": "employment_place_work",
       "value": "",
-      "values": [
-        "hybrid"
-      ]
+      "values": ["hybrid"]
     },
     "display": {
       "group": "Place and Time",
@@ -719,17 +693,12 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "true",
-      "false"
-    ],
+    "options": ["true", "false"],
     "condition": {
       "type": "in",
       "parameter": "employment_place_work",
       "value": "",
-      "values": [
-        "hybrid"
-      ]
+      "values": ["hybrid"]
     },
     "display": {
       "group": "Place and Time",
@@ -749,10 +718,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "false",
-      "true"
-    ],
+    "options": ["false", "true"],
     "display": {
       "group": "Place and Time",
       "subgroup": "Place",
@@ -771,12 +737,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "annual",
-      "monthly",
-      "daily",
-      "hourly"
-    ],
+    "options": ["annual", "monthly", "daily", "hourly"],
     "display": {
       "group": "Base Salary",
       "subgroup": "Salary",
@@ -799,9 +760,7 @@
       "type": "in",
       "parameter": "employment_salary_amount_type",
       "value": "",
-      "values": [
-        "true"
-      ]
+      "values": ["true"]
     },
     "display": {
       "group": "Salary and Bonus",
@@ -825,9 +784,7 @@
       "type": "in",
       "parameter": "employment_salary_amount_type",
       "value": "",
-      "values": [
-        "true"
-      ]
+      "values": ["true"]
     },
     "display": {
       "group": "Salary and Bonus",
@@ -851,9 +808,7 @@
       "type": "in",
       "parameter": "employment_salary_amount_type",
       "value": "",
-      "values": [
-        "true"
-      ]
+      "values": ["true"]
     },
     "display": {
       "group": "Salary and Bonus",
@@ -877,9 +832,7 @@
       "type": "in",
       "parameter": "employment_salary_amount_type",
       "value": "",
-      "values": [
-        "true"
-      ]
+      "values": ["true"]
     },
     "display": {
       "group": "Salary and Bonus",
@@ -899,10 +852,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "net",
-      "gross"
-    ],
+    "options": ["net", "gross"],
     "display": {
       "group": "Salary and Bonus",
       "subgroup": "Salary",
@@ -921,10 +871,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "false",
-      "true"
-    ],
+    "options": ["false", "true"],
     "display": {
       "group": "Salary and Bonus",
       "subgroup": "Salary",
@@ -961,10 +908,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "true",
-      "false"
-    ],
+    "options": ["true", "false"],
     "display": {
       "group": "Salary and Bonus",
       "subgroup": "Salary",
@@ -1390,10 +1334,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "flat",
-      "tiered"
-    ],
+    "options": ["flat", "tiered"],
     "condition": {
       "type": "boolean",
       "parameter": "employment_incentive_compensation"
@@ -1428,9 +1369,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1463,9 +1402,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1498,9 +1435,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1533,9 +1468,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1569,9 +1502,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1604,9 +1535,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1640,9 +1569,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -1676,9 +1603,7 @@
           "type": "in",
           "parameter": "employment_sales_commission_type",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -2936,10 +2861,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "fixed",
-      "flexible"
-    ],
+    "options": ["fixed", "flexible"],
     "display": {
       "group": "Place and Time",
       "subgroup": "Time",
@@ -2962,9 +2884,7 @@
       "type": "in",
       "parameter": "employment_work_hours",
       "value": "",
-      "values": [
-        "fixed"
-      ]
+      "values": ["fixed"]
     },
     "display": {
       "group": "Place and Time",
@@ -2984,22 +2904,12 @@
     "metadata": {
       "priority": 2
     },
-    "options": [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
-    ],
+    "options": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
     "condition": {
       "type": "in",
       "parameter": "employment_work_hours",
       "value": "",
-      "values": [
-        "fixed"
-      ]
+      "values": ["fixed"]
     },
     "display": {
       "group": "Place and Time",
@@ -3019,22 +2929,12 @@
     "metadata": {
       "priority": 2
     },
-    "options": [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
-    ],
+    "options": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
     "condition": {
       "type": "in",
       "parameter": "employment_work_hours",
       "value": "",
-      "values": [
-        "fixed"
-      ]
+      "values": ["fixed"]
     },
     "display": {
       "group": "Place and Time",
@@ -3058,9 +2958,7 @@
       "type": "in",
       "parameter": "employment_work_hours",
       "value": "",
-      "values": [
-        "fixed"
-      ]
+      "values": ["fixed"]
     },
     "display": {
       "group": "Place and Time",
@@ -3084,9 +2982,7 @@
       "type": "in",
       "parameter": "employment_work_hours",
       "value": "",
-      "values": [
-        "flexible"
-      ]
+      "values": ["flexible"]
     },
     "display": {
       "group": "Place and Time",
@@ -3110,9 +3006,7 @@
       "type": "in",
       "parameter": "employment_work_hours",
       "value": "",
-      "values": [
-        "flexible"
-      ]
+      "values": ["flexible"]
     },
     "display": {
       "group": "Place and Time",
@@ -3168,10 +3062,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "unlimited",
-      "limited"
-    ],
+    "options": ["unlimited", "limited"],
     "condition": {
       "type": "and",
       "conditions": [
@@ -3183,9 +3074,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -3207,10 +3096,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "excluded",
-      "included"
-    ],
+    "options": ["excluded", "included"],
     "condition": {
       "type": "boolean",
       "parameter": "employment_leave_clause"
@@ -3266,9 +3152,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -3301,9 +3185,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "limited"
-          ]
+          "values": ["limited"]
         },
         {
           "type": "boolean",
@@ -3340,9 +3222,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "limited"
-          ]
+          "values": ["limited"]
         },
         {
           "type": "boolean",
@@ -3379,9 +3259,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "limited"
-          ]
+          "values": ["limited"]
         },
         {
           "type": "boolean",
@@ -3418,9 +3296,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -3453,9 +3329,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -3653,9 +3527,7 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -3688,17 +3560,13 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "limited"
-          ]
+          "values": ["limited"]
         },
         {
           "type": "in",
           "parameter": "employment_untaken_leave_transfer",
           "value": "",
-          "values": [
-            "carryover-limited-time-bar"
-          ]
+          "values": ["carryover-limited-time-bar"]
         }
       ]
     },
@@ -3731,17 +3599,13 @@
           "type": "in",
           "parameter": "employment_leave_days",
           "value": "",
-          "values": [
-            "limited"
-          ]
+          "values": ["limited"]
         },
         {
           "type": "in",
           "parameter": "employment_untaken_leave_transfer",
           "value": "",
-          "values": [
-            "true"
-          ]
+          "values": ["true"]
         }
       ]
     },
@@ -3785,12 +3649,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "no-payment",
-      "pay-accrued",
-      "pay-request",
-      "payment-termination"
-    ],
+    "options": ["no-payment", "pay-accrued", "pay-request", "payment-termination"],
     "condition": {
       "type": "boolean",
       "parameter": "employment_leave_clause"
@@ -3919,11 +3778,7 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "at-will",
-      "fixed-notice",
-      "scaling-notice"
-    ],
+    "options": ["at-will", "fixed-notice", "scaling-notice"],
     "display": {
       "group": "Termination",
       "subgroup": "Termination Notice",
@@ -3946,9 +3801,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "indefinite"
-      ]
+      "values": ["indefinite"]
     },
     "display": {
       "group": "Termination",
@@ -3972,9 +3825,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "indefinite"
-      ]
+      "values": ["indefinite"]
     },
     "display": {
       "group": "Termination",
@@ -3998,9 +3849,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "indefinite"
-      ]
+      "values": ["indefinite"]
     },
     "display": {
       "group": "Termination",
@@ -4024,9 +3873,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "indefinite"
-      ]
+      "values": ["indefinite"]
     },
     "display": {
       "group": "Termination",
@@ -4050,9 +3897,7 @@
       "type": "in",
       "parameter": "employment_appointment_term_type",
       "value": "",
-      "values": [
-        "indefinite"
-      ]
+      "values": ["indefinite"]
     },
     "display": {
       "group": "Termination",
@@ -5341,15 +5186,34 @@
     "metadata": {
       "priority": 1
     },
-    "options": [
-      "both-parties",
-      "employer-discretion"
-    ],
+    "options": ["both-parties", "employer-discretion"],
     "display": {
       "group": "Miscellaneous",
       "subgroup": "Change of Terms",
       "label": "Change to the Employment Agreement"
     },
+    "defaults": {
+      "global_default": null,
+      "jurisdictions": []
+    }
+  },
+  {
+    "id": "test_id",
+    "name": "Test",
+    "description": "",
+    "type": "duration",
+    "metadata": {
+      "llm_instructions": "",
+      "priority": 0,
+      "format": ""
+    },
+    "condition": null,
+    "display": {
+      "group": "",
+      "subgroup": "",
+      "label": ""
+    },
+    "options": [],
     "defaults": {
       "global_default": null,
       "jurisdictions": []

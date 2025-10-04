@@ -175,7 +175,9 @@
               "type": "in",
               "parameter": "employment_appointment_term_type",
               "value": "",
-              "values": ["indefinite"]
+              "values": [
+                "indefinite"
+              ]
             }
           },
           {
@@ -187,7 +189,9 @@
               "type": "in",
               "parameter": "employment_appointment_term_type",
               "value": "",
-              "values": ["pure-fixed-term"]
+              "values": [
+                "pure-fixed-term"
+              ]
             }
           },
           {
@@ -199,7 +203,9 @@
               "type": "in",
               "parameter": "employment_appointment_term_type",
               "value": "",
-              "values": ["fixed-term-with-notice"]
+              "values": [
+                "fixed-term-with-notice"
+              ]
             }
           },
           {
@@ -211,7 +217,9 @@
               "type": "in",
               "parameter": "employment_appointment_term_type",
               "value": "",
-              "values": ["initial-fixed-then-notice"]
+              "values": [
+                "initial-fixed-then-notice"
+              ]
             }
           },
           {
@@ -295,7 +303,9 @@
               "type": "in",
               "parameter": "employment_place_work",
               "value": "",
-              "values": ["onsite"]
+              "values": [
+                "onsite"
+              ]
             }
           },
           {
@@ -307,7 +317,9 @@
               "type": "in",
               "parameter": "employment_place_work",
               "value": "",
-              "values": ["remote"]
+              "values": [
+                "remote"
+              ]
             }
           },
           {
@@ -319,7 +331,9 @@
               "type": "in",
               "parameter": "employment_place_work",
               "value": "",
-              "values": ["remote"]
+              "values": [
+                "remote"
+              ]
             }
           },
           {
@@ -331,7 +345,9 @@
               "type": "in",
               "parameter": "employment_place_work",
               "value": "",
-              "values": ["remote"]
+              "values": [
+                "remote"
+              ]
             }
           },
           {
@@ -346,7 +362,9 @@
                   "type": "in",
                   "parameter": "employment_place_work",
                   "value": "",
-                  "values": ["remote"]
+                  "values": [
+                    "remote"
+                  ]
                 },
                 {
                   "type": "boolean",
@@ -364,7 +382,9 @@
               "type": "in",
               "parameter": "employment_place_work",
               "value": "",
-              "values": ["hybrid"]
+              "values": [
+                "hybrid"
+              ]
             }
           },
           {
@@ -376,7 +396,9 @@
               "type": "in",
               "parameter": "employment_place_work",
               "value": "",
-              "values": ["hybrid"]
+              "values": [
+                "hybrid"
+              ]
             }
           },
           {
@@ -391,7 +413,9 @@
                   "type": "in",
                   "parameter": "employment_place_work",
                   "value": "",
-                  "values": ["hybrid"]
+                  "values": [
+                    "hybrid"
+                  ]
                 },
                 {
                   "type": "boolean",
@@ -459,7 +483,9 @@
               "type": "in",
               "parameter": "employment_salary_amount_type",
               "value": "",
-              "values": ["annual"]
+              "values": [
+                "annual"
+              ]
             }
           },
           {
@@ -471,7 +497,9 @@
               "type": "in",
               "parameter": "employment_salary_amount_type",
               "value": "",
-              "values": ["monthly"]
+              "values": [
+                "monthly"
+              ]
             }
           },
           {
@@ -483,7 +511,9 @@
               "type": "in",
               "parameter": "employment_salary_amount_type",
               "value": "",
-              "values": ["daily"]
+              "values": [
+                "daily"
+              ]
             }
           },
           {
@@ -495,7 +525,9 @@
               "type": "in",
               "parameter": "employment_salary_amount_type",
               "value": "",
-              "values": ["hourly"]
+              "values": [
+                "hourly"
+              ]
             }
           },
           {
@@ -507,7 +539,9 @@
               "type": "in",
               "parameter": "employment_salary_amount_basis",
               "value": "",
-              "values": ["gross"]
+              "values": [
+                "gross"
+              ]
             }
           },
           {
@@ -519,7 +553,9 @@
               "type": "in",
               "parameter": "employment_salary_amount_basis",
               "value": "",
-              "values": ["net"]
+              "values": [
+                "net"
+              ]
             }
           },
           {
@@ -675,7 +711,9 @@
                   "type": "in",
                   "parameter": "employment_sales_commission_type",
                   "value": "",
-                  "values": ["flat"]
+                  "values": [
+                    "flat"
+                  ]
                 }
               ]
             }
@@ -696,7 +734,9 @@
                   "type": "in",
                   "parameter": "employment_sales_commission_type",
                   "value": "",
-                  "values": ["tiered"]
+                  "values": [
+                    "tiered"
+                  ]
                 }
               ]
             }
@@ -1243,7 +1283,9 @@
               "type": "in",
               "parameter": "employment_work_hours",
               "value": "",
-              "values": ["fixed"]
+              "values": [
+                "fixed"
+              ]
             }
           },
           {
@@ -1255,7 +1297,9 @@
               "type": "in",
               "parameter": "employment_work_hours",
               "value": "",
-              "values": ["flexible"]
+              "values": [
+                "flexible"
+              ]
             }
           },
           {
@@ -1315,13 +1359,17 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_public_holidays_inclusion",
                   "value": "",
-                  "values": ["excluded"]
+                  "values": [
+                    "excluded"
+                  ]
                 }
               ]
             }
@@ -1342,13 +1390,17 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_public_holidays_inclusion",
                   "value": "",
-                  "values": ["included"]
+                  "values": [
+                    "included"
+                  ]
                 }
               ]
             }
@@ -1369,7 +1421,9 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "boolean",
@@ -1394,7 +1448,9 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 }
               ]
             }
@@ -1472,13 +1528,17 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_untaken_leave_transfer",
                   "value": "",
-                  "values": ["forfeit"]
+                  "values": [
+                    "forfeit"
+                  ]
                 }
               ]
             }
@@ -1499,13 +1559,17 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_untaken_leave_transfer",
                   "value": "",
-                  "values": ["carryover-limited"]
+                  "values": [
+                    "carryover-limited"
+                  ]
                 }
               ]
             }
@@ -1526,13 +1590,17 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_untaken_leave_transfer",
                   "value": "",
-                  "values": ["carryover-limited-time-bar"]
+                  "values": [
+                    "carryover-limited-time-bar"
+                  ]
                 }
               ]
             }
@@ -1553,13 +1621,17 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_untaken_leave_transfer",
                   "value": "",
-                  "values": ["carryover-unlimited"]
+                  "values": [
+                    "carryover-unlimited"
+                  ]
                 }
               ]
             }
@@ -1580,13 +1652,19 @@
                   "type": "in",
                   "parameter": "employment_leave_days",
                   "value": "",
-                  "values": ["limited"]
+                  "values": [
+                    "limited"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_untaken_leave_transfer",
                   "value": "",
-                  "values": ["forfeit’", "‘carryover-limited’", "‘carryover-limited-time-bar"]
+                  "values": [
+                    "forfeit’",
+                    "‘carryover-limited’",
+                    "‘carryover-limited-time-bar"
+                  ]
                 },
                 {
                   "type": "boolean",
@@ -1611,7 +1689,9 @@
                   "type": "in",
                   "parameter": "employment_untaken_leave_payment",
                   "value": "",
-                  "values": ["no-payment"]
+                  "values": [
+                    "no-payment"
+                  ]
                 }
               ]
             }
@@ -1642,7 +1722,9 @@
                   "type": "in",
                   "parameter": "employment_untaken_leave_payment",
                   "value": "",
-                  "values": ["pay-accrued"]
+                  "values": [
+                    "pay-accrued"
+                  ]
                 }
               ]
             }
@@ -1663,7 +1745,9 @@
                   "type": "in",
                   "parameter": "employment_untaken_leave_payment",
                   "value": "",
-                  "values": ["pay-request"]
+                  "values": [
+                    "pay-request"
+                  ]
                 }
               ]
             }
@@ -1684,7 +1768,9 @@
                   "type": "in",
                   "parameter": "employment_untaken_leave_payment",
                   "value": "",
-                  "values": ["payment-termination"]
+                  "values": [
+                    "payment-termination"
+                  ]
                 }
               ]
             }
@@ -1705,7 +1791,9 @@
                   "type": "in",
                   "parameter": "employment_untaken_leave_payment",
                   "value": "",
-                  "values": ["payment-termination"]
+                  "values": [
+                    "payment-termination"
+                  ]
                 }
               ]
             }
@@ -1836,7 +1924,10 @@
               "type": "in",
               "parameter": "employment_appointment_term_type",
               "value": "",
-              "values": ["pure-fixed-term’", "‘fixed-term-with-notice"]
+              "values": [
+                "pure-fixed-term’",
+                "‘fixed-term-with-notice"
+              ]
             }
           },
           {
@@ -1851,13 +1942,19 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["indefinite", "fixed-term-with-notice", "initial-fixed-then-notice"]
+                  "values": [
+                    "indefinite",
+                    "fixed-term-with-notice",
+                    "initial-fixed-then-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["at-will"]
+                  "values": [
+                    "at-will"
+                  ]
                 }
               ]
             }
@@ -1874,13 +1971,17 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["indefinite"]
+                  "values": [
+                    "indefinite"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["fixed-notice"]
+                  "values": [
+                    "fixed-notice"
+                  ]
                 }
               ]
             }
@@ -1897,13 +1998,17 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["fixed-term-with-notice"]
+                  "values": [
+                    "fixed-term-with-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["fixed-notice"]
+                  "values": [
+                    "fixed-notice"
+                  ]
                 }
               ]
             }
@@ -1920,13 +2025,17 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["initial-fixed-then-notice"]
+                  "values": [
+                    "initial-fixed-then-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["fixed-notice"]
+                  "values": [
+                    "fixed-notice"
+                  ]
                 }
               ]
             }
@@ -1943,13 +2052,17 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["indefinite"]
+                  "values": [
+                    "indefinite"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["scaling-notice"]
+                  "values": [
+                    "scaling-notice"
+                  ]
                 }
               ]
             }
@@ -1966,13 +2079,17 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["fixed-term-with-notice"]
+                  "values": [
+                    "fixed-term-with-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["scaling-notice"]
+                  "values": [
+                    "scaling-notice"
+                  ]
                 }
               ]
             }
@@ -1989,13 +2106,17 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["initial-fixed-then-notice"]
+                  "values": [
+                    "initial-fixed-then-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["scaling-notice"]
+                  "values": [
+                    "scaling-notice"
+                  ]
                 }
               ]
             }
@@ -2012,13 +2133,19 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["indefinite", "fixed-term-with-notice", "initial-fixed-then-notice"]
+                  "values": [
+                    "indefinite",
+                    "fixed-term-with-notice",
+                    "initial-fixed-then-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["scaling-notice"]
+                  "values": [
+                    "scaling-notice"
+                  ]
                 }
               ]
             }
@@ -2035,13 +2162,19 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["indefinite", "fixed-term-with-notice", "initial-fixed-then-notice"]
+                  "values": [
+                    "indefinite",
+                    "fixed-term-with-notice",
+                    "initial-fixed-then-notice"
+                  ]
                 },
                 {
                   "type": "in",
                   "parameter": "employment_termination_notice_type",
                   "value": "",
-                  "values": ["scaling-notice"]
+                  "values": [
+                    "scaling-notice"
+                  ]
                 }
               ]
             }
@@ -2068,7 +2201,11 @@
                   "type": "in",
                   "parameter": "employment_appointment_term_type",
                   "value": "",
-                  "values": ["indefinite", "fixed-term-with-notice", "initial-fixed-then-notice"]
+                  "values": [
+                    "indefinite",
+                    "fixed-term-with-notice",
+                    "initial-fixed-then-notice"
+                  ]
                 },
                 {
                   "type": "boolean",
@@ -3112,7 +3249,9 @@
               "type": "in",
               "parameter": "employment_change_terms",
               "value": "",
-              "values": ["both-parties"]
+              "values": [
+                "both-parties"
+              ]
             }
           },
           {
@@ -3124,7 +3263,9 @@
               "type": "in",
               "parameter": "employment_change_terms",
               "value": "",
-              "values": ["employer-discretion"]
+              "values": [
+                "employer-discretion"
+              ]
             }
           },
           {
@@ -3150,18 +3291,5 @@
         ]
       }
     ]
-  },
-  {
-    "id": "new_template_1759247821820",
-    "title": "New Document Template",
-    "version": "1.0",
-    "description": "A new document template. Click edit to customize.",
-    "active": true,
-    "introduction": {
-      "id": "new_template_1759247821820_introduction",
-      "title": "Introduction",
-      "content": "This is the introduction section of the new template."
-    },
-    "clauses": []
   }
 ]

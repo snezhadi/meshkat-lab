@@ -99,7 +99,7 @@ function SortableClause({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="rounded-lg border border-gray-200">
+    <div ref={setNodeRef} style={style} className="rounded-lg border border-gray-200" id={`clause-${clause.id}`}>
       <Collapsible open={isExpanded} onOpenChange={onToggle}>
         <CollapsibleTrigger asChild>
           <div className="flex cursor-pointer items-center justify-between rounded-t-lg border-b border-gray-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100">
@@ -242,7 +242,13 @@ function SortableParagraph({
             )}
           </div>
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="sm" onClick={onEdit} className="h-7 w-7 p-0">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onEdit} 
+              className="h-7 w-7 p-0"
+              title="Edit Paragraph"
+            >
               <Edit className="h-3 w-3" />
             </Button>
             <Button
@@ -250,6 +256,7 @@ function SortableParagraph({
               size="sm"
               onClick={onDelete}
               className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+              title="Delete Paragraph"
             >
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -452,6 +459,7 @@ export function DocumentTemplateAccordion({
 
     onTemplateChange(updatedTemplate);
   };
+
 
   return (
     <div className="space-y-4">

@@ -117,10 +117,33 @@ export default function DocumentPartEditPage() {
           foundPart = foundTemplate.introduction;
         } else if (partType === 'clause') {
           foundPart = foundTemplate.clauses.find((c: any) => c.id === partId);
+          // If clause not found in saved data, it might be a newly added unsaved clause
+          // Create a temporary clause object for editing
+          if (!foundPart) {
+            foundPart = {
+              id: partId as string,
+              title: 'New Clause',
+              content: 'Enter clause content here...',
+              description: null,
+              condition: undefined,
+              paragraphs: []
+            };
+          }
         } else if (partType === 'paragraph') {
           for (const clause of foundTemplate.clauses) {
             foundPart = clause.paragraphs.find((p: any) => p.id === partId);
             if (foundPart) break;
+          }
+          // If paragraph not found in saved data, it might be a newly added unsaved paragraph
+          // Create a temporary paragraph object for editing
+          if (!foundPart) {
+            foundPart = {
+              id: partId as string,
+              title: 'New Paragraph',
+              content: 'Enter paragraph content here...',
+              description: null,
+              condition: undefined
+            };
           }
         }
 
@@ -197,14 +220,36 @@ export default function DocumentPartEditPage() {
           if (partType === 'introduction') {
             updatedTemplate.introduction = part;
           } else if (partType === 'clause') {
-            updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
-              c.id === partId ? part : c
-            );
+            const existingClauseIndex = updatedTemplate.clauses.findIndex((c) => c.id === partId);
+            if (existingClauseIndex >= 0) {
+              // Update existing clause
+              updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
+                c.id === partId ? part : c
+              );
+            } else {
+              // Add new clause
+              updatedTemplate.clauses = [...updatedTemplate.clauses, part];
+            }
           } else if (partType === 'paragraph') {
-            updatedTemplate.clauses = updatedTemplate.clauses.map((clause) => ({
-              ...clause,
-              paragraphs: clause.paragraphs.map((p) => (p.id === partId ? part : p)),
-            }));
+            updatedTemplate.clauses = updatedTemplate.clauses.map((clause) => {
+              const existingParagraphIndex = clause.paragraphs.findIndex((p) => p.id === partId);
+              if (existingParagraphIndex >= 0) {
+                // Update existing paragraph
+                return {
+                  ...clause,
+                  paragraphs: clause.paragraphs.map((p) => (p.id === partId ? part : p)),
+                };
+              } else {
+                // Add new paragraph to the first clause (or create a new clause if none exist)
+                if (clause.id) {
+                  return {
+                    ...clause,
+                    paragraphs: [...clause.paragraphs, part],
+                  };
+                }
+                return clause;
+              }
+            });
           }
 
           return updatedTemplate;
@@ -411,10 +456,15 @@ export default function DocumentPartEditPage() {
       {/* Edit Form */}
       <div className="rounded-lg border border-gray-200 bg-white">
         <CardContent className="space-y-6 p-6">
-          {/* ID Field (Read-only) */}
+          {/* ID Field (Editable) */}
           <div className="space-y-2">
             <Label htmlFor="id">ID</Label>
-            <Input id="id" value={part.id} className="w-full" disabled />
+            <Input 
+              id="id" 
+              value={part.id} 
+              onChange={(e) => handleChange('id', e.target.value)}
+              className="w-full" 
+            />
           </div>
 
           {/* Title Field */}

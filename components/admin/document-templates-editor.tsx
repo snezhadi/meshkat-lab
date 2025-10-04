@@ -223,7 +223,7 @@ export function DocumentTemplatesEditor({
                       </div>
                       <div className="mt-1 flex items-center justify-between">
                         <p className="text-sm text-gray-600">
-                          Version: {template.version}, Last Updated:{' '}
+                          Last Updated:{' '}
                           {new Date().toLocaleDateString('en-US', {
                             month: '2-digit',
                             day: '2-digit',
