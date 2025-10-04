@@ -179,6 +179,28 @@ export default function TemplateEditorPage() {
     setHasUnsavedChanges(true);
   };
 
+  const handleAddClause = () => {
+    if (!template) return;
+    
+    const newClause = {
+      id: `clause_${Date.now()}`,
+      title: 'New Clause',
+      content: 'Enter clause content here...',
+      description: null,
+      condition: undefined,
+      paragraphs: []
+    };
+    
+    const updatedTemplate = {
+      ...template,
+      clauses: [...template.clauses, newClause]
+    };
+    
+    setTemplate(updatedTemplate);
+    setHasUnsavedChanges(true);
+    toast.success('New clause added!');
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
@@ -266,6 +288,13 @@ export default function TemplateEditorPage() {
             >
               <span>←</span>
               <span>Back to Templates</span>
+            </Button>
+            <Button
+              onClick={handleAddClause}
+              className="flex items-center space-x-2"
+            >
+              <span>➕</span>
+              <span>Add Clause</span>
             </Button>
             <Button
               onClick={() => handleSave()}

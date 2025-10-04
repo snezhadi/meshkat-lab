@@ -74,6 +74,7 @@ function SortableClause({
   onDelete,
   onEditParagraph,
   onDeleteParagraph,
+  onAddParagraph,
   onDragEnd,
 }: {
   clause: any;
@@ -84,6 +85,7 @@ function SortableClause({
   onDelete: () => void;
   onEditParagraph: (paragraph: any) => void;
   onDeleteParagraph: (paragraphId: string) => void;
+  onAddParagraph: (clauseId: string) => void;
   onDragEnd: (clauseId: string, event: DragEndEvent) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -131,9 +133,22 @@ function SortableClause({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
+                  onAddParagraph(clause.id);
+                }}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                title="Add Paragraph"
+              >
+                <span className="text-sm">➕</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
                   onEdit();
                 }}
                 className="h-8 w-8 p-0"
+                title="Edit Clause"
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -145,6 +160,7 @@ function SortableClause({
                   onDelete();
                 }}
                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                title="Delete Clause"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -412,6 +428,31 @@ export function DocumentTemplateAccordion({
     router.push(editUrl);
   };
 
+  const handleAddParagraph = (clauseId: string) => {
+    const newParagraph = {
+      id: `paragraph_${Date.now()}`,
+      title: 'New Paragraph',
+      content: 'Enter paragraph content here...',
+      description: null,
+      condition: undefined,
+    };
+
+    const updatedTemplate = {
+      ...template,
+      clauses: template.clauses.map((clause) => {
+        if (clause.id === clauseId) {
+          return {
+            ...clause,
+            paragraphs: [...clause.paragraphs, newParagraph],
+          };
+        }
+        return clause;
+      }),
+    };
+
+    onTemplateChange(updatedTemplate);
+  };
+
   return (
     <div className="space-y-4">
       {/* Introduction */}
@@ -487,6 +528,7 @@ export function DocumentTemplateAccordion({
                 onDelete={() => handleDeleteClause(clause.id)}
                 onEditParagraph={(paragraph) => handleEditPart(paragraph, 'paragraph')}
                 onDeleteParagraph={(paragraphId) => handleDeleteParagraph(clause.id, paragraphId)}
+                onAddParagraph={handleAddParagraph}
                 onDragEnd={handleParagraphDragEnd}
               />
             ))}
