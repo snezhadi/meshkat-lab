@@ -8,7 +8,7 @@
       "llm_instructions": "This date may be the same as the execution date (the date the contract is signed) but can also be set to a different, specified date—either earlier or later—depending on the parties’ intentions or upon fulfilment of certain conditions precedent.",
       "priority": 0,
       "format": "DD/MM/YYYY",
-      "llm_description": "The Employment Agreement Effective Date is the date from which the rights, obligations, and provisions of the Employment Agreement become legally binding and enforceable between the parties. It marks the commencement of the parties’ duties and responsibilities under the agreement. \n\nClearly defining the effective date helps avoid confusion about when contractual obligations begin, ensures proper contract lifecycle management, and reduces the risk of disputes regarding timing or enforceability.  "
+      "llm_description": "The Employment Agreement Effective Date is the date from which the rights, obligations, and provisions of the Employment Agreement become legally binding and enforceable between the parties. It marks the commencement of the parties’ duties and responsibilities under the agreement. \n\nClearly defining the effective date helps avoid confusion about when contractual obligations begin, ensures proper contract lifecycle management, and reduces the risk of disputes regarding timing or enforceability.  xx"
     },
     "display": {
       "group": "General Parameters",

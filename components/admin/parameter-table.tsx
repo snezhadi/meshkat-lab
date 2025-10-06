@@ -13,6 +13,7 @@ interface Parameter {
   type: string;
   metadata?: {
     llm_instructions?: string;
+    llm_description?: string;
     priority?: number;
     format?: string;
   };

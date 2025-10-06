@@ -27,6 +27,7 @@ interface Parameter {
   type: string;
   metadata?: {
     llm_instructions?: string;
+    llm_description?: string;
     priority?: number;
     format?: string;
   };
@@ -317,11 +318,14 @@ export default function CreateParameterPage() {
         return 'textarea';
       case 'number':
       case 'currency':
+      case 'percent':
         return 'numberbox';
       case 'duration':
         return 'durationbox';
       case 'date':
         return 'datepicker';
+      case 'time':
+        return 'timepicker';
       case 'enum':
         return 'dropdown';
       default:
@@ -364,6 +368,16 @@ export default function CreateParameterPage() {
             placeholder={placeholder}
           />
         );
+      case 'timepicker':
+        return (
+          <Input
+            id={id}
+            type="time"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value || null)}
+            placeholder={placeholder}
+          />
+        );
       case 'numberbox':
         return (
           <Input
@@ -384,7 +398,10 @@ export default function CreateParameterPage() {
                 onChange(null);
               }
             }}
-            placeholder={placeholder}
+            placeholder={paramType === 'percent' ? 'e.g., 25.5' : placeholder}
+            step={paramType === 'percent' ? '0.1' : undefined}
+            min={paramType === 'percent' ? '0' : undefined}
+            max={paramType === 'percent' ? '100' : undefined}
           />
         );
       case 'durationbox':

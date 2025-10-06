@@ -42,6 +42,9 @@ interface DocumentTemplate {
     id: string;
     title: string;
     content: string;
+    metadata?: {
+      llm_description?: string;
+    };
   };
   clauses: Array<{
     id: string;
@@ -49,12 +52,18 @@ interface DocumentTemplate {
     content: string;
     description: string | null;
     condition?: Condition | string;
+    metadata?: {
+      llm_description?: string;
+    };
     paragraphs: Array<{
       id: string;
       title: string;
       content: string;
       description: string | null;
       condition?: Condition | string;
+      metadata?: {
+        llm_description?: string;
+      };
     }>;
   }>;
 }

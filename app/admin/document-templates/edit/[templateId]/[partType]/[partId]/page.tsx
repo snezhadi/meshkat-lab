@@ -30,6 +30,9 @@ interface DocumentTemplate {
     id: string;
     title: string;
     content: string;
+    metadata?: {
+      llm_description?: string;
+    };
   };
   clauses: Array<{
     id: string;
@@ -37,12 +40,18 @@ interface DocumentTemplate {
     content: string;
     description: string | null;
     condition?: Condition | string;
+    metadata?: {
+      llm_description?: string;
+    };
     paragraphs: Array<{
       id: string;
       title: string;
       content: string;
       description: string | null;
       condition?: Condition | string;
+      metadata?: {
+        llm_description?: string;
+      };
     }>;
   }>;
 }
@@ -490,6 +499,31 @@ export default function DocumentPartEditPage() {
                   enableParameters={false}
                 />
               </div>
+            </div>
+          )}
+
+          {/* LLM Description Field (for clauses and paragraphs) */}
+          {(partType === 'clause' || partType === 'paragraph') && (
+            <div className="space-y-2">
+              <Label htmlFor="llm_description">LLM Description</Label>
+              <Textarea
+                id="llm_description"
+                value={part.metadata?.llm_description || ''}
+                onChange={(e) => {
+                  const updatedPart = {
+                    ...part,
+                    metadata: {
+                      ...part.metadata,
+                      llm_description: e.target.value
+                    }
+                  };
+                  setPart(updatedPart);
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full"
+                rows={12}
+                placeholder="Detailed description for AI processing..."
+              />
             </div>
           )}
 

@@ -29,6 +29,7 @@ interface Parameter {
   type: string;
   metadata?: {
     llm_instructions?: string;
+    llm_description?: string;
     priority?: number;
     format?: string;
   };
@@ -360,11 +361,14 @@ export default function ParameterEditPage() {
         return 'textarea';
       case 'number':
       case 'currency':
+      case 'percent':
         return 'numberbox';
       case 'duration':
         return 'durationbox';
       case 'date':
         return 'datepicker';
+      case 'time':
+        return 'timepicker';
       case 'enum':
         return 'dropdown';
       default:
@@ -409,6 +413,17 @@ export default function ParameterEditPage() {
           />
         );
 
+      case 'timepicker':
+        return (
+          <Input
+            id={id}
+            type="time"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value || null)}
+            placeholder={placeholder}
+          />
+        );
+
       case 'numberbox':
         return (
           <Input
@@ -429,7 +444,10 @@ export default function ParameterEditPage() {
                 onChange(null);
               }
             }}
-            placeholder={placeholder}
+            placeholder={paramType === 'percent' ? 'e.g., 25.5' : placeholder}
+            step={paramType === 'percent' ? '0.1' : undefined}
+            min={paramType === 'percent' ? '0' : undefined}
+            max={paramType === 'percent' ? '100' : undefined}
           />
         );
 
@@ -733,6 +751,20 @@ export default function ParameterEditPage() {
                     placeholder="e.g., MM/DD/YYYY"
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="llm_description" className="text-sm font-medium text-gray-700">
+                  LLM Description
+                </Label>
+                <Textarea
+                  id="llm_description"
+                  value={parameter.metadata?.llm_description || ''}
+                  onChange={(e) => handleChange('metadata.llm_description', e.target.value)}
+                  className="mt-1"
+                  rows={12}
+                  placeholder="Detailed description for AI processing..."
+                />
               </div>
 
               <div>

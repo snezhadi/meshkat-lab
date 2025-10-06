@@ -6,10 +6,10 @@ const path = require('path');
 // Path to the document templates file
 const DOCUMENT_TEMPLATES_FILE = path.join(__dirname, '..', 'data', 'document-templates.json');
 
-function addLlmDescriptionToObject(obj) {
+function addMetadataToObject(obj) {
   if (obj && typeof obj === 'object') {
-    // Add llm_description field in metadata if description exists
-    if (obj.description !== undefined) {
+    // Add metadata.llm_description if description exists
+    if (obj.description !== undefined && obj.description !== null && obj.description !== '') {
       // Initialize metadata object if it doesn't exist
       if (!obj.metadata) {
         obj.metadata = {};
@@ -26,7 +26,7 @@ function addLlmDescriptionToObject(obj) {
     // Recursively process nested objects and arrays
     for (const key in obj) {
       if (obj[key] && typeof obj[key] === 'object') {
-        addLlmDescriptionToObject(obj[key]);
+        addMetadataToObject(obj[key]);
       }
     }
   }
@@ -44,23 +44,30 @@ function processDocumentTemplates() {
     documentTemplates.forEach((template, templateIndex) => {
       console.log(`\n🔧 Processing template ${templateIndex + 1}: ${template.title || template.id}`);
       
+      // Process template-level description
+      if (template.description) {
+        console.log('  📝 Processing template-level description...');
+        addMetadataToObject(template);
+      }
+      
       // Process introduction
       if (template.introduction) {
         console.log('  📝 Processing introduction...');
-        addLlmDescriptionToObject(template.introduction);
+        addMetadataToObject(template.introduction);
       }
       
       // Process clauses
       if (template.clauses && Array.isArray(template.clauses)) {
         console.log(`  📋 Processing ${template.clauses.length} clauses...`);
         template.clauses.forEach((clause, clauseIndex) => {
-          addLlmDescriptionToObject(clause);
+          console.log(`    🔧 Processing clause ${clauseIndex + 1}: ${clause.title}`);
+          addMetadataToObject(clause);
           
           // Process paragraphs within clause
           if (clause.paragraphs && Array.isArray(clause.paragraphs)) {
-            console.log(`    📄 Processing ${clause.paragraphs.length} paragraphs in clause "${clause.title}"...`);
+            console.log(`      📄 Processing ${clause.paragraphs.length} paragraphs...`);
             clause.paragraphs.forEach((paragraph, paragraphIndex) => {
-              addLlmDescriptionToObject(paragraph);
+              addMetadataToObject(paragraph);
             });
           }
         });
@@ -72,11 +79,13 @@ function processDocumentTemplates() {
     const updatedContent = JSON.stringify(documentTemplates, null, 2);
     fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, updatedContent, 'utf8');
     
-    console.log('✅ Successfully added llm_description field to all relevant sections!');
+    console.log('✅ Successfully updated metadata structure!');
     console.log('\n📊 Summary:');
-    console.log('- Added llm_description to metadata in all introduction sections');
-    console.log('- Added llm_description to metadata in all clause sections');
-    console.log('- Added llm_description to metadata in all paragraph sections');
+    console.log('- Added metadata.llm_description to template-level descriptions');
+    console.log('- Added metadata.llm_description to all introduction sections with descriptions');
+    console.log('- Added metadata.llm_description to all clause sections with descriptions');
+    console.log('- Added metadata.llm_description to all paragraph sections with descriptions');
+    console.log('- Removed any old llm_description fields');
     console.log('- Each metadata.llm_description field contains the exact content of the description field');
     
   } catch (error) {
