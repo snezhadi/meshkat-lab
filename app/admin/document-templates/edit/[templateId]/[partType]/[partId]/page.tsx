@@ -125,10 +125,18 @@ export default function DocumentPartEditPage() {
         if (partType === 'introduction') {
           foundPart = foundTemplate.introduction;
         } else if (partType === 'clause') {
+          console.log(`🔍 Looking for clause with ID: ${partId}`);
+          console.log(`📋 Available clause IDs:`, foundTemplate.clauses.map(c => c.id));
+          console.log(`📋 Available clause titles:`, foundTemplate.clauses.map(c => c.title));
+          
           foundPart = foundTemplate.clauses.find((c: any) => c.id === partId);
-          // If clause not found in saved data, it might be a newly added unsaved clause
-          // Create a temporary clause object for editing
+          
           if (!foundPart) {
+            console.warn(`❌ Clause with ID ${partId} not found in template data`);
+            console.log(`🔍 This might be a race condition or data inconsistency`);
+            
+            // If clause not found in saved data, it might be a newly added unsaved clause
+            // Create a temporary clause object for editing
             foundPart = {
               id: partId as string,
               title: 'New Clause',
@@ -137,6 +145,9 @@ export default function DocumentPartEditPage() {
               condition: undefined,
               paragraphs: []
             };
+            console.log(`🆕 Created temporary clause for editing`);
+          } else {
+            console.log(`✅ Found clause: "${foundPart.title}" (ID: ${foundPart.id})`);
           }
         } else if (partType === 'paragraph') {
           for (const clause of foundTemplate.clauses) {
@@ -229,28 +240,35 @@ export default function DocumentPartEditPage() {
           if (partType === 'introduction') {
             updatedTemplate.introduction = part;
           } else if (partType === 'clause') {
+            console.log(`💾 Saving clause with ID: ${partId}`);
+            console.log(`💾 Clause title: "${part.title}"`);
+            console.log(`💾 Available clause IDs in template:`, updatedTemplate.clauses.map(c => c.id));
+            
             const existingClauseIndex = updatedTemplate.clauses.findIndex((c) => c.id === partId);
+            console.log(`💾 Existing clause index: ${existingClauseIndex}`);
+            
             if (existingClauseIndex >= 0) {
               // Update existing clause
+              console.log(`✅ Updating existing clause at index ${existingClauseIndex}`);
               updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
                 c.id === partId ? part : c
               );
             } else {
               // This should not happen for existing clauses - log error and update anyway
-              console.error(`Clause with ID ${partId} not found in template ${templateId}. This may indicate a data inconsistency.`);
+              console.error(`❌ Clause with ID ${partId} not found in template ${templateId}. This may indicate a data inconsistency.`);
               console.log('Available clause IDs:', updatedTemplate.clauses.map(c => c.id));
               console.log('Looking for partId:', partId);
               
               // Try to find by title as fallback (in case ID changed)
               const clauseByTitle = updatedTemplate.clauses.find((c) => c.title === part.title);
               if (clauseByTitle) {
-                console.log(`Found clause by title: ${clauseByTitle.title}, updating it instead`);
+                console.log(`🔄 Found clause by title: ${clauseByTitle.title}, updating it instead`);
                 updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
                   c.title === part.title ? part : c
                 );
               } else {
                 // Last resort: add as new clause but warn
-                console.warn(`Adding clause as new entry. This may create duplicates.`);
+                console.warn(`⚠️ Adding clause as new entry. This may create duplicates.`);
                 updatedTemplate.clauses = [...updatedTemplate.clauses, part];
               }
             }
