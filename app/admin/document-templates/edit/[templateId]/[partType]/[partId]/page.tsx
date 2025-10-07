@@ -236,8 +236,23 @@ export default function DocumentPartEditPage() {
                 c.id === partId ? part : c
               );
             } else {
-              // Add new clause
-              updatedTemplate.clauses = [...updatedTemplate.clauses, part];
+              // This should not happen for existing clauses - log error and update anyway
+              console.error(`Clause with ID ${partId} not found in template ${templateId}. This may indicate a data inconsistency.`);
+              console.log('Available clause IDs:', updatedTemplate.clauses.map(c => c.id));
+              console.log('Looking for partId:', partId);
+              
+              // Try to find by title as fallback (in case ID changed)
+              const clauseByTitle = updatedTemplate.clauses.find((c) => c.title === part.title);
+              if (clauseByTitle) {
+                console.log(`Found clause by title: ${clauseByTitle.title}, updating it instead`);
+                updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
+                  c.title === part.title ? part : c
+                );
+              } else {
+                // Last resort: add as new clause but warn
+                console.warn(`Adding clause as new entry. This may create duplicates.`);
+                updatedTemplate.clauses = [...updatedTemplate.clauses, part];
+              }
             }
           } else if (partType === 'paragraph') {
             updatedTemplate.clauses = updatedTemplate.clauses.map((clause) => {
