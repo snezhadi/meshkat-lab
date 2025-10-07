@@ -106,6 +106,7 @@ Thumbs.db
 # Docker
 .dockerignore
 
-# Data files (optional - remove if you want to track data)
-# data/
-# !data/.gitkeep
+# Data files - production data should not be in git
+data/*.json
+data/backups/
+!data/.gitkeep
