@@ -113,18 +113,33 @@ export async function POST(request: NextRequest) {
       console.warn('Failed to create backup:', backupError);
     }
 
+    // Log environment info
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Current working directory: ${process.cwd()}`);
+    console.log(`Data directory path: ${DATA_DIR}`);
+    console.log(`Parameters file path: ${PARAMETERS_FILE}`);
+    console.log(`Writing ${parameters.length} parameters...`);
+
     // Save parameters
     await fs.writeFile(PARAMETERS_FILE, JSON.stringify(parameters, null, 2));
+    console.log(`Parameters file written successfully`);
 
     // Save config if provided
     if (config) {
       await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
+      console.log(`Config file written successfully`);
     }
+
+    // Verify the write by reading back
+    const verifyData = await fs.readFile(PARAMETERS_FILE, 'utf8');
+    const parsedData = JSON.parse(verifyData);
+    console.log(`Verified ${parsedData.length} parameters saved`);
 
     return NextResponse.json({
       success: true,
       message: 'Parameters saved successfully',
       backupFile: backupFile,
+      parameterCount: parsedData.length,
     });
   } catch (error) {
     console.error('Error saving parameters:', error);

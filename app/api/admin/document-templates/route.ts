@@ -105,11 +105,26 @@ export async function POST(request: NextRequest) {
     const jsonData = JSON.stringify(documentTemplates, null, 2);
     
     try {
+      // Log environment info
+      console.log(`Environment: ${process.env.NODE_ENV}`);
+      console.log(`Current working directory: ${process.cwd()}`);
+      console.log(`Data directory path: ${DATA_DIR}`);
+      console.log(`Templates file path: ${DOCUMENT_TEMPLATES_FILE}`);
+      
       // Ensure directories exist
       await ensureDataDirectories();
       console.log(`Data directory is ready: ${DATA_DIR}`);
       
+      // Check if directory exists and is writable
+      try {
+        await fs.access(DATA_DIR, fs.constants.W_OK);
+        console.log(`Data directory is writable`);
+      } catch (accessError) {
+        console.error(`Data directory is NOT writable:`, accessError);
+      }
+      
       // Write the file
+      console.log(`Writing ${documentTemplates.length} templates...`);
       await fs.writeFile(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
       console.log(`File written successfully: ${DOCUMENT_TEMPLATES_FILE}`);
       
@@ -118,6 +133,7 @@ export async function POST(request: NextRequest) {
       const parsedData = JSON.parse(verifyData);
       
       console.log(`Document templates saved successfully. Count: ${parsedData.length}`);
+      console.log(`Verified template IDs: ${parsedData.map((t: any) => t.id).join(', ')}`);
       if (documentTemplates.length > 0) {
         console.log(`Latest template ID: ${documentTemplates[documentTemplates.length - 1].id}`);
       }
@@ -127,7 +143,8 @@ export async function POST(request: NextRequest) {
         code: writeError.code,
         errno: writeError.errno,
         syscall: writeError.syscall,
-        path: writeError.path
+        path: writeError.path,
+        message: writeError.message
       });
       throw writeError;
     }
