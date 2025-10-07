@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
 // Use local data directory for development
@@ -8,20 +8,24 @@ const DOCUMENT_TEMPLATES_FILE = path.join(DATA_DIR, 'document-templates.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 
 // Ensure directories exist
-function ensureDataDirectories() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(BACKUP_DIR)) {
-    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+async function ensureDataDirectories() {
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.mkdir(BACKUP_DIR, { recursive: true });
+  } catch (error) {
+    // Directories might already exist
   }
 }
 
 // Initialize with default data if file doesn't exist
-function initializeDefaultData() {
-  ensureDataDirectories();
+async function initializeDefaultData() {
+  await ensureDataDirectories();
 
-  if (!fs.existsSync(DOCUMENT_TEMPLATES_FILE)) {
+  const fileExists = await fs.access(DOCUMENT_TEMPLATES_FILE)
+    .then(() => true)
+    .catch(() => false);
+
+  if (!fileExists) {
     const defaultTemplates = [
       {
         id: 'employment_agreement',
@@ -41,14 +45,15 @@ function initializeDefaultData() {
       },
     ];
 
-    fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, JSON.stringify(defaultTemplates, null, 2), 'utf8');
+    await fs.writeFile(DOCUMENT_TEMPLATES_FILE, JSON.stringify(defaultTemplates, null, 2), 'utf8');
   }
 }
 
 export async function GET() {
   try {
-    initializeDefaultData();
-    const documentTemplates = JSON.parse(fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8'));
+    await initializeDefaultData();
+    const data = await fs.readFile(DOCUMENT_TEMPLATES_FILE, 'utf8');
+    const documentTemplates = JSON.parse(data);
     
     console.log(`GET request - Returning ${documentTemplates.length} templates`);
     if (documentTemplates.length > 0) {
@@ -67,7 +72,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    initializeDefaultData();
+    await initializeDefaultData();
     const { documentTemplates, createCheckpoint } = await request.json();
 
     console.log(`POST request received - Templates count: ${documentTemplates?.length || 0}`);
@@ -88,8 +93,8 @@ export async function POST(request: NextRequest) {
       const backupFile = path.join(BACKUP_DIR, `document-templates-checkpoint-${timestamp}.json`);
 
       try {
-        const currentTemplates = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
-        fs.writeFileSync(backupFile, currentTemplates, 'utf8');
+        const currentTemplates = await fs.readFile(DOCUMENT_TEMPLATES_FILE, 'utf8');
+        await fs.writeFile(backupFile, currentTemplates, 'utf8');
         console.log(`Created checkpoint: ${backupFile}`);
       } catch (backupError) {
         console.warn('Failed to create backup:', backupError);
@@ -100,30 +105,23 @@ export async function POST(request: NextRequest) {
     const jsonData = JSON.stringify(documentTemplates, null, 2);
     
     try {
-      // Check if data directory exists
-      if (!fs.existsSync(DATA_DIR)) {
-        console.error(`Data directory does not exist: ${DATA_DIR}`);
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-        console.log(`Created data directory: ${DATA_DIR}`);
-      }
-      
-      // Check write permissions
-      fs.accessSync(DATA_DIR, fs.constants.W_OK);
-      console.log(`Data directory is writable: ${DATA_DIR}`);
+      // Ensure directories exist
+      await ensureDataDirectories();
+      console.log(`Data directory is ready: ${DATA_DIR}`);
       
       // Write the file
-      fs.writeFileSync(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
+      await fs.writeFile(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
       console.log(`File written successfully: ${DOCUMENT_TEMPLATES_FILE}`);
       
       // Verify the write was successful by reading it back
-      const verifyData = fs.readFileSync(DOCUMENT_TEMPLATES_FILE, 'utf8');
+      const verifyData = await fs.readFile(DOCUMENT_TEMPLATES_FILE, 'utf8');
       const parsedData = JSON.parse(verifyData);
       
       console.log(`Document templates saved successfully. Count: ${parsedData.length}`);
       if (documentTemplates.length > 0) {
         console.log(`Latest template ID: ${documentTemplates[documentTemplates.length - 1].id}`);
       }
-    } catch (writeError) {
+    } catch (writeError: any) {
       console.error('Error writing document templates:', writeError);
       console.error('Error details:', {
         code: writeError.code,
@@ -165,11 +163,15 @@ export async function DELETE(request: NextRequest) {
 
     const checkpointFile = path.join(BACKUP_DIR, checkpointName);
 
-    if (!fs.existsSync(checkpointFile)) {
+    const fileExists = await fs.access(checkpointFile)
+      .then(() => true)
+      .catch(() => false);
+
+    if (!fileExists) {
       return NextResponse.json({ success: false, error: 'Checkpoint not found' }, { status: 404 });
     }
 
-    fs.unlinkSync(checkpointFile);
+    await fs.unlink(checkpointFile);
 
     return NextResponse.json({
       success: true,

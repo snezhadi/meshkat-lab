@@ -3946,7 +3946,7 @@
   },
   {
     "id": "new_template_1759577490639",
-    "title": "Test Template",
+    "title": "Test Template 2",
     "version": "1.0",
     "description": "**Purpose:** A new document template.\n\n**Key Features:**\n1. Click edit to customize",
     "active": true,
@@ -3959,5 +3959,18 @@
     "metadata": {
       "llm_description": "A new document template. Click edit to customize."
     }
+  },
+  {
+    "id": "new_template_1759839804596",
+    "title": "New Document Template",
+    "version": "1.0",
+    "description": "A new document template. Click edit to customize.",
+    "active": true,
+    "introduction": {
+      "id": "new_template_1759839804596_introduction",
+      "title": "Introduction",
+      "content": "This is the introduction section of the new template."
+    },
+    "clauses": []
   }
 ]
