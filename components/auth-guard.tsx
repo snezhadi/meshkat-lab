@@ -46,21 +46,26 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         } else {
           console.log('User not authenticated, redirecting to login');
           setIsAuthenticated(false);
-          // Clear all localStorage when not authenticated
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('userPermissions');
-            localStorage.removeItem('username');
-            
-            // Clear parameter-related localStorage
-            localStorage.removeItem('selected-template-id');
-            Object.keys(localStorage).forEach(key => {
-              if (key.startsWith('parameter-filters-template-')) {
-                localStorage.removeItem(key);
-              }
-            });
-            
-            window.dispatchEvent(new CustomEvent('userLoginChange'));
-          }
+    // Clear all localStorage when not authenticated
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('userPermissions');
+      localStorage.removeItem('username');
+      
+      // Clear all localStorage items related to templates and parameters
+      Object.keys(localStorage).forEach(key => {
+        // Clear parameter-related items
+        if (key.startsWith('parameter-filters-template-')) {
+          localStorage.removeItem(key);
+        }
+        // Clear template expansion state
+        if (key.startsWith('template-') && (key.includes('-intro-expanded') || key.includes('-clauses-expanded'))) {
+          localStorage.removeItem(key);
+        }
+      });
+      localStorage.removeItem('selected-template-id');
+      
+      window.dispatchEvent(new CustomEvent('userLoginChange'));
+    }
           router.push('/login');
         }
       } catch (error) {

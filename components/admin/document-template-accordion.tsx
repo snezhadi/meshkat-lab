@@ -331,9 +331,54 @@ export function DocumentTemplateAccordion({
   onClauseAdded,
 }: DocumentTemplateAccordionProps) {
   const router = useRouter();
-  const [expandedIntroduction, setExpandedIntroduction] = useState(true);
-  const [expandedClauses, setExpandedClauses] = useState<Set<string>>(new Set());
+  
+  // Load expanded state from localStorage
+  const [expandedIntroduction, setExpandedIntroduction] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`template-${template.id}-intro-expanded`);
+      return saved !== null ? saved === 'true' : true; // Default to true
+    }
+    return true;
+  });
+  
+  const [expandedClauses, setExpandedClauses] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`template-${template.id}-clauses-expanded`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return new Set(parsed);
+        } catch (error) {
+          console.error('Error parsing saved clause state:', error);
+        }
+      }
+    }
+    return new Set();
+  });
+  
   const [clauseWithNewParagraph, setClauseWithNewParagraph] = useState<string | null>(null);
+  
+  // Local template state to avoid re-rendering issues during drag operations
+  const [localTemplate, setLocalTemplate] = useState(template);
+  
+  // Update local template when prop changes
+  useEffect(() => {
+    setLocalTemplate(template);
+  }, [template]);
+  
+  // Save expanded introduction state to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`template-${template.id}-intro-expanded`, expandedIntroduction.toString());
+    }
+  }, [expandedIntroduction, template.id]);
+  
+  // Save expanded clauses state to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`template-${template.id}-clauses-expanded`, JSON.stringify(Array.from(expandedClauses)));
+    }
+  }, [expandedClauses, template.id]);
   
   // Function to expand a specific clause (used by parent component)
   const expandClause = (clauseId: string) => {
@@ -343,14 +388,14 @@ export function DocumentTemplateAccordion({
   };
 
   // Auto-expand newly created clauses
-  const [previousClauseCount, setPreviousClauseCount] = useState(template.clauses.length);
+  const [previousClauseCount, setPreviousClauseCount] = useState(localTemplate.clauses.length);
   
   useEffect(() => {
-    const currentClauseCount = template.clauses.length;
+    const currentClauseCount = localTemplate.clauses.length;
     
     // If a new clause was added (count increased), expand the newest clause
     if (currentClauseCount > previousClauseCount) {
-      const newestClause = template.clauses[template.clauses.length - 1];
+      const newestClause = localTemplate.clauses[localTemplate.clauses.length - 1];
       if (newestClause) {
         expandClause(newestClause.id);
       }
@@ -363,7 +408,7 @@ export function DocumentTemplateAccordion({
     }
     
     setPreviousClauseCount(currentClauseCount);
-  }, [template.clauses, previousClauseCount, clauseWithNewParagraph]);
+  }, [localTemplate.clauses, previousClauseCount, clauseWithNewParagraph]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -386,38 +431,72 @@ export function DocumentTemplateAccordion({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = template.clauses.findIndex((clause) => clause.id === active.id);
-      const newIndex = template.clauses.findIndex((clause) => clause.id === over.id);
+      const oldIndex = localTemplate.clauses.findIndex((clause) => clause.id === active.id);
+      const newIndex = localTemplate.clauses.findIndex((clause) => clause.id === over.id);
 
       const updatedTemplate = {
-        ...template,
-        clauses: arrayMove(template.clauses, oldIndex, newIndex),
+        ...localTemplate,
+        clauses: arrayMove(localTemplate.clauses, oldIndex, newIndex),
       };
 
       onTemplateChange(updatedTemplate);
     }
   };
 
-  const handleParagraphDragEnd = (clauseId: string, event: DragEndEvent) => {
+  const handleParagraphDragEnd = async (clauseId: string, event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const clause = template.clauses.find((c) => c.id === clauseId);
+      const clause = localTemplate.clauses.find((c) => c.id === clauseId);
       if (!clause) return;
 
       const oldIndex = clause.paragraphs.findIndex((paragraph) => paragraph.id === active.id);
       const newIndex = clause.paragraphs.findIndex((paragraph) => paragraph.id === over.id);
 
+      // Update local state immediately for responsive UI
       const updatedParagraphs = arrayMove(clause.paragraphs, oldIndex, newIndex);
-
       const updatedTemplate = {
-        ...template,
-        clauses: template.clauses.map((c) =>
+        ...localTemplate,
+        clauses: localTemplate.clauses.map((c) =>
           c.id === clauseId ? { ...c, paragraphs: updatedParagraphs } : c
         ),
       };
 
-      onTemplateChange(updatedTemplate);
+      // Update local state first (without triggering full refresh)
+      setLocalTemplate(updatedTemplate);
+
+      try {
+        // Update sort_order in database for each affected paragraph
+        const updates = updatedParagraphs.map(async (paragraph, index) => {
+          const response = await fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraph.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title: paragraph.title,
+              content: paragraph.content,
+              description: paragraph.description,
+              condition: paragraph.condition,
+              llm_description: paragraph.metadata?.llm_description || '',
+              sort_order: index, // Update sort order based on new position
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update paragraph order');
+          }
+        });
+
+        await Promise.all(updates);
+        toast.success('Paragraph order updated successfully!');
+      } catch (error) {
+        console.error('Error updating paragraph order:', error);
+        toast.error('Failed to update paragraph order');
+        // Revert local state on error
+        setLocalTemplate(template);
+      }
     }
   };
 
@@ -430,8 +509,8 @@ export function DocumentTemplateAccordion({
       const updatedTemplate = {
         ...template,
         introduction: {
-          id: template.introduction.id,
-          title: template.introduction.title,
+          id: localTemplate.introduction.id,
+          title: localTemplate.introduction.title,
           content: '',
         },
       };
@@ -500,7 +579,7 @@ export function DocumentTemplateAccordion({
   };
 
   const handleEditPart = (part: any, type: 'introduction' | 'clause' | 'paragraph') => {
-    const editUrl = `/admin/document-templates/edit/${template.id}/${type}/${part.id}`;
+    const editUrl = `/admin/document-templates/edit/${localTemplate.id}/${type}/${part.id}`;
     router.push(editUrl);
   };
 
@@ -520,7 +599,7 @@ export function DocumentTemplateAccordion({
           description: null,
           condition: null,
           llm_description: '',
-          sort_order: template.clauses.find(c => c.id === clauseId)?.paragraphs.length || 0, // Add at the end
+          sort_order: localTemplate.clauses.find(c => c.id === clauseId)?.paragraphs.length || 0, // Add at the end
         }),
       });
 
@@ -561,7 +640,7 @@ export function DocumentTemplateAccordion({
                 <ChevronRight className="h-4 w-4 text-gray-600" />
               )}
               <div>
-                <h4 className="font-medium text-gray-900">{template.introduction.title}</h4>
+                <h4 className="font-medium text-gray-900">{localTemplate.introduction.title}</h4>
                 <p className="text-sm text-gray-600">Introduction</p>
               </div>
             </div>
@@ -571,7 +650,7 @@ export function DocumentTemplateAccordion({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleEditPart(template.introduction, 'introduction');
+                  handleEditPart(localTemplate.introduction, 'introduction');
                 }}
                 className="h-8 w-8 p-0"
               >
@@ -594,7 +673,7 @@ export function DocumentTemplateAccordion({
         <CollapsibleContent className="mt-2">
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="prose markdown-content max-w-none">
-              <ContentRenderer content={template.introduction.content} />
+              <ContentRenderer content={localTemplate.introduction.content} />
             </div>
           </div>
         </CollapsibleContent>
@@ -607,11 +686,11 @@ export function DocumentTemplateAccordion({
         onDragEnd={handleClauseDragEnd}
       >
         <SortableContext
-          items={template.clauses.map((c) => c.id)}
+          items={localTemplate.clauses.map((c) => c.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-3">
-            {template.clauses.map((clause, clauseIndex) => (
+            {localTemplate.clauses.map((clause, clauseIndex) => (
               <SortableClause
                 key={clause.id}
                 clause={clause}

@@ -25,13 +25,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         localStorage.removeItem('userPermissions');
         localStorage.removeItem('username');
         
-        // Clear parameter-related localStorage
-        localStorage.removeItem('selected-template-id');
+        // Clear all localStorage items related to templates and parameters
         Object.keys(localStorage).forEach(key => {
+          // Clear parameter-related items
           if (key.startsWith('parameter-filters-template-')) {
             localStorage.removeItem(key);
           }
+          // Clear template expansion state
+          if (key.startsWith('template-') && (key.includes('-intro-expanded') || key.includes('-clauses-expanded'))) {
+            localStorage.removeItem(key);
+          }
         });
+        localStorage.removeItem('selected-template-id');
         
         window.dispatchEvent(new CustomEvent('userLoginChange'));
       }
