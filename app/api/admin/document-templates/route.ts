@@ -14,6 +14,7 @@ function transformTemplateFromDB(template: any, clauses: any[], paragraphs: any[
       content: paragraph.content,
       description: paragraph.description,
       condition: paragraph.condition,
+      sort_order: paragraph.sort_order,
       metadata: paragraph.llm_description ? { llm_description: paragraph.llm_description } : {}
     });
     return acc;
@@ -29,6 +30,7 @@ function transformTemplateFromDB(template: any, clauses: any[], paragraphs: any[
       content: clause.content,
       description: clause.description,
       condition: clause.condition,
+      sort_order: clause.sort_order,
       metadata: clause.llm_description ? { llm_description: clause.llm_description } : {},
       paragraphs: (paragraphsByClause[clause.id] || [])
         .sort((a, b) => a.sort_order - b.sort_order)
@@ -50,6 +52,7 @@ function transformTemplateFromDB(template: any, clauses: any[], paragraphs: any[
       content: introductionClause.content,
       description: introductionClause.description,
       condition: introductionClause.condition,
+      sort_order: introductionClause.sort_order,
       metadata: introductionClause.llm_description ? { llm_description: introductionClause.llm_description } : {}
     } : {
       id: `${template.id}_introduction`,
@@ -57,6 +60,7 @@ function transformTemplateFromDB(template: any, clauses: any[], paragraphs: any[
       content: "",
       description: null,
       condition: undefined,
+      sort_order: -1,
       metadata: {}
     },
     clauses: transformedClauses

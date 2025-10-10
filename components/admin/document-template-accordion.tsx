@@ -127,10 +127,10 @@ function SortableClause({
               )}
               <div>
                 <h4 className="font-medium text-gray-900">{clause.title}</h4>
-                <p className="text-sm text-gray-600">
-                  Clause {clauseIndex + 1} • {clause.paragraphs.length} paragraph(s)
-                  {clause.condition && ' • Conditional'}
-                </p>
+        <p className="text-sm text-gray-600">
+          Clause {clauseIndex + 1} • {clause.paragraphs.length} paragraph(s) • Sort Order: {clause.sort_order ?? 'undefined'}
+          {clause.condition && ' • Conditional'}
+        </p>
                 {clause.condition && (
                   <div className="mt-2">
                     <ConditionPreview
@@ -242,10 +242,10 @@ function SortableParagraph({
         <div className="mb-2 flex items-center justify-between">
           <div>
             <h5 className="text-sm font-medium text-gray-900">{paragraph.title}</h5>
-            <p className="text-xs text-gray-600">
-              Paragraph {paragraphIndex + 1}
-              {paragraph.condition && ' • Conditional'}
-            </p>
+        <p className="text-xs text-gray-600">
+          Paragraph {paragraphIndex + 1} • Sort Order: {paragraph.sort_order ?? 'undefined'}
+          {paragraph.condition && ' • Conditional'}
+        </p>
             {paragraph.condition && (
               <div className="mt-2">
                 <ConditionPreview
@@ -429,20 +429,13 @@ export function DocumentTemplateAccordion({
 
   const handleClauseDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    
-    console.log('🎯 Clause drag end event:', { activeId: active.id, overId: over?.id });
 
     if (over && active.id !== over.id) {
       const oldIndex = localTemplate.clauses.findIndex((clause) => clause.id === active.id);
       const newIndex = localTemplate.clauses.findIndex((clause) => clause.id === over.id);
-      
-      console.log('📍 Clause indices:', { oldIndex, newIndex });
-      console.log('📋 Current clauses:', localTemplate.clauses.map(c => ({ id: c.id, title: c.title })));
 
       // Update local state immediately for responsive UI
       const updatedClauses = arrayMove(localTemplate.clauses, oldIndex, newIndex);
-      console.log('📋 Updated clauses order:', updatedClauses.map(c => ({ id: c.id, title: c.title })));
-      
       const updatedTemplate = {
         ...localTemplate,
         clauses: updatedClauses,
@@ -450,24 +443,18 @@ export function DocumentTemplateAccordion({
 
       // Update local state first (without triggering full refresh)
       setLocalTemplate(updatedTemplate);
-      console.log('✅ Local state updated');
 
       try {
-        // Update sort_order in database for all affected clauses
-        // When moving from position A to position B, all items between A and B need their sort_order updated
-        const minIndex = Math.min(oldIndex, newIndex);
-        const maxIndex = Math.max(oldIndex, newIndex);
+        // Update sort_order in database for ALL clauses to ensure sequential ordering
+        // After a drag operation, we need to renumber all clauses sequentially
         
-        console.log(`📦 Moving clause from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
-        console.log(`📦 Number of clauses to update: ${maxIndex - minIndex + 1}`);
+        console.log(`🔄 Updating clause sort_order for template`);
+        console.log(`📋 Clauses to update (${updatedClauses.length}):`, updatedClauses.map(c => ({ id: c.id, title: c.title, currentSortOrder: c.sort_order })));
         
-        // Update all clauses in the affected range with their new positions
-        const clausesToUpdate = updatedClauses.slice(minIndex, maxIndex + 1);
-        console.log('📦 Clauses to update:', clausesToUpdate.map(c => ({ id: c.id, title: c.title })));
-        
-        const updates = clausesToUpdate.map((clause, relativeIndex) => {
-          const newSortOrder = minIndex + relativeIndex;
-          console.log(`  🔄 Updating clause ${clause.id} (${clause.title}) to sort_order ${newSortOrder}`);
+        const updates = updatedClauses.map((clause, index) => {
+          // Skip introduction clause (sort_order = -1)
+          const newSortOrder = clause.sort_order === -1 ? -1 : index;
+          console.log(`  📄 Clause ${clause.id} ("${clause.title}"): ${clause.sort_order} → ${newSortOrder}`);
           
           return fetch(`/api/admin/document-templates/clauses`, {
             method: 'PUT',
@@ -484,22 +471,21 @@ export function DocumentTemplateAccordion({
           });
         });
 
-        console.log('⏳ Waiting for all clause updates to complete...');
         const responses = await Promise.all(updates);
-        console.log('📨 Received responses:', responses.map(r => r.status));
         
         // Check if all updates succeeded
-        for (let i = 0; i < responses.length; i++) {
-          const response = responses[i];
+        for (const response of responses) {
           if (!response.ok) {
             const errorData = await response.json();
-            console.error(`❌ Failed to update clause at index ${i}:`, errorData);
             throw new Error(errorData.error || 'Failed to update clause order');
           }
         }
 
-        console.log('✅ All clause updates successful');
         toast.success('Clause order updated!');
+        
+        // Refresh template data to ensure UI matches database
+        // Use the current template prop, not localTemplate, to trigger a fresh fetch
+        onTemplateChange(template);
       } catch (error) {
         console.error('Error updating clause order:', error);
         toast.error('Failed to update clause order');
@@ -523,13 +509,9 @@ export function DocumentTemplateAccordion({
 
       const oldIndex = clause.paragraphs.findIndex((paragraph) => paragraph.id === active.id);
       const newIndex = clause.paragraphs.findIndex((paragraph) => paragraph.id === over.id);
-      
-      console.log('📍 Paragraph indices:', { oldIndex, newIndex });
-      console.log('📄 Current paragraphs:', clause.paragraphs.map(p => ({ id: p.id, title: p.title })));
 
       // Update local state immediately for responsive UI
       const updatedParagraphs = arrayMove(clause.paragraphs, oldIndex, newIndex);
-      console.log('📄 Updated paragraphs order:', updatedParagraphs.map(p => ({ id: p.id, title: p.title })));
       
       const updatedTemplate = {
         ...localTemplate,
@@ -540,24 +522,17 @@ export function DocumentTemplateAccordion({
 
       // Update local state first (without triggering full refresh)
       setLocalTemplate(updatedTemplate);
-      console.log('✅ Local state updated');
 
       try {
-        // Update sort_order in database for all affected paragraphs
-        // When moving from position A to position B, all items between A and B need their sort_order updated
-        const minIndex = Math.min(oldIndex, newIndex);
-        const maxIndex = Math.max(oldIndex, newIndex);
+        // Update sort_order in database for ALL paragraphs in this clause to ensure sequential ordering
+        // After a drag operation, we need to renumber all paragraphs sequentially
         
-        console.log(`📦 Moving paragraph from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
-        console.log(`📦 Number of paragraphs to update: ${maxIndex - minIndex + 1}`);
+        console.log(`🔄 Updating paragraph sort_order for clause ${clauseId}`);
+        console.log(`📄 Paragraphs to update (${updatedParagraphs.length}):`, updatedParagraphs.map(p => ({ id: p.id, title: p.title, currentSortOrder: p.sort_order })));
         
-        // Update all paragraphs in the affected range with their new positions
-        const paragraphsToUpdate = updatedParagraphs.slice(minIndex, maxIndex + 1);
-        console.log('📦 Paragraphs to update:', paragraphsToUpdate.map(p => ({ id: p.id, title: p.title })));
-        
-        const updates = paragraphsToUpdate.map((paragraph, relativeIndex) => {
-          const newSortOrder = minIndex + relativeIndex;
-          console.log(`  🔄 Updating paragraph ${paragraph.id} (${paragraph.title}) to sort_order ${newSortOrder}`);
+        const updates = updatedParagraphs.map((paragraph, index) => {
+          const newSortOrder = index;
+          console.log(`  📝 Paragraph ${paragraph.id} ("${paragraph.title}"): ${paragraph.sort_order} → ${newSortOrder}`);
           
           return fetch(`/api/admin/document-templates/paragraphs`, {
             method: 'PUT',
@@ -574,22 +549,21 @@ export function DocumentTemplateAccordion({
           });
         });
 
-        console.log('⏳ Waiting for all paragraph updates to complete...');
         const responses = await Promise.all(updates);
-        console.log('📨 Received responses:', responses.map(r => r.status));
         
         // Check if all updates succeeded
-        for (let i = 0; i < responses.length; i++) {
-          const response = responses[i];
+        for (const response of responses) {
           if (!response.ok) {
             const errorData = await response.json();
-            console.error(`❌ Failed to update paragraph at index ${i}:`, errorData);
             throw new Error(errorData.error || 'Failed to update paragraph order');
           }
         }
 
-        console.log('✅ All paragraph updates successful');
         toast.success('Paragraph order updated!');
+        
+        // Refresh template data to ensure UI matches database
+        // Use the current template prop, not localTemplate, to trigger a fresh fetch
+        onTemplateChange(template);
       } catch (error) {
         console.error('Error updating paragraph order:', error);
         toast.error('Failed to update paragraph order');
@@ -740,7 +714,7 @@ export function DocumentTemplateAccordion({
               )}
               <div>
                 <h4 className="font-medium text-gray-900">{localTemplate.introduction.title}</h4>
-                <p className="text-sm text-gray-600">Introduction</p>
+                <p className="text-sm text-gray-600">Introduction • Sort Order: {localTemplate.introduction.sort_order ?? 'undefined'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
