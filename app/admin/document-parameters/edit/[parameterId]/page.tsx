@@ -125,36 +125,15 @@ export default function ParameterEditPage() {
     try {
       setLoading(true);
 
-      // First, get all templates to find which one contains our parameter
-      const templatesResponse = await fetch('/api/admin/document-templates');
-      if (!templatesResponse.ok) {
-        throw new Error('Failed to load templates');
+      // Fetch parameter directly by database ID (much faster!)
+      const parameterResponse = await fetch(`/api/admin/parameters/${parameterId}`);
+      if (!parameterResponse.ok) {
+        throw new Error('Failed to load parameter');
       }
-      const templatesData = await templatesResponse.json();
-      const templates = templatesData.data || [];
+      const parameterData = await parameterResponse.json();
 
-      // Search for the parameter across all templates
-      let foundParameter: Parameter | null = null;
-      let foundTemplateId: string | null = null;
-      let config: ParameterConfig | null = null;
-
-      for (const template of templates) {
-        const parametersResponse = await fetch(`/api/admin/parameters?templateId=${template.id}`);
-        if (parametersResponse.ok) {
-          const parametersData = await parametersResponse.json();
-          const parameter = parametersData.parameters?.find((p: Parameter) => p.dbId.toString() === parameterId);
-          
-          if (parameter) {
-            foundParameter = parameter;
-            foundTemplateId = template.id.toString();
-            config = parametersData.config;
-            break;
-          }
-        }
-      }
-
-      if (!foundParameter) {
-        throw new Error(`Parameter with ID "${parameterId}" not found in any template`);
+      if (!parameterData.success || !parameterData.parameter) {
+        throw new Error('Parameter not found');
       }
 
       // Load jurisdictions
@@ -165,32 +144,26 @@ export default function ParameterEditPage() {
       const jurisdictionsData = await jurisdictionsResponse.json();
 
       setAllParameters([]); // We don't need all parameters for edit page
-      setConfig(config);
+      setConfig(parameterData.config);
       setJurisdictions(jurisdictionsData.jurisdictions || []);
-      setTemplateId(foundTemplateId);
+      setTemplateId(parameterData.templateId);
 
       // Ensure defaults structure exists
-      if (!foundParameter.defaults) {
-        foundParameter.defaults = {
+      const loadedParameter = parameterData.parameter;
+      if (!loadedParameter.defaults) {
+        loadedParameter.defaults = {
           global_default: null,
           jurisdictions: [],
         };
       }
 
-      console.log('Parameter loaded:', foundParameter.id, 'Defaults:', foundParameter.defaults);
-      setParameter(foundParameter);
+      console.log('Parameter loaded:', loadedParameter.id, 'Defaults:', loadedParameter.defaults);
+      setParameter(loadedParameter);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load parameter data');
-      // Navigate back to parameters page with template selection preserved
-      const currentParams = new URLSearchParams(searchParams.toString());
-      if (templateId) {
-        currentParams.set('templateId', templateId);
-      }
-      const redirectUrl = currentParams.toString() 
-        ? `/admin/document-parameters?${currentParams.toString()}`
-        : '/admin/document-parameters';
-      router.push(redirectUrl);
+      // Navigate back to parameters page (template selection is in localStorage)
+      router.push('/admin/document-parameters');
     } finally {
       setLoading(false);
     }

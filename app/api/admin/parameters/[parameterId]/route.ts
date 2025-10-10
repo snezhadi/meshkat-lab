@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 
-// GET - Fetch a specific parameter
+// GET - Fetch a specific parameter by database ID
 export async function GET(
   request: NextRequest,
   { params }: { params: { parameterId: string } }
@@ -17,26 +17,85 @@ export async function GET(
       );
     }
 
-    const { data: parameter, error } = await supabase
+    // Fetch parameter using database ID (not custom_id)
+    // Convert parameterId to integer since it comes from URL as string
+    const paramId = parseInt(parameterId);
+    console.log('🔍 GET parameter by ID:', parameterId, '→', paramId);
+    
+    if (isNaN(paramId)) {
+      console.error('❌ Invalid parameter ID:', parameterId);
+      return NextResponse.json(
+        { success: false, error: 'Invalid parameter ID' },
+        { status: 400 }
+      );
+    }
+
+    console.log('📡 Fetching parameter from database...');
+    const { data: parameters, error } = await supabase
       .from('parameters')
       .select(`
         *,
-        type:parameter_types(name),
-        input_type:input_types(name),
-        priority:priority_levels(name),
-        display_group:parameter_groups(name),
-        display_subgroup:parameter_subgroups(name)
+        parameter_types(name),
+        input_types(name),
+        priority_levels(level),
+        parameter_groups(name),
+        parameter_subgroups(name)
       `)
-      .eq('custom_id', parameterId)
-      .single();
+      .eq('id', paramId);
 
-    if (error) {
-      throw new Error(`Failed to fetch parameter: ${error.message}`);
+    console.log('📊 Query result:', { parametersCount: parameters?.length, error });
+
+    if (error || !parameters || parameters.length === 0) {
+      console.error('❌ Parameter not found:', parameterId, error);
+      return NextResponse.json(
+        { success: false, error: 'Parameter not found' },
+        { status: 404 }
+      );
+    }
+
+    const param = parameters[0];
+
+    // Transform to frontend format
+    const transformedParameter = {
+      id: param.custom_id,
+      dbId: param.id,
+      name: param.name,
+      description: param.description,
+      type: param.parameter_types?.name || 'text',
+      metadata: {
+        llm_instructions: param.llm_instructions,
+        llm_description: param.llm_description,
+        priority: param.priority_levels?.level || 1,
+        format: param.format,
+      },
+      condition: param.condition,
+      display: {
+        group: param.parameter_groups?.name || 'General Parameters',
+        subgroup: param.parameter_subgroups?.name || 'General',
+        label: param.display_label || param.name,
+        input: param.input_types?.name || 'text',
+      },
+      options: param.options ? param.options.split(',') : [],
+      defaults: {
+        global_default: param.global_default,
+      },
+    };
+
+    // Also fetch the config for this parameter's template
+    const configResponse = await fetch(
+      `${request.nextUrl.origin}/api/admin/parameters?templateId=${param.template_id}`
+    );
+    let config = null;
+    if (configResponse.ok) {
+      const configData = await configResponse.json();
+      config = configData.config;
     }
 
     return NextResponse.json({
       success: true,
-      data: parameter,
+      parameter: transformedParameter,
+      templateId: param.template_id.toString(),
+      config: config,
     });
   } catch (error) {
     console.error('Error fetching parameter:', error);
