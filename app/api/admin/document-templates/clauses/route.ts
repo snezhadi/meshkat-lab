@@ -132,6 +132,7 @@ export async function PUT(request: NextRequest) {
         description: clauseData.description,
         condition: clauseData.condition,
         llm_description: clauseData.llm_description,
+        sort_order: clauseData.sort_order !== undefined ? clauseData.sort_order : undefined,
         updated_at: new Date().toISOString(),
       })
       .eq('id', actualClauseId)

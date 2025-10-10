@@ -128,6 +128,7 @@ export async function PUT(request: NextRequest) {
         description: paragraphData.description,
         condition: paragraphData.condition,
         llm_description: paragraphData.llm_description,
+        sort_order: paragraphData.sort_order !== undefined ? paragraphData.sort_order : undefined,
         updated_at: new Date().toISOString(),
       })
       .eq('id', actualParagraphId)

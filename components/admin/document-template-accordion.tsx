@@ -469,10 +469,11 @@ export function DocumentTemplateAccordion({
           const newSortOrder = minIndex + relativeIndex;
           console.log(`  🔄 Updating clause ${clause.id} (${clause.title}) to sort_order ${newSortOrder}`);
           
-          return fetch(`/api/admin/document-templates/clauses?clauseId=${clause.id}`, {
+          return fetch(`/api/admin/document-templates/clauses`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              clauseId: clause.id,
               title: clause.title,
               content: clause.content,
               description: clause.description || null,
@@ -558,10 +559,11 @@ export function DocumentTemplateAccordion({
           const newSortOrder = minIndex + relativeIndex;
           console.log(`  🔄 Updating paragraph ${paragraph.id} (${paragraph.title}) to sort_order ${newSortOrder}`);
           
-          return fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraph.id}`, {
+          return fetch(`/api/admin/document-templates/paragraphs`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              paragraphId: paragraph.id,
               title: paragraph.title,
               content: paragraph.content,
               description: paragraph.description || null,
