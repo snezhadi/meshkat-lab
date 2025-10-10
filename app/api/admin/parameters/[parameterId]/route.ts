@@ -4,11 +4,13 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 // GET - Fetch a specific parameter by database ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { parameterId: string } }
+  context: { params: Promise<{ parameterId: string }> | { parameterId: string } }
 ) {
   try {
     const supabase = createServerSupabaseClient();
-    const { parameterId } = params;
+    // Handle both async and sync params for Next.js 15 compatibility
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const { parameterId } = resolvedParams;
 
     if (!parameterId) {
       return NextResponse.json(
@@ -109,11 +111,13 @@ export async function GET(
 // PUT - Update a specific parameter
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { parameterId: string } }
+  context: { params: Promise<{ parameterId: string }> | { parameterId: string } }
 ) {
   try {
     const supabase = createServerSupabaseClient();
-    const { parameterId } = params;
+    // Handle both async and sync params for Next.js 15 compatibility
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const { parameterId } = resolvedParams;
     const parameterData = await request.json();
 
     console.log('🔍 PUT /api/admin/parameters/[parameterId] - Received:', {
@@ -273,10 +277,15 @@ export async function PUT(
 }
 
 // DELETE - Delete a specific parameter
-export async function DELETE(request: NextRequest, { params }: { params: { parameterId: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ parameterId: string }> | { parameterId: string } }
+) {
   try {
     const supabase = createServerSupabaseClient();
-    const parameterId = params.parameterId;
+    // Handle both async and sync params for Next.js 15 compatibility
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const parameterId = resolvedParams.parameterId;
     
     console.log('DELETE parameter request - parameterId:', parameterId);
 
