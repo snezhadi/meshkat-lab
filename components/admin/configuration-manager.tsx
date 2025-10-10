@@ -346,7 +346,7 @@ export function ConfigurationManager({
 
                   return (
                     <div
-                      key={subgroup}
+                      key={`${group}-${subgroup}`}
                       className={`flex items-center justify-between rounded-lg p-3 ${
                         inUse ? 'border border-blue-200 bg-blue-50' : 'bg-gray-50'
                       }`}

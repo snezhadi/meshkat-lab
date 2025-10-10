@@ -31,6 +31,19 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Clear all parameter-related localStorage on login to start fresh
+        if (typeof window !== 'undefined') {
+          // Clear template selection
+          localStorage.removeItem('selected-template-id');
+          
+          // Clear all template-specific filters (iterate through all possible template IDs)
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('parameter-filters-template-')) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
+        
         router.push('/admin');
         router.refresh();
       } else {

@@ -1,0 +1,204 @@
+[dotenv@17.2.1] injecting env (2) from .env.local -- tip: ⚙️  write to custom object with { processEnv: myObject }
+🚀 Starting template UPSERT from document-templates-oct9.json...
+
+📂 Reading document-templates-oct9.json...
+📊 Found 1 template(s) to process
+
+============================================================
+Processing: EMPLOYMENT AGREEMENT
+============================================================
+📋 Template ID: 12
+
+🗑️  Deleting existing content for EMPLOYMENT AGREEMENT...
+  📋 Found 9 clauses to delete
+  ✅ Deleted paragraphs
+✅ Existing content deleted successfully
+
+📝 Inserting introduction as clause (sort_order = -1)...
+✅ Introduction inserted (ID: 1469)
+
+📝 Inserting 35 clauses...
+
+[1/35] Processing clause: DEFINITIONS
+  ✅ Clause inserted (ID: 1470)
+  📄 Inserting 8 paragraphs...
+  ✅ Inserted 8 paragraphs
+
+[2/35] Processing clause: PARTIES
+  ✅ Clause inserted (ID: 1471)
+  📄 Inserting 1 paragraphs...
+  ✅ Inserted 1 paragraphs
+
+[3/35] Processing clause: COMMENCEMENT OF EMPLOYMENT
+  ✅ Clause inserted (ID: 1472)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[4/35] Processing clause: JOB TITLE AND DUTIES
+  ✅ Clause inserted (ID: 1473)
+  📄 Inserting 7 paragraphs...
+  ✅ Inserted 7 paragraphs
+
+[5/35] Processing clause: TERM OF APPOINTMENT
+  ✅ Clause inserted (ID: 1474)
+  📄 Inserting 9 paragraphs...
+  ✅ Inserted 9 paragraphs
+
+[6/35] Processing clause: PLACE OF WORK
+  ✅ Clause inserted (ID: 1475)
+  📄 Inserting 8 paragraphs...
+  ✅ Inserted 8 paragraphs
+
+[7/35] Processing clause: MOBILITY AND RELOCATION
+  ✅ Clause inserted (ID: 1476)
+  📄 Inserting 3 paragraphs...
+  ✅ Inserted 3 paragraphs
+
+[8/35] Processing clause: SALARY
+  ✅ Clause inserted (ID: 1477)
+  📄 Inserting 9 paragraphs...
+  ✅ Inserted 9 paragraphs
+
+[9/35] Processing clause: INCENTIVE COMPENSATION
+  ✅ Clause inserted (ID: 1478)
+  📄 Inserting 14 paragraphs...
+  ✅ Inserted 14 paragraphs
+
+[10/35] Processing clause: STOCK-BASED COMPENSATION
+  ✅ Clause inserted (ID: 1479)
+  📄 Inserting 11 paragraphs...
+  ✅ Inserted 11 paragraphs
+
+[11/35] Processing clause: BENEFITS
+  ✅ Clause inserted (ID: 1480)
+  📄 Inserting 7 paragraphs...
+  ✅ Inserted 7 paragraphs
+
+[12/35] Processing clause: EXPENSE REIMBURSEMENT
+  ✅ Clause inserted (ID: 1481)
+  📄 Inserting 1 paragraphs...
+  ✅ Inserted 1 paragraphs
+
+[13/35] Processing clause: HOURS OF WORK
+  ✅ Clause inserted (ID: 1482)
+  📄 Inserting 3 paragraphs...
+  ✅ Inserted 3 paragraphs
+
+[14/35] Processing clause: ANNUAL LEAVE
+  ✅ Clause inserted (ID: 1483)
+  📄 Inserting 19 paragraphs...
+  ✅ Inserted 19 paragraphs
+
+[15/35] Processing clause: SICKNESS ABSENCE
+  ✅ Clause inserted (ID: 1484)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[16/35] Processing clause: TERMINATION AND NOTICE PERIOD
+  ✅ Clause inserted (ID: 1485)
+  📄 Inserting 16 paragraphs...
+  ✅ Inserted 16 paragraphs
+
+[17/35] Processing clause: SEVERANCE PROVISIONS
+  ✅ Clause inserted (ID: 1486)
+  📄 Inserting 6 paragraphs...
+  ✅ Inserted 6 paragraphs
+
+[18/35] Processing clause: COLLECTIVE AGREEMENT
+  ✅ Clause inserted (ID: 1487)
+  📄 Inserting 3 paragraphs...
+  ✅ Inserted 3 paragraphs
+
+[19/35] Processing clause: EMPLOYEE REPRESENTATIONS AND WARRANTIES
+  ✅ Clause inserted (ID: 1488)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[20/35] Processing clause: INTEGRITY
+  ✅ Clause inserted (ID: 1489)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[21/35] Processing clause: INFORMATION TECHNOLOGY, SOCIAL MEDIA & INTERNET USAGE
+  ✅ Clause inserted (ID: 1490)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[22/35] Processing clause: CONFIDENTIAL INFORMATION
+  ✅ Clause inserted (ID: 1491)
+  📄 Inserting 6 paragraphs...
+  ✅ Inserted 6 paragraphs
+
+[23/35] Processing clause: EMPLOYER PROPERTY
+  ✅ Clause inserted (ID: 1492)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[24/35] Processing clause: CONFLICT OF INTERESTS
+  ✅ Clause inserted (ID: 1493)
+  📄 Inserting 5 paragraphs...
+  ✅ Inserted 5 paragraphs
+
+[25/35] Processing clause: NON-COMPETE
+  ✅ Clause inserted (ID: 1494)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[26/35] Processing clause: NON-SOLICITATION
+  ✅ Clause inserted (ID: 1495)
+  📄 Inserting 6 paragraphs...
+  ✅ Inserted 6 paragraphs
+
+[27/35] Processing clause: NON-DISPARAGEMENT
+  ✅ Clause inserted (ID: 1496)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[28/35] Processing clause: INTELLECTUAL PROPERTY OWNERSHIP AND ASSIGNMENT
+  ✅ Clause inserted (ID: 1497)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[29/35] Processing clause: PRE-EXISTING INTELLECTUAL PROPERTY
+  ✅ Clause inserted (ID: 1498)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[30/35] Processing clause: EMPLOYEE PERSONAL IP DISCLOSURE AND CONSENT
+  ✅ Clause inserted (ID: 1499)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[31/35] Processing clause: ASSIGNMENT
+  ✅ Clause inserted (ID: 1500)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[32/35] Processing clause: FORCE MAJEURE
+  ✅ Clause inserted (ID: 1501)
+  📄 Inserting 2 paragraphs...
+  ✅ Inserted 2 paragraphs
+
+[33/35] Processing clause: GOVERNING LAW AND DISPUTE RESOLUTION
+  ✅ Clause inserted (ID: 1502)
+  📄 Inserting 5 paragraphs...
+  ✅ Inserted 5 paragraphs
+
+[34/35] Processing clause: ENTIRE AGREEMENT, VARIATION AND SEVERABILITY
+  ✅ Clause inserted (ID: 1503)
+  📄 Inserting 4 paragraphs...
+  ✅ Inserted 4 paragraphs
+
+[35/35] Processing clause: EMPLOYMENT_SIGNATURE_SECTION
+  ✅ Clause inserted (ID: 1504)
+  📄 Inserting 1 paragraphs...
+  ✅ Inserted 1 paragraphs
+
+============================================================
+✅ EMPLOYMENT AGREEMENT Summary:
+============================================================
+📝 Total clauses inserted: 36 (including introduction)
+📄 Total paragraphs inserted: 190
+============================================================
+
+✅ All templates processed successfully!

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/auth-guard';
 import { Button } from '@/components/ui/button';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -13,10 +14,28 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { canManageGlobalConfig } = usePermissions();
 
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      
+      // Clear all localStorage and notify other components
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('userPermissions');
+        localStorage.removeItem('username');
+        
+        // Clear parameter-related localStorage
+        localStorage.removeItem('selected-template-id');
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('parameter-filters-template-')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        window.dispatchEvent(new CustomEvent('userLoginChange'));
+      }
+      
       router.push('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -25,15 +44,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     {
-      id: 'document-parameters',
-      label: 'Document Parameters',
-      href: '/admin/document-parameters',
-    },
-    {
       id: 'document-templates',
       label: 'Document Templates',
       href: '/admin/document-templates',
     },
+    {
+      id: 'document-parameters',
+      label: 'Document Parameters',
+      href: '/admin/document-parameters',
+    },
+    ...(canManageGlobalConfig ? [{
+      id: 'global-configuration',
+      label: 'Global Configuration',
+      href: '/admin/global-configuration',
+    }] : []),
     // Future menu items can be added here
     // {
     //   id: 'analytics',

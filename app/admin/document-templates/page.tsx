@@ -5,7 +5,7 @@ import { Condition } from '@/components/admin/condition-builder';
 import { DocumentTemplatesEditor } from '@/components/admin/document-templates-editor';
 
 interface DocumentTemplate {
-  id: string;
+  id: number;
   title: string;
   version: string;
   description: string;

@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Edit, GripVertical, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 interface Parameter {
-  id: string;
+  id: string; // custom_id for frontend compatibility
+  dbId: number; // database primary key for API operations
   name: string;
   description?: string;
   type: string;
@@ -43,8 +44,8 @@ interface ParameterTableProps {
 
 export function ParameterTable({ parameters, onReorder, config }: ParameterTableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -77,27 +78,31 @@ export function ParameterTable({ parameters, onReorder, config }: ParameterTable
     setDraggedIndex(null);
   };
 
-  const handleDelete = async (parameterId: string) => {
-    if (showDeleteConfirm === parameterId) {
-      // Delete parameter directly via API
-      const response = await fetch('/api/admin/parameters/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ parameterId }),
-      });
+  const handleDelete = async (parameter: Parameter) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete parameter "${parameter.name}"? This action cannot be undone.`
+      )
+    ) {
+      try {
+        // Delete parameter using the database primary key (dbId)
+        const response = await fetch(`/api/admin/parameters/${parameter.dbId}`, {
+          method: 'DELETE',
+        });
 
-      if (response.ok) {
-        // Refresh the page to show updated data
-        window.location.reload();
-      } else {
-        console.error('Failed to delete parameter');
+        if (response.ok) {
+          // Show success message and refresh the data
+          alert('Parameter deleted successfully');
+          window.location.reload();
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to delete parameter:', errorData);
+          alert(`Failed to delete parameter: ${errorData.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error deleting parameter:', error);
         alert('Failed to delete parameter');
       }
-      setShowDeleteConfirm(null);
-    } else {
-      setShowDeleteConfirm(parameterId);
     }
   };
 
@@ -190,7 +195,10 @@ export function ParameterTable({ parameters, onReorder, config }: ParameterTable
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => router.push(`/admin/document-parameters/edit/${parameter.id}`)}
+                    onClick={() => {
+                      // Navigate to edit page (template selection and filters are in localStorage)
+                      router.push(`/admin/document-parameters/edit/${parameter.dbId}`);
+                    }}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     <Edit className="h-4 w-4" />
@@ -198,39 +206,12 @@ export function ParameterTable({ parameters, onReorder, config }: ParameterTable
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(parameter.id)}
-                    className={`${
-                      showDeleteConfirm === parameter.id
-                        ? 'text-red-600 hover:text-red-900'
-                        : 'text-red-400 hover:text-red-600'
-                    }`}
+                    onClick={() => handleDelete(parameter)}
+                    className="text-red-400 hover:text-red-600"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                {showDeleteConfirm === parameter.id && (
-                  <div className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-xs">
-                    <div className="mb-1 font-medium text-red-800">Confirm Delete?</div>
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(parameter.id)}
-                        className="bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700"
-                      >
-                        Yes, Delete
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setShowDeleteConfirm(null)}
-                        className="px-2 py-1 text-xs"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="max-w-xs truncate font-mono text-sm text-gray-900">

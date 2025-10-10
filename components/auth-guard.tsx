@@ -8,6 +8,7 @@ interface UserPermissions {
   canDelete: boolean;
   canCreate: boolean;
   canEdit: boolean;
+  canManageGlobalConfig: boolean;
 }
 
 interface AuthGuardProps {
@@ -39,15 +40,47 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           if (typeof window !== 'undefined') {
             localStorage.setItem('userPermissions', JSON.stringify(data.user.permissions));
             localStorage.setItem('username', data.user.username);
+            // Dispatch custom event to notify other components of permission changes
+            window.dispatchEvent(new CustomEvent('userLoginChange'));
           }
         } else {
           console.log('User not authenticated, redirecting to login');
           setIsAuthenticated(false);
+          // Clear all localStorage when not authenticated
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('userPermissions');
+            localStorage.removeItem('username');
+            
+            // Clear parameter-related localStorage
+            localStorage.removeItem('selected-template-id');
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('parameter-filters-template-')) {
+                localStorage.removeItem(key);
+              }
+            });
+            
+            window.dispatchEvent(new CustomEvent('userLoginChange'));
+          }
           router.push('/login');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
+        // Clear all localStorage on auth failure
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('userPermissions');
+          localStorage.removeItem('username');
+          
+          // Clear parameter-related localStorage
+          localStorage.removeItem('selected-template-id');
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('parameter-filters-template-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          
+          window.dispatchEvent(new CustomEvent('userLoginChange'));
+        }
         router.push('/login');
       }
     };

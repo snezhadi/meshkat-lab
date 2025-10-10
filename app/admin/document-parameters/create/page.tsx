@@ -21,7 +21,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 interface Parameter {
-  id: string;
+  id: string; // custom_id for frontend compatibility
+  dbId?: number; // database primary key for API operations (optional for new parameters)
   name: string;
   description?: string;
   type: string;
@@ -66,6 +67,7 @@ export default function CreateParameterPage() {
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [allParameters, setAllParameters] = useState<Parameter[]>([]);
+  const [templateId, setTemplateId] = useState<string>('');
   const [config, setConfig] = useState<Config>({
     groups: [],
     subgroups: {},
@@ -101,8 +103,19 @@ export default function CreateParameterPage() {
   const loadData = async () => {
     try {
       setLoading(true);
+      
+      // Get template ID from URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const templateIdParam = urlParams.get('templateId');
+      
+      if (!templateIdParam) {
+        throw new Error('Template ID is required');
+      }
+      
+      setTemplateId(templateIdParam);
+
       const [parametersResponse, jurisdictionsResponse] = await Promise.all([
-        fetch('/api/admin/parameters'),
+        fetch(`/api/admin/parameters?templateId=${templateIdParam}`),
         fetch('/api/admin/jurisdictions'),
       ]);
 
@@ -191,7 +204,7 @@ export default function CreateParameterPage() {
     setHasUnsavedChanges(true);
   };
 
-  const handleSave = async () => {
+  const handleSaveAndExit = async () => {
     try {
       setSaving(true);
 
@@ -223,16 +236,36 @@ export default function CreateParameterPage() {
         return;
       }
 
-      const updatedParameters = [...allParameters, parameter];
+      if (!templateId) {
+        toast.error('Template ID not found');
+        setSaving(false);
+        return;
+      }
 
-      const response = await fetch('/api/admin/parameters', {
+      // Create only the new parameter
+      const response = await fetch('/api/admin/parameters/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          parameters: updatedParameters,
-          config: config,
+          custom_id: parameter.id,
+          name: parameter.name,
+          description: parameter.description,
+          type: parameter.type,
+          input_type: parameter.display?.input,
+          priority: parameter.metadata?.priority,
+          display_group: parameter.display?.group,
+          display_subgroup: parameter.display?.subgroup,
+          required: parameter.required,
+          options: parameter.options,
+          llm_instructions: parameter.metadata?.llm_instructions,
+          llm_description: parameter.metadata?.llm_description,
+          condition: parameter.condition,
+          display_label: parameter.display?.label,
+          format: parameter.metadata?.format,
+          global_default: parameter.defaults?.global_default,
+          template_id: templateId,
         }),
       });
 
@@ -242,6 +275,7 @@ export default function CreateParameterPage() {
 
       toast.success('Parameter created successfully');
       setHasUnsavedChanges(false);
+      // Navigate back (template selection is in localStorage)
       router.push('/admin/document-parameters');
     } catch (error) {
       console.error('Error saving parameter:', error);
@@ -251,12 +285,6 @@ export default function CreateParameterPage() {
     }
   };
 
-  const handleSaveAndExit = async () => {
-    await handleSave();
-    if (!saving) {
-      router.push('/admin/document-parameters');
-    }
-  };
 
   const handleCancel = () => {
     if (hasUnsavedChanges) {
@@ -514,13 +542,9 @@ export default function CreateParameterPage() {
                   <X className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving}>
-                  <Save className="mr-2 h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save'}
-                </Button>
                 <Button onClick={handleSaveAndExit} disabled={saving}>
                   <Save className="mr-2 h-4 w-4" />
-                  Save & Exit
+                  {saving ? 'Saving...' : 'Save & Exit'}
                 </Button>
               </div>
             </div>

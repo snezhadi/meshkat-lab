@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { ChevronDown, ChevronRight, Edit, GripVertical, Trash2 } from 'lucide-react';
 import {
   DndContext,
@@ -34,7 +35,7 @@ interface DragEndEvent {
 }
 
 interface DocumentTemplate {
-  id: string;
+  id: number;
   title: string;
   version: string;
   description: string;
@@ -42,6 +43,8 @@ interface DocumentTemplate {
     id: string;
     title: string;
     content: string;
+    description: string | null;
+    condition?: Condition | string;
     metadata?: {
       llm_description?: string;
     };
@@ -71,6 +74,7 @@ interface DocumentTemplate {
 interface DocumentTemplateAccordionProps {
   template: DocumentTemplate;
   onTemplateChange: (template: DocumentTemplate) => void;
+  onClauseAdded?: (clauseId: string) => void;
 }
 
 // Sortable Clause Component
@@ -324,10 +328,35 @@ function SortableParagraphs({
 export function DocumentTemplateAccordion({
   template,
   onTemplateChange,
+  onClauseAdded,
 }: DocumentTemplateAccordionProps) {
   const router = useRouter();
   const [expandedIntroduction, setExpandedIntroduction] = useState(true);
   const [expandedClauses, setExpandedClauses] = useState<Set<string>>(new Set());
+  
+  // Function to expand a specific clause (used by parent component)
+  const expandClause = (clauseId: string) => {
+    const newExpanded = new Set(expandedClauses);
+    newExpanded.add(clauseId);
+    setExpandedClauses(newExpanded);
+  };
+
+  // Auto-expand newly created clauses
+  const [previousClauseCount, setPreviousClauseCount] = useState(template.clauses.length);
+  
+  useEffect(() => {
+    const currentClauseCount = template.clauses.length;
+    
+    // If a new clause was added (count increased), expand the newest clause
+    if (currentClauseCount > previousClauseCount) {
+      const newestClause = template.clauses[template.clauses.length - 1];
+      if (newestClause) {
+        expandClause(newestClause.id);
+      }
+    }
+    
+    setPreviousClauseCount(currentClauseCount);
+  }, [template.clauses, previousClauseCount]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -403,39 +432,63 @@ export function DocumentTemplateAccordion({
     }
   };
 
-  const handleDeleteClause = (clauseId: string) => {
+  const handleDeleteClause = async (clauseId: string) => {
     if (
       window.confirm(
         'Are you sure you want to delete this entire clause and all its paragraphs? This action cannot be undone.'
       )
     ) {
-      const updatedTemplate = {
-        ...template,
-        clauses: template.clauses.filter((clause) => clause.id !== clauseId),
-      };
-      onTemplateChange(updatedTemplate);
+      try {
+        // Delete the clause from the database (paragraphs will be deleted automatically due to CASCADE)
+        const response = await fetch(`/api/admin/document-templates/clauses?clauseId=${clauseId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete clause');
+        }
+
+        // Show success message
+        toast.success('Clause deleted successfully!');
+        
+        // Refresh the template data to ensure we have the latest state
+        onTemplateChange(template); // This will trigger fetchTemplate() and get correct data
+        
+      } catch (error) {
+        console.error('Error deleting clause:', error);
+        toast.error('Failed to delete clause');
+      }
     }
   };
 
-  const handleDeleteParagraph = (clauseId: string, paragraphId: string) => {
+  const handleDeleteParagraph = async (clauseId: string, paragraphId: string) => {
     if (
       window.confirm(
         'Are you sure you want to delete this paragraph? This action cannot be undone.'
       )
     ) {
-      const updatedTemplate = {
-        ...template,
-        clauses: template.clauses.map((clause) => {
-          if (clause.id === clauseId) {
-            return {
-              ...clause,
-              paragraphs: clause.paragraphs.filter((paragraph) => paragraph.id !== paragraphId),
-            };
-          }
-          return clause;
-        }),
-      };
-      onTemplateChange(updatedTemplate);
+      try {
+        // Delete the paragraph from the database
+        const response = await fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraphId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete paragraph');
+        }
+
+        // Show success message
+        toast.success('Paragraph deleted successfully!');
+        
+        // Refresh the template data to ensure we have the latest state
+        onTemplateChange(template); // This will trigger fetchTemplate() and get correct data
+        
+      } catch (error) {
+        console.error('Error deleting paragraph:', error);
+        toast.error('Failed to delete paragraph');
+      }
     }
   };
 
@@ -444,29 +497,48 @@ export function DocumentTemplateAccordion({
     router.push(editUrl);
   };
 
-  const handleAddParagraph = (clauseId: string) => {
-    const newParagraph = {
-      id: `paragraph_${Date.now()}`,
-      title: 'New Paragraph',
-      content: 'Enter paragraph content here...',
-      description: null,
-      condition: undefined,
-    };
+  const handleAddParagraph = async (clauseId: string) => {
+    try {
+      
+      // Create the paragraph directly in the database
+      const response = await fetch('/api/admin/document-templates/paragraphs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clause_id: clauseId,
+          title: 'New Paragraph',
+          content: 'Enter paragraph content here...',
+          description: null,
+          condition: null,
+          llm_description: '',
+          sort_order: template.clauses.find(c => c.id === clauseId)?.paragraphs.length || 0, // Add at the end
+        }),
+      });
 
-    const updatedTemplate = {
-      ...template,
-      clauses: template.clauses.map((clause) => {
-        if (clause.id === clauseId) {
-          return {
-            ...clause,
-            paragraphs: [...clause.paragraphs, newParagraph],
-          };
-        }
-        return clause;
-      }),
-    };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create paragraph');
+      }
 
-    onTemplateChange(updatedTemplate);
+      const result = await response.json();
+      
+      // Don't update local state - let the template refresh handle it
+      // This ensures we get the correct paragraph ID from the database
+      onTemplateChange(template); // This will trigger fetchTemplate() and get correct data
+      
+      // Expand the clause to show the newly added paragraph
+      const newExpanded = new Set(expandedClauses);
+      newExpanded.add(clauseId);
+      setExpandedClauses(newExpanded);
+      
+      // Show success message
+      toast.success('New paragraph added successfully!');
+    } catch (error) {
+      console.error('Error creating paragraph:', error);
+      // You might want to show a toast error here
+    }
   };
 
 

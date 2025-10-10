@@ -1,87 +1,165 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
-// Use local data directory for development
-const DATA_DIR = path.join(process.cwd(), 'data');
-const PARAMETERS_FILE = path.join(DATA_DIR, 'parameters.json');
-const CONFIG_FILE = path.join(DATA_DIR, 'parameter-config.json');
-
-// Ensure directories exist
-async function ensureDataDirectories() {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-  } catch (error) {
-    // Directory might already exist
-  }
+// Transform database parameter to frontend format
+function transformParameterFromDB(param: any): any {
+  return {
+    id: param.custom_id,
+    name: param.name,
+    description: param.description,
+    type: param.type_id ? param.parameter_types?.name : 'text',
+    metadata: {
+      llm_instructions: param.llm_instructions,
+      llm_description: param.llm_description,
+      priority: param.priority_id ? param.priority_levels?.level : 1,
+      format: param.format,
+    },
+    condition: param.condition,
+    display: {
+      group: param.parameter_groups?.name || 'General Parameters',
+      subgroup: param.parameter_subgroups?.name || 'Basic',
+      label: param.display_label,
+      input: param.display_input_id ? param.input_types?.name : 'textbox',
+    },
+    options: param.options ? param.options.split(',') : undefined,
+    defaults: {
+      global_default: param.global_default,
+      jurisdictions: [], // Skip for now as requested
+    },
+  };
 }
 
-// Initialize with default data if files don't exist
-async function initializeDefaultData() {
-  await ensureDataDirectories();
-
-  if (
-    !(await fs
-      .access(PARAMETERS_FILE)
-      .then(() => true)
-      .catch(() => false))
-  ) {
-    const defaultParameters = [
-      {
-        id: 'employee_name',
-        name: 'Employee Name',
-        type: 'text',
-        group: 'Employee Information',
-        subgroup: 'Personal Details',
-        priority: 1,
-        description: 'Full name of the employee',
-        condition: null,
-        defaults: {
-          jurisdictions: [],
-        },
-      },
-    ];
-
-    await fs.writeFile(PARAMETERS_FILE, JSON.stringify(defaultParameters, null, 2));
-  }
-
-  if (
-    !(await fs
-      .access(CONFIG_FILE)
-      .then(() => true)
-      .catch(() => false))
-  ) {
-    const defaultConfig = {
-      groups: ['Employee Information', 'Company Information', 'Legal Terms'],
-      subgroups: {
-        'Employee Information': ['Personal Details', 'Contact Information'],
-        'Company Information': ['Business Details', 'Address Information'],
-        'Legal Terms': ['Employment Terms', 'Termination Clauses'],
-      },
-      types: ['text', 'number', 'date', 'boolean', 'select', 'textarea'],
-      priorities: [1, 2, 3, 4, 5],
-      inputs: ['text', 'number', 'date', 'checkbox', 'select', 'textarea'],
-    };
-
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
-  }
+// Transform frontend parameter to database format
+function transformParameterToDB(param: any, templateId: number): any {
+  return {
+    template_id: templateId,
+    custom_id: param.id,
+    name: param.name,
+    description: param.description,
+    llm_instructions: param.metadata?.llm_instructions,
+    llm_description: param.metadata?.llm_description,
+    format: param.metadata?.format,
+    condition: param.condition || null,
+    display_label: param.display?.label || param.name,
+    options: param.options ? param.options.join(',') : null,
+    global_default: param.defaults?.global_default || null,
+  };
 }
 
 // GET /api/admin/parameters - Load parameters and config
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    await initializeDefaultData();
+    const supabase = createServerSupabaseClient();
+    const { searchParams } = new URL(request.url);
+    const templateId = searchParams.get('templateId');
 
-    const [parametersData, configData] = await Promise.all([
-      fs.readFile(PARAMETERS_FILE, 'utf8'),
-      fs.readFile(CONFIG_FILE, 'utf8'),
+    if (!templateId) {
+      return NextResponse.json(
+        { error: 'Template ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Fetch parameters with JOINs using foreign key constraint names
+    const { data: parameters, error: parametersError } = await supabase
+      .from('parameters')
+      .select(`
+        *,
+        parameter_types!fk_parameter_type(name),
+        priority_levels!fk_parameter_priority(level),
+        input_types!fk_parameter_input(name),
+        parameter_groups!fk_parameter_group(name),
+        parameter_subgroups!fk_parameter_subgroup(name)
+      `)
+      .eq('template_id', parseInt(templateId))
+      .order('id');
+
+    if (parametersError) {
+      throw new Error(`Failed to fetch parameters: ${parametersError.message}`);
+    }
+
+    // Fetch configuration for dropdowns
+    const [
+      { data: parameterTypes, error: typesError },
+      { data: inputTypes, error: inputError },
+      { data: priorityLevels, error: priorityError },
+      { data: groups, error: groupsError },
+      { data: subgroups, error: subgroupsError },
+    ] = await Promise.all([
+      supabase.from('parameter_types').select('name').order('sort_order'),
+      supabase.from('input_types').select('name').order('sort_order'),
+      supabase.from('priority_levels').select('level').order('sort_order'),
+      supabase.from('parameter_groups').select('name').eq('template_id', parseInt(templateId)).order('sort_order'),
+      supabase.from('parameter_subgroups').select('name').eq('template_id', parseInt(templateId)).order('sort_order'),
     ]);
 
-    const parameters = JSON.parse(parametersData);
-    const config = JSON.parse(configData);
+    if (typesError || inputError || priorityError || groupsError || subgroupsError) {
+      console.warn('Some configuration data could not be loaded');
+    }
+
+    // Transform parameters to frontend format using JOIN results
+    const transformedParameters = (parameters || []).map(param => ({
+      id: param.custom_id, // Keep custom_id as id for frontend compatibility
+      dbId: param.id, // Add database primary key for API operations
+      name: param.name,
+      description: param.description,
+      type: param.parameter_types?.name || 'text',
+      metadata: {
+        llm_instructions: param.llm_instructions,
+        llm_description: param.llm_description,
+        priority: param.priority_levels?.level || 1,
+        format: param.format,
+      },
+      condition: param.condition,
+      display: {
+        group: param.parameter_groups?.name || 'General Parameters',
+        subgroup: param.parameter_subgroups?.name || 'Basic',
+        label: param.display_label,
+        input: param.input_types?.name || 'textbox',
+      },
+      options: param.options ? param.options.split(',') : undefined,
+      defaults: {
+        global_default: param.global_default,
+        jurisdictions: [],
+      },
+    }));
+
+    // Build config object with proper subgroup grouping and deduplication
+    const subgroupsMap = new Map<string, Set<string>>();
+    
+    // First, collect all subgroups and group them properly
+    if (subgroups) {
+      for (const sg of subgroups) {
+        // Get the group for this subgroup from the parameters
+        const groupForSubgroup = transformedParameters.find(p => 
+          p.display.subgroup === sg.name
+        )?.display.group || 'General Parameters';
+        
+        if (!subgroupsMap.has(groupForSubgroup)) {
+          subgroupsMap.set(groupForSubgroup, new Set());
+        }
+        subgroupsMap.get(groupForSubgroup)!.add(sg.name);
+      }
+    }
+    
+    // Convert to the expected format
+    const subgroupsConfig: Record<string, string[]> = {};
+    for (const [group, subgroupSet] of subgroupsMap) {
+      subgroupsConfig[group] = Array.from(subgroupSet).sort();
+    }
+    
+    const config = {
+      groups: groups?.map(g => g.name) || [],
+      subgroups: subgroupsConfig,
+      types: parameterTypes?.map(t => t.name) || [],
+      priorities: priorityLevels?.map(p => p.level) || [],
+      inputs: inputTypes?.map(i => i.name) || [],
+    };
+
+    console.log(`GET request - Retrieved ${transformedParameters.length} parameters for template ${templateId}`);
 
     return NextResponse.json({
-      parameters,
+      parameters: transformedParameters,
       config,
     });
   } catch (error) {
@@ -93,53 +171,78 @@ export async function GET() {
 // POST /api/admin/parameters - Save parameters
 export async function POST(request: NextRequest) {
   try {
-    await initializeDefaultData();
-    const { parameters, config } = await request.json();
+    const supabase = createServerSupabaseClient();
+    const { parameters, templateId } = await request.json();
 
     // Validate the data
     if (!Array.isArray(parameters)) {
       return NextResponse.json({ error: 'Parameters must be an array' }, { status: 400 });
     }
 
-    // Create backup before saving
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupFile = path.join(DATA_DIR, `parameters-backup-${timestamp}.json`);
-
-    try {
-      const currentData = await fs.readFile(PARAMETERS_FILE, 'utf8');
-      await fs.writeFile(backupFile, currentData);
-      console.log(`Backup created: ${backupFile}`);
-    } catch (backupError) {
-      console.warn('Failed to create backup:', backupError);
+    if (!templateId) {
+      return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
 
-    // Log environment info
-    console.log(`Environment: ${process.env.NODE_ENV}`);
-    console.log(`Current working directory: ${process.cwd()}`);
-    console.log(`Data directory path: ${DATA_DIR}`);
-    console.log(`Parameters file path: ${PARAMETERS_FILE}`);
-    console.log(`Writing ${parameters.length} parameters...`);
+    console.log(`POST request - Saving ${parameters.length} parameters for template ${templateId}`);
 
-    // Save parameters
-    await fs.writeFile(PARAMETERS_FILE, JSON.stringify(parameters, null, 2));
-    console.log(`Parameters file written successfully`);
+    // Get reference data for lookups
+    const [
+      { data: parameterTypes },
+      { data: inputTypes },
+      { data: priorityLevels },
+      { data: groups },
+      { data: subgroups },
+    ] = await Promise.all([
+      supabase.from('parameter_types').select('id, name'),
+      supabase.from('input_types').select('id, name'),
+      supabase.from('priority_levels').select('id, level'),
+      supabase.from('parameter_groups').select('id, name').eq('template_id', parseInt(templateId)),
+      supabase.from('parameter_subgroups').select('id, name').eq('template_id', parseInt(templateId)),
+    ]);
 
-    // Save config if provided
-    if (config) {
-      await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
-      console.log(`Config file written successfully`);
+    // Create lookup maps
+    const typeMap = new Map(parameterTypes?.map(t => [t.name, t.id]) || []);
+    const inputMap = new Map(inputTypes?.map(i => [i.name, i.id]) || []);
+    const priorityMap = new Map(priorityLevels?.map(p => [p.level, p.id]) || []);
+    const groupMap = new Map(groups?.map(g => [g.name, g.id]) || []);
+    const subgroupMap = new Map(subgroups?.map(sg => [sg.name, sg.id]) || []);
+
+    // Delete existing parameters for this template
+    const { error: deleteError } = await supabase
+      .from('parameters')
+      .delete()
+      .eq('template_id', parseInt(templateId));
+
+    if (deleteError) {
+      throw new Error(`Failed to delete existing parameters: ${deleteError.message}`);
     }
 
-    // Verify the write by reading back
-    const verifyData = await fs.readFile(PARAMETERS_FILE, 'utf8');
-    const parsedData = JSON.parse(verifyData);
-    console.log(`Verified ${parsedData.length} parameters saved`);
+    // Insert new parameters
+    for (const param of parameters) {
+      const paramData = transformParameterToDB(param, parseInt(templateId));
+
+      // Add foreign key references
+      paramData.type_id = typeMap.get(param.type) || null;
+      paramData.display_input_id = inputMap.get(param.display?.input) || null;
+      paramData.priority_id = priorityMap.get(param.metadata?.priority) || null;
+      paramData.display_group_id = groupMap.get(param.display?.group) || null;
+      paramData.display_subgroup_id = subgroupMap.get(param.display?.subgroup) || null;
+
+      const { error: insertError } = await supabase
+        .from('parameters')
+        .insert(paramData);
+
+      if (insertError) {
+        throw new Error(`Failed to insert parameter ${param.id}: ${insertError.message}`);
+      }
+    }
+
+    console.log(`Parameters saved successfully for template ${templateId}`);
 
     return NextResponse.json({
       success: true,
       message: 'Parameters saved successfully',
-      backupFile: backupFile,
-      parameterCount: parsedData.length,
+      parameterCount: parameters.length,
     });
   } catch (error) {
     console.error('Error saving parameters:', error);

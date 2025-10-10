@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 interface DocumentTemplate {
-  id: string;
+  id: number;
   title: string;
   version: string;
   description: string;
@@ -30,6 +30,8 @@ interface DocumentTemplate {
     id: string;
     title: string;
     content: string;
+    description: string | null;
+    condition?: Condition | string;
     metadata?: {
       llm_description?: string;
     };
@@ -112,7 +114,7 @@ export default function DocumentPartEditPage() {
         }
 
         const templates = result.data;
-        const foundTemplate = templates.find((t: DocumentTemplate) => t.id === templateId);
+        const foundTemplate = templates.find((t: DocumentTemplate) => t.id === parseInt(templateId as string));
 
         if (!foundTemplate) {
           throw new Error(`Template not found: ${templateId}`);
@@ -214,122 +216,104 @@ export default function DocumentPartEditPage() {
     }
   };
 
-  const handleSave = async (shouldExit = false) => {
+  const handleSave = async () => {
     if (!template || !part) return;
 
     setSaving(true);
+    
     try {
-      // First, fetch all templates
-      const response = await fetch('/api/admin/document-templates');
-      if (!response.ok) {
-        throw new Error('Failed to fetch document templates');
-      }
+      let apiEndpoint = '';
+      let requestData = {};
 
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch document templates');
-      }
-
-      const allTemplates = result.data;
-
-      // Update the specific template with the modified part
-      const updatedTemplates = allTemplates.map((t: DocumentTemplate) => {
-        if (t.id === templateId) {
-          let updatedTemplate = { ...t };
-
-          if (partType === 'introduction') {
-            updatedTemplate.introduction = part;
-          } else if (partType === 'clause') {
-            console.log(`💾 Saving clause with ID: ${partId}`);
-            console.log(`💾 Clause title: "${part.title}"`);
-            console.log(`💾 Available clause IDs in template:`, updatedTemplate.clauses.map(c => c.id));
-            
-            const existingClauseIndex = updatedTemplate.clauses.findIndex((c) => c.id === partId);
-            console.log(`💾 Existing clause index: ${existingClauseIndex}`);
-            
-            if (existingClauseIndex >= 0) {
-              // Update existing clause
-              console.log(`✅ Updating existing clause at index ${existingClauseIndex}`);
-              updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
-                c.id === partId ? part : c
-              );
-            } else {
-              // This should not happen for existing clauses - log error and update anyway
-              console.error(`❌ Clause with ID ${partId} not found in template ${templateId}. This may indicate a data inconsistency.`);
-              console.log('Available clause IDs:', updatedTemplate.clauses.map(c => c.id));
-              console.log('Looking for partId:', partId);
-              
-              // Try to find by title as fallback (in case ID changed)
-              const clauseByTitle = updatedTemplate.clauses.find((c) => c.title === part.title);
-              if (clauseByTitle) {
-                console.log(`🔄 Found clause by title: ${clauseByTitle.title}, updating it instead`);
-                updatedTemplate.clauses = updatedTemplate.clauses.map((c) =>
-                  c.title === part.title ? part : c
-                );
-              } else {
-                // Last resort: add as new clause but warn
-                console.warn(`⚠️ Adding clause as new entry. This may create duplicates.`);
-                updatedTemplate.clauses = [...updatedTemplate.clauses, part];
-              }
-            }
-          } else if (partType === 'paragraph') {
-            updatedTemplate.clauses = updatedTemplate.clauses.map((clause) => {
-              const existingParagraphIndex = clause.paragraphs.findIndex((p) => p.id === partId);
-              if (existingParagraphIndex >= 0) {
-                // Update existing paragraph
-                return {
-                  ...clause,
-                  paragraphs: clause.paragraphs.map((p) => (p.id === partId ? part : p)),
-                };
-              } else {
-                // Add new paragraph to the first clause (or create a new clause if none exist)
-                if (clause.id) {
-                  return {
-                    ...clause,
-                    paragraphs: [...clause.paragraphs, part],
-                  };
-                }
-                return clause;
-              }
-            });
+      if (partType === 'introduction') {
+        // For introduction, we need to find the clause with sort_order = -1
+        // First, get the introduction clause from the database
+        const introResponse = await fetch(`/api/admin/document-templates/clauses?clauseId=${part.id}`);
+        if (introResponse.ok) {
+          const introResult = await introResponse.json();
+          if (introResult.success) {
+            apiEndpoint = '/api/admin/document-templates/clauses';
+            requestData = {
+              clauseId: introResult.data.id,
+              title: part.title,
+              content: part.content,
+              description: part.description,
+              condition: part.condition,
+              llm_description: part.metadata?.llm_description,
+            };
           }
-
-          return updatedTemplate;
         }
-        return t;
-      });
+      } else if (partType === 'clause') {
+        console.log(`💾 Saving clause with ID: ${partId}`);
+        apiEndpoint = '/api/admin/document-templates/clauses';
+        requestData = {
+          clauseId: partId,
+          title: part.title,
+          content: part.content,
+          description: part.description,
+          condition: part.condition,
+          llm_description: part.metadata?.llm_description,
+        };
+      } else if (partType === 'paragraph') {
+        console.log(`💾 Saving paragraph with ID: ${partId}`);
+        apiEndpoint = '/api/admin/document-templates/paragraphs';
+        requestData = {
+          paragraphId: partId,
+          title: part.title,
+          content: part.content,
+          description: part.description,
+          condition: part.condition,
+          llm_description: part.metadata?.llm_description,
+        };
+      }
 
-      // Save all templates
-      const saveResponse = await fetch('/api/admin/document-templates', {
-        method: 'POST',
+      if (!apiEndpoint) {
+        throw new Error('Invalid part type');
+      }
+
+      // Debug: Log the request data
+      console.log('Saving with data:', { apiEndpoint, requestData });
+
+      // Save only the specific part being edited
+      const saveResponse = await fetch(apiEndpoint, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          documentTemplates: updatedTemplates,
-          createCheckpoint: false,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (!saveResponse.ok) {
-        throw new Error('Failed to save template');
+        const errorData = await saveResponse.json().catch(() => ({}));
+        console.error('Save failed:', {
+          status: saveResponse.status,
+          statusText: saveResponse.statusText,
+          errorData
+        });
+        throw new Error(errorData.error || `Failed to save changes (${saveResponse.status})`);
       }
 
       const saveResult = await saveResponse.json();
       if (!saveResult.success) {
-        throw new Error(saveResult.error || 'Failed to save template');
+        throw new Error(saveResult.error || 'Failed to save changes');
       }
 
+      console.log(`✅ ${partType} saved successfully`);
       toast.success('Changes saved successfully!');
       setHasUnsavedChanges(false);
 
-      // Navigate based on the save action
-      if (shouldExit) {
-        router.push(`/admin/document-templates/edit/${templateId}`);
-      }
-      // If shouldExit is false, stay on current page (no navigation)
+      // Navigate back to template editor
+      router.push(`/admin/document-templates/edit/${templateId}`);
     } catch (err) {
-      toast.error('Failed to save changes');
+      console.error('Save error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save changes';
+      
+      // Check if it's an ID format error
+      if (errorMessage.includes('Invalid clause ID format')) {
+        toast.error('Please refresh the page and try again. The clause ID format is invalid.');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setSaving(false);
     }
@@ -456,21 +440,7 @@ export default function DocumentPartEditPage() {
             >
               Cancel
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleSave(false)}
-              disabled={saving || !hasUnsavedChanges}
-            >
-              {saving ? (
-                <>
-                  <div className="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-b-2"></div>
-                  Saving...
-                </>
-              ) : (
-                'Save'
-              )}
-            </Button>
-            <Button onClick={() => handleSave(true)} disabled={saving || !hasUnsavedChanges}>
+            <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges}>
               {saving ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
@@ -498,16 +468,6 @@ export default function DocumentPartEditPage() {
       {/* Edit Form */}
       <div className="rounded-lg border border-gray-200 bg-white">
         <CardContent className="space-y-6 p-6">
-          {/* ID Field (Editable) */}
-          <div className="space-y-2">
-            <Label htmlFor="id">ID</Label>
-            <Input 
-              id="id" 
-              value={part.id} 
-              onChange={(e) => handleChange('id', e.target.value)}
-              className="w-full" 
-            />
-          </div>
 
           {/* Title Field */}
           <div className="space-y-2">
@@ -520,55 +480,49 @@ export default function DocumentPartEditPage() {
             />
           </div>
 
-          {/* Description Field (for clauses and paragraphs) */}
-          {(partType === 'clause' || partType === 'paragraph') && (
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <div className="w-full">
-                <MarkdownEditor
-                  content={part.description || ''}
-                  onChange={(content) => handleChange('description', content)}
-                  placeholder="Enter description..."
-                  enableParameters={false}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* LLM Description Field (for clauses and paragraphs) */}
-          {(partType === 'clause' || partType === 'paragraph') && (
-            <div className="space-y-2">
-              <Label htmlFor="llm_description">LLM Description</Label>
-              <Textarea
-                id="llm_description"
-                value={part.metadata?.llm_description || ''}
-                onChange={(e) => {
-                  const updatedPart = {
-                    ...part,
-                    metadata: {
-                      ...part.metadata,
-                      llm_description: e.target.value
-                    }
-                  };
-                  setPart(updatedPart);
-                  setHasUnsavedChanges(true);
-                }}
-                className="w-full"
-                rows={12}
-                placeholder="Detailed description for AI processing..."
+          {/* Description Field (for clauses, paragraphs, and introduction) */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <div className="w-full">
+              <MarkdownEditor
+                content={part.description || ''}
+                onChange={(content) => handleChange('description', content)}
+                placeholder="Enter description..."
+                enableParameters={false}
               />
             </div>
-          )}
+          </div>
 
-          {/* Condition Field (for clauses and paragraphs) */}
-          {(partType === 'clause' || partType === 'paragraph') && (
-            <ConditionEditor
-              condition={part.condition}
-              onConditionChange={(condition) => handleChange('condition', condition)}
-              availableParameters={availableParameters}
-              label="Condition"
+          {/* LLM Description Field (for clauses, paragraphs, and introduction) */}
+          <div className="space-y-2">
+            <Label htmlFor="llm_description">LLM Description</Label>
+            <Textarea
+              id="llm_description"
+              value={part.metadata?.llm_description || ''}
+              onChange={(e) => {
+                const updatedPart = {
+                  ...part,
+                  metadata: {
+                    ...part.metadata,
+                    llm_description: e.target.value
+                  }
+                };
+                setPart(updatedPart);
+                setHasUnsavedChanges(true);
+              }}
+              className="w-full"
+              rows={12}
+              placeholder="Detailed description for AI processing..."
             />
-          )}
+          </div>
+
+          {/* Condition Field (for clauses, paragraphs, and introduction) */}
+          <ConditionEditor
+            condition={part.condition}
+            onConditionChange={(condition) => handleChange('condition', condition)}
+            availableParameters={availableParameters}
+            label="Condition"
+          />
 
           {/* Content Field */}
           <div className="space-y-2">

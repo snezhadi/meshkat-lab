@@ -10,7 +10,8 @@ import { ParameterFilters } from './parameter-filters';
 import { ParameterTable } from './parameter-table';
 
 interface Parameter {
-  id: string;
+  id: string; // custom_id for frontend compatibility
+  dbId: number; // database primary key for API operations
   name: string;
   description?: string;
   type: string;
@@ -41,7 +42,9 @@ interface ParameterConfig {
 interface DocumentParametersEditorProps {
   parameters: Parameter[];
   config: ParameterConfig;
+  templateId: string;
   onRefresh: () => void;
+  onSave: (parameters: Parameter[]) => Promise<{ success: boolean; error?: string }>;
 }
 
 interface FilterState {
@@ -56,16 +59,18 @@ interface FilterState {
 export function DocumentParametersEditor({
   parameters,
   config,
+  templateId,
   onRefresh,
+  onSave,
 }: DocumentParametersEditorProps) {
   const router = useRouter();
   const { canExport } = usePermissions();
   const [filteredParameters, setFilteredParameters] = useState<Parameter[]>(parameters);
   const [activeTab, setActiveTab] = useState<'parameters' | 'configuration'>('parameters');
   const [filters, setFilters] = useState<FilterState>(() => {
-    // Load filters from localStorage on component mount
+    // Load filters from localStorage on component mount (template-specific)
     if (typeof window !== 'undefined') {
-      const savedFilters = localStorage.getItem('parameter-filters');
+      const savedFilters = localStorage.getItem(`parameter-filters-template-${templateId}`);
       if (savedFilters) {
         try {
           return JSON.parse(savedFilters);
@@ -136,12 +141,12 @@ export function DocumentParametersEditor({
     });
   }, [parameters, filters]);
 
-  // Save filters to localStorage whenever they change
+  // Save filters to localStorage whenever they change (template-specific)
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('parameter-filters', JSON.stringify(filters));
+      localStorage.setItem(`parameter-filters-template-${templateId}`, JSON.stringify(filters));
     }
-  }, [filters]);
+  }, [filters, templateId]);
 
   // Update filtered parameters when filters change
   React.useEffect(() => {
@@ -178,8 +183,8 @@ export function DocumentParametersEditor({
   }, [router]);
 
   const handleCreateParameter = () => {
-    // Navigate to create new parameter page
-    router.push('/admin/document-parameters/create');
+    // Navigate to create new parameter page with template ID
+    router.push(`/admin/document-parameters/create?templateId=${templateId}`);
   };
 
   const handleReorderParameters = (reorderedParameters: Parameter[]) => {
@@ -191,18 +196,51 @@ export function DocumentParametersEditor({
     setFilteredParameters(reorderedParameters);
   };
 
+  const handleParameterSave = async (updatedParameter: Parameter) => {
+    try {
+      // Update the parameter in the local state
+      const updatedParameters = parameters.map(p => 
+        p.id === updatedParameter.id ? updatedParameter : p
+      );
+      
+      // Save via the onSave prop
+      const result = await onSave(updatedParameters);
+      
+      if (result.success) {
+        // Update local state
+        setFilteredParameters(updatedParameters.map(p => 
+          p.id === updatedParameter.id ? updatedParameter : p
+        ));
+      } else {
+        throw new Error(result.error || 'Failed to save parameter');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      console.error('Error saving parameter:', errorMessage);
+      throw err; // Re-throw so the caller can handle it
+    }
+  };
+
   const handleConfigChange = async (newConfig: ParameterConfig) => {
     try {
       setSavingConfig(true);
 
-      const response = await fetch('/api/admin/parameters', {
+      if (!templateId) {
+        throw new Error('Template ID not found');
+      }
+
+      // Save only the configuration (groups and subgroups)
+      const response = await fetch('/api/admin/parameters/config', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          parameters: parameters,
-          config: newConfig,
+          templateId: templateId,
+          config: {
+            groups: newConfig.groups,
+            subgroups: newConfig.subgroups,
+          },
         }),
       });
 
@@ -211,8 +249,11 @@ export function DocumentParametersEditor({
       }
 
       const result = await response.json();
-      console.log('Configuration save result:', result);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save configuration');
+      }
 
+      console.log('✅ Configuration saved successfully');
       // Update localConfig to reflect saved state
       setLocalConfig(newConfig);
     } catch (err) {

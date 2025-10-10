@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Condition } from '@/components/admin/condition-builder';
@@ -23,7 +23,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 interface Parameter {
-  id: string;
+  id: string; // custom_id for frontend compatibility
+  dbId: number; // database primary key for API operations
   name: string;
   description?: string;
   type: string;
@@ -64,12 +65,14 @@ interface Jurisdiction {
 export default function ParameterEditPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const parameterId = params.parameterId as string;
 
   const [parameter, setParameter] = useState<Parameter | null>(null);
   const [config, setConfig] = useState<ParameterConfig | null>(null);
   const [allParameters, setAllParameters] = useState<Parameter[]>([]);
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
+  const [templateId, setTemplateId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -122,32 +125,49 @@ export default function ParameterEditPage() {
     try {
       setLoading(true);
 
-      // Load parameters, config, and jurisdictions from API endpoints
-      const [parametersResponse, jurisdictionsResponse] = await Promise.all([
-        fetch('/api/admin/parameters'),
-        fetch('/api/admin/jurisdictions'),
-      ]);
+      // First, get all templates to find which one contains our parameter
+      const templatesResponse = await fetch('/api/admin/document-templates');
+      if (!templatesResponse.ok) {
+        throw new Error('Failed to load templates');
+      }
+      const templatesData = await templatesResponse.json();
+      const templates = templatesData.data || [];
 
-      if (!parametersResponse.ok || !jurisdictionsResponse.ok) {
-        throw new Error('Failed to load data');
+      // Search for the parameter across all templates
+      let foundParameter: Parameter | null = null;
+      let foundTemplateId: string | null = null;
+      let config: ParameterConfig | null = null;
+
+      for (const template of templates) {
+        const parametersResponse = await fetch(`/api/admin/parameters?templateId=${template.id}`);
+        if (parametersResponse.ok) {
+          const parametersData = await parametersResponse.json();
+          const parameter = parametersData.parameters?.find((p: Parameter) => p.dbId.toString() === parameterId);
+          
+          if (parameter) {
+            foundParameter = parameter;
+            foundTemplateId = template.id.toString();
+            config = parametersData.config;
+            break;
+          }
+        }
       }
 
-      const [parametersData, jurisdictionsData] = await Promise.all([
-        parametersResponse.json(),
-        jurisdictionsResponse.json(),
-      ]);
-
-      const { parameters: parametersList, config: configData } = parametersData;
-
-      setAllParameters(parametersList);
-      setConfig(configData);
-      setJurisdictions(jurisdictionsData);
-
-      // Find the specific parameter
-      const foundParameter = parametersList.find((p: Parameter) => p.id === parameterId);
       if (!foundParameter) {
-        throw new Error('Parameter not found');
+        throw new Error(`Parameter with ID "${parameterId}" not found in any template`);
       }
+
+      // Load jurisdictions
+      const jurisdictionsResponse = await fetch('/api/admin/jurisdictions');
+      if (!jurisdictionsResponse.ok) {
+        throw new Error('Failed to load jurisdictions');
+      }
+      const jurisdictionsData = await jurisdictionsResponse.json();
+
+      setAllParameters([]); // We don't need all parameters for edit page
+      setConfig(config);
+      setJurisdictions(jurisdictionsData.jurisdictions || []);
+      setTemplateId(foundTemplateId);
 
       // Ensure defaults structure exists
       if (!foundParameter.defaults) {
@@ -162,7 +182,15 @@ export default function ParameterEditPage() {
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load parameter data');
-      router.push('/admin/document-parameters');
+      // Navigate back to parameters page with template selection preserved
+      const currentParams = new URLSearchParams(searchParams.toString());
+      if (templateId) {
+        currentParams.set('templateId', templateId);
+      }
+      const redirectUrl = currentParams.toString() 
+        ? `/admin/document-parameters?${currentParams.toString()}`
+        : '/admin/document-parameters';
+      router.push(redirectUrl);
     } finally {
       setLoading(false);
     }
@@ -173,6 +201,7 @@ export default function ParameterEditPage() {
       const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
       if (!confirmed) return;
     }
+    
     router.push(url);
   };
 
@@ -247,7 +276,7 @@ export default function ParameterEditPage() {
     setHasUnsavedChanges(true);
   };
 
-  const handleSave = async (shouldExit = false) => {
+  const handleSave = async () => {
     if (!parameter || !config) return;
 
     try {
@@ -281,33 +310,65 @@ export default function ParameterEditPage() {
         return;
       }
 
-      // Update the parameter in the list
-      const updatedParameters = allParameters.map((p) => (p.id === parameterId ? parameter : p));
+      if (!templateId) {
+        throw new Error('Template ID not found');
+      }
 
-      const response = await fetch('/api/admin/parameters', {
-        method: 'POST',
+      // Save only the specific parameter being edited
+      const requestBody = {
+        custom_id: parameter.id,
+        name: parameter.name,
+        description: parameter.description,
+        type: parameter.type,
+        input_type: parameter.display?.input,
+        priority: parameter.metadata?.priority,
+        display_group: parameter.display?.group,
+        display_subgroup: parameter.display?.subgroup,
+        display_label: parameter.display?.label,
+        options: parameter.options,
+        llm_instructions: parameter.metadata?.llm_instructions,
+        llm_description: parameter.metadata?.llm_description,
+        template_id: templateId,
+      };
+
+      console.log('🔍 Frontend sending request body:', {
+        parameterId,
+        requestBody,
+        parameter: parameter
+      });
+
+      console.log('🔍 Making API call to:', `/api/admin/parameters/${parameterId}`);
+      
+      const response = await fetch(`/api/admin/parameters/${parameterId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          parameters: updatedParameters,
-          config: config,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('📡 API Response status:', response.status);
+      console.log('📡 API Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to save parameter');
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`Failed to save parameter: ${response.status} ${errorText}`);
       }
 
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save parameter');
+      }
+
+      // console.log(`✅ Parameter saved successfully: ${parameter.id}`);
       toast.success('Parameter saved successfully!');
       setHasUnsavedChanges(false);
 
-      // Navigate based on the save action
-      if (shouldExit) {
-        router.push('/admin/document-parameters');
-      }
-      // If shouldExit is false, stay on current page (no navigation)
+      // Navigate back to parameters page (template selection and filters are in localStorage)
+      router.push('/admin/document-parameters');
     } catch (err) {
+      console.error('Save error:', err);
       toast.error('Failed to save parameter');
     } finally {
       setSaving(false);
@@ -336,7 +397,17 @@ export default function ParameterEditPage() {
           <div className="mb-4 text-4xl">❌</div>
           <h2 className="mb-2 text-xl font-semibold">Parameter Not Found</h2>
           <p className="mb-4 text-gray-600">The parameter you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push('/admin/document-parameters')}>
+          <Button onClick={() => {
+            // Navigate back to parameters page with template selection preserved
+            const currentParams = new URLSearchParams(searchParams.toString());
+            if (templateId) {
+              currentParams.set('templateId', templateId);
+            }
+            const redirectUrl = currentParams.toString() 
+              ? `/admin/document-parameters?${currentParams.toString()}`
+              : '/admin/document-parameters';
+            router.push(redirectUrl);
+          }}>
             Back to Parameters
           </Button>
         </div>
@@ -575,15 +646,15 @@ export default function ParameterEditPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleSave(false)}
-                disabled={saving || !hasUnsavedChanges}
-              >
-                Save
-              </Button>
-              <Button onClick={() => handleSave(true)} disabled={saving}>
-                Save & Exit
+              <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges}>
+                {saving ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                    Saving...
+                  </>
+                ) : (
+                  'Save & Exit'
+                )}
               </Button>
             </div>
           </div>

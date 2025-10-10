@@ -30,6 +30,7 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
         canDelete: true,
         canCreate: true,
         canEdit: true,
+        canManageGlobalConfig: true,
       },
     },
     {
@@ -40,6 +41,7 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
         canDelete: true,
         canCreate: true,
         canEdit: true,
+        canManageGlobalConfig: false,
       },
     },
   ],

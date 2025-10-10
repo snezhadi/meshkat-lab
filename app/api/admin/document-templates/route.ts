@@ -1,66 +1,115 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
-// Use local data directory for development
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DOCUMENT_TEMPLATES_FILE = path.join(DATA_DIR, 'document-templates.json');
-const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+// Transform database template to frontend format
+function transformTemplateFromDB(template: any, clauses: any[], paragraphs: any[]): any {
+  // Group paragraphs by clause_id
+  const paragraphsByClause = paragraphs.reduce((acc, paragraph) => {
+    if (!acc[paragraph.clause_id]) {
+      acc[paragraph.clause_id] = [];
+    }
+    acc[paragraph.clause_id].push({
+      id: paragraph.id,
+      title: paragraph.title,
+      content: paragraph.content,
+      description: paragraph.description,
+      condition: paragraph.condition,
+      metadata: paragraph.llm_description ? { llm_description: paragraph.llm_description } : {}
+    });
+    return acc;
+  }, {} as Record<number, any[]>);
 
-// Ensure directories exist
-async function ensureDataDirectories() {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.mkdir(BACKUP_DIR, { recursive: true });
-  } catch (error) {
-    // Directories might already exist
-  }
+  // Transform clauses with their paragraphs
+  const transformedClauses = clauses
+    .filter(clause => clause.sort_order >= 0) // Exclude introduction (sort_order = -1)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map(clause => ({
+      id: clause.id,
+      title: clause.title,
+      content: clause.content,
+      description: clause.description,
+      condition: clause.condition,
+      metadata: clause.llm_description ? { llm_description: clause.llm_description } : {},
+      paragraphs: (paragraphsByClause[clause.id] || [])
+        .sort((a, b) => a.sort_order - b.sort_order)
+    }));
+
+  // Get introduction clause (sort_order = -1)
+  const introductionClause = clauses.find(clause => clause.sort_order === -1);
+
+  return {
+    id: template.id,
+    title: template.title,
+    version: "1.0", // Default version for compatibility
+    description: template.description,
+    active: template.active,
+    metadata: template.llm_description ? { llm_description: template.llm_description } : {},
+    introduction: introductionClause ? {
+      id: introductionClause.id,
+      title: introductionClause.title,
+      content: introductionClause.content,
+      description: introductionClause.description,
+      condition: introductionClause.condition,
+      metadata: introductionClause.llm_description ? { llm_description: introductionClause.llm_description } : {}
+    } : {
+      id: `${template.id}_introduction`,
+      title: "Introduction",
+      content: "",
+      description: null,
+      condition: undefined,
+      metadata: {}
+    },
+    clauses: transformedClauses
+  };
 }
 
-// Initialize with default data if file doesn't exist
-async function initializeDefaultData() {
-  await ensureDataDirectories();
-
-  const fileExists = await fs.access(DOCUMENT_TEMPLATES_FILE)
-    .then(() => true)
-    .catch(() => false);
-
-  if (!fileExists) {
-    const defaultTemplates = [
-      {
-        id: 'employment_agreement',
-        name: 'Employment Agreement',
-        description: 'Standard employment agreement template',
-        jurisdiction: 'CA',
-        clauses: [
-          {
-            id: 'definitions',
-            title: 'Definitions',
-            content: 'In this Agreement, the following terms have the meanings set out below...',
-            description: 'Define key terms used in the agreement',
-            condition: null,
-            paragraphs: [],
-          },
-        ],
-      },
-    ];
-
-    await fs.writeFile(DOCUMENT_TEMPLATES_FILE, JSON.stringify(defaultTemplates, null, 2), 'utf8');
-  }
+// Transform frontend template to database format
+function transformTemplateToDB(template: any) {
+  return {
+    title: template.title,
+    description: template.description,
+    active: template.active,
+    llm_description: template.metadata?.llm_description
+  };
 }
 
 export async function GET() {
   try {
-    await initializeDefaultData();
-    const data = await fs.readFile(DOCUMENT_TEMPLATES_FILE, 'utf8');
-    const documentTemplates = JSON.parse(data);
-    
-    console.log(`GET request - Returning ${documentTemplates.length} templates`);
-    if (documentTemplates.length > 0) {
-      console.log(`Template IDs in file: ${documentTemplates.map(t => t.id).join(', ')}`);
+    const supabase = createServerSupabaseClient();
+
+    // Fetch templates with their clauses and paragraphs
+    const { data: templates, error: templatesError } = await supabase
+      .from('templates')
+      .select(`
+        *,
+        template_clauses (
+          *,
+          template_paragraphs (*)
+        )
+      `)
+      .order('id');
+
+    if (templatesError) {
+      throw new Error(`Failed to fetch templates: ${templatesError.message}`);
     }
-    
-    return NextResponse.json({ success: true, data: documentTemplates });
+
+    // Transform data to match frontend format
+    const transformedTemplates = templates.map(template => {
+      const clauses = template.template_clauses || [];
+      const paragraphs = clauses.flatMap(clause => clause.template_paragraphs || []);
+      
+      return transformTemplateFromDB(template, clauses, paragraphs);
+    });
+
+    console.log(`GET request - Retrieved ${transformedTemplates.length} templates from Supabase`);
+    if (transformedTemplates.length > 0) {
+      console.log(`Template IDs: ${transformedTemplates.map((t: any) => t.id).join(', ')}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: transformedTemplates,
+    });
   } catch (error) {
     console.error('Error reading document templates:', error);
     return NextResponse.json(
@@ -72,12 +121,21 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await initializeDefaultData();
+    const supabase = createServerSupabaseClient();
     const { documentTemplates, createCheckpoint } = await request.json();
 
     console.log(`POST request received - Templates count: ${documentTemplates?.length || 0}`);
     if (documentTemplates && documentTemplates.length > 0) {
-      console.log(`Template IDs: ${documentTemplates.map(t => t.id).join(', ')}`);
+      console.log(`Template IDs: ${documentTemplates.map((t: any) => t.id).join(', ')}`);
+      
+      // Check if this is just creating new templates (only templates with string IDs starting with 'new_template_')
+      const hasExistingTemplates = documentTemplates.some((t: any) => 
+        t.id && typeof t.id === 'number'
+      );
+      
+      if (!hasExistingTemplates) {
+        console.log('🚀 Detected new template creation only - processing only new templates');
+      }
     }
 
     if (!documentTemplates) {
@@ -87,66 +145,153 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create backup if requested
-    if (createCheckpoint) {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupFile = path.join(BACKUP_DIR, `document-templates-checkpoint-${timestamp}.json`);
+    // Start a transaction-like operation
+    for (const template of documentTemplates) {
+      const templateData = transformTemplateToDB(template);
+      
+      let templateId: number;
+      
+      // Check if template exists (for updates)
+      const templateIdStr = template.id?.toString();
+      const isNewTemplate = !templateIdStr || templateIdStr.startsWith('new_template_');
+      
+      if (template.id && typeof template.id === 'number' && !isNewTemplate) {
+        // Update existing template
+        const { data: existingTemplate, error: fetchError } = await supabase
+          .from('templates')
+          .select('id')
+          .eq('id', parseInt(template.id))
+          .single();
 
-      try {
-        const currentTemplates = await fs.readFile(DOCUMENT_TEMPLATES_FILE, 'utf8');
-        await fs.writeFile(backupFile, currentTemplates, 'utf8');
-        console.log(`Created checkpoint: ${backupFile}`);
-      } catch (backupError) {
-        console.warn('Failed to create backup:', backupError);
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          throw new Error(`Failed to check existing template: ${fetchError.message}`);
+        }
+
+        if (existingTemplate) {
+          // Update existing template
+          const { error: updateError } = await supabase
+            .from('templates')
+            .update(templateData)
+            .eq('id', template.id);
+
+          if (updateError) {
+            throw new Error(`Failed to update template: ${updateError.message}`);
+          }
+
+          templateId = parseInt(template.id);
+          console.log(`Updated template: ${template.title} (ID: ${templateId})`);
+        } else {
+          throw new Error(`Template with ID ${template.id} not found`);
+        }
+      } else {
+        // Create new template
+        const { data: newTemplate, error: insertError } = await supabase
+          .from('templates')
+          .insert(templateData)
+          .select()
+          .single();
+
+        if (insertError) {
+          throw new Error(`Failed to create template: ${insertError.message}`);
+        }
+
+        templateId = newTemplate.id;
+        console.log(`Created new template: ${template.title} (ID: ${templateId})`);
+      }
+
+      // Delete existing clauses and paragraphs for this template
+      const { error: deleteClausesError } = await supabase
+        .from('template_clauses')
+        .delete()
+        .eq('template_id', templateId);
+
+      if (deleteClausesError) {
+        throw new Error(`Failed to delete existing clauses: ${deleteClausesError.message}`);
+      }
+
+      // Insert introduction as a clause with sort_order = -1
+      if (template.introduction) {
+        const { error: introError } = await supabase
+          .from('template_clauses')
+          .insert({
+            template_id: templateId,
+            title: template.introduction.title,
+            content: template.introduction.content,
+            description: null,
+            condition: template.introduction.condition || null,
+            sort_order: -1,
+            llm_description: template.introduction.metadata?.llm_description
+          });
+
+        if (introError) {
+          throw new Error(`Failed to insert introduction: ${introError.message}`);
+        }
+      }
+
+      // Insert clauses and their paragraphs
+      for (let i = 0; i < template.clauses.length; i++) {
+        const clause = template.clauses[i];
+        
+        const { data: clauseData, error: clauseError } = await supabase
+          .from('template_clauses')
+          .insert({
+            template_id: templateId,
+            title: clause.title,
+            content: clause.content,
+            description: clause.description,
+            condition: clause.condition || null,
+            sort_order: i,
+            llm_description: clause.metadata?.llm_description
+          })
+          .select()
+          .single();
+
+        if (clauseError) {
+          throw new Error(`Failed to insert clause: ${clauseError.message}`);
+        }
+
+        const clauseId = clauseData.id;
+
+        // Insert paragraphs
+        for (let j = 0; j < clause.paragraphs.length; j++) {
+          const paragraph = clause.paragraphs[j];
+          
+          const { error: paragraphError } = await supabase
+            .from('template_paragraphs')
+            .insert({
+              clause_id: clauseId,
+              title: paragraph.title,
+              content: paragraph.content,
+              description: paragraph.description,
+              condition: paragraph.condition || null,
+              sort_order: j,
+              llm_description: paragraph.metadata?.llm_description
+            });
+
+          if (paragraphError) {
+            throw new Error(`Failed to insert paragraph: ${paragraphError.message}`);
+          }
+        }
       }
     }
 
-    // Write the new document templates
-    const jsonData = JSON.stringify(documentTemplates, null, 2);
-    
-    try {
-      // Log environment info
-      console.log(`Environment: ${process.env.NODE_ENV}`);
-      console.log(`Current working directory: ${process.cwd()}`);
-      console.log(`Data directory path: ${DATA_DIR}`);
-      console.log(`Templates file path: ${DOCUMENT_TEMPLATES_FILE}`);
+    console.log(`Document templates saved successfully. Count: ${documentTemplates.length}`);
+
+    // For new template creation, return the created template with its new ID
+    let createdTemplate = null;
+    if (documentTemplates.length === 1 && documentTemplates[0].id && typeof documentTemplates[0].id === 'string' && documentTemplates[0].id.startsWith('new_template_')) {
+      // This is a new template creation, find the created template
+      const newTemplateId = documentTemplates[0].id;
+      const { data: templates } = await supabase
+        .from('templates')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(1);
       
-      // Ensure directories exist
-      await ensureDataDirectories();
-      console.log(`Data directory is ready: ${DATA_DIR}`);
-      
-      // Check if directory exists and is writable
-      try {
-        await fs.access(DATA_DIR, fs.constants.W_OK);
-        console.log(`Data directory is writable`);
-      } catch (accessError) {
-        console.error(`Data directory is NOT writable:`, accessError);
+      if (templates && templates.length > 0) {
+        createdTemplate = templates[0];
+        console.log(`Returning created template with ID: ${createdTemplate.id}`);
       }
-      
-      // Write the file
-      console.log(`Writing ${documentTemplates.length} templates...`);
-      await fs.writeFile(DOCUMENT_TEMPLATES_FILE, jsonData, 'utf8');
-      console.log(`File written successfully: ${DOCUMENT_TEMPLATES_FILE}`);
-      
-      // Verify the write was successful by reading it back
-      const verifyData = await fs.readFile(DOCUMENT_TEMPLATES_FILE, 'utf8');
-      const parsedData = JSON.parse(verifyData);
-      
-      console.log(`Document templates saved successfully. Count: ${parsedData.length}`);
-      console.log(`Verified template IDs: ${parsedData.map((t: any) => t.id).join(', ')}`);
-      if (documentTemplates.length > 0) {
-        console.log(`Latest template ID: ${documentTemplates[documentTemplates.length - 1].id}`);
-      }
-    } catch (writeError: any) {
-      console.error('Error writing document templates:', writeError);
-      console.error('Error details:', {
-        code: writeError.code,
-        errno: writeError.errno,
-        syscall: writeError.syscall,
-        path: writeError.path,
-        message: writeError.message
-      });
-      throw writeError;
     }
 
     return NextResponse.json({
@@ -156,6 +301,7 @@ export async function POST(request: NextRequest) {
         ? `document-templates-checkpoint-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
         : null,
       templateCount: documentTemplates.length,
+      template: createdTemplate, // Include the created template with new ID
     });
   } catch (error) {
     console.error('Error saving document templates:', error);
@@ -169,35 +315,35 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { url } = request;
-    const checkpointName = new URL(url).searchParams.get('checkpoint');
+    const templateId = new URL(url).searchParams.get('templateId');
 
-    if (!checkpointName) {
+    if (!templateId) {
       return NextResponse.json(
-        { success: false, error: 'Checkpoint name is required' },
+        { success: false, error: 'Template ID is required' },
         { status: 400 }
       );
     }
 
-    const checkpointFile = path.join(BACKUP_DIR, checkpointName);
+    const supabase = createServerSupabaseClient();
 
-    const fileExists = await fs.access(checkpointFile)
-      .then(() => true)
-      .catch(() => false);
+    // Delete template (cascade will handle clauses and paragraphs)
+    const { error } = await supabase
+      .from('templates')
+      .delete()
+      .eq('id', parseInt(templateId));
 
-    if (!fileExists) {
-      return NextResponse.json({ success: false, error: 'Checkpoint not found' }, { status: 404 });
+    if (error) {
+      throw new Error(`Failed to delete template: ${error.message}`);
     }
-
-    await fs.unlink(checkpointFile);
 
     return NextResponse.json({
       success: true,
-      message: 'Checkpoint deleted successfully',
+      message: 'Template deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting checkpoint:', error);
+    console.error('Error deleting template:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete checkpoint' },
+      { success: false, error: 'Failed to delete template' },
       { status: 500 }
     );
   }

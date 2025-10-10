@@ -9,7 +9,7 @@ import { DocumentTemplateAccordion } from './document-template-accordion';
 import { VersioningPanel } from './document-templates-versioning';
 
 interface DocumentTemplate {
-  id: string;
+  id: number | string;
   title: string;
   version: string;
   description: string;
@@ -120,14 +120,14 @@ export function DocumentTemplatesEditor({
     const updatedTemplates = [...templates, newTemplate];
     
     try {
-      // Save directly to API without going through the handleSave function
+      // For new template creation, only send the new template to avoid processing all existing templates
       const response = await fetch('/api/admin/document-templates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          documentTemplates: updatedTemplates,
+          documentTemplates: [newTemplate], // Only send the new template
         }),
       });
 
@@ -139,17 +139,27 @@ export function DocumentTemplatesEditor({
       
       if (result.success) {
         console.log(`New template created successfully: ${newTemplateId}`);
+        console.log('API response:', result);
         toast.success('New template created successfully!');
         
         // Update local state
         setTemplates(updatedTemplates);
         setHasUnsavedChanges(false);
         
-        // Wait a bit longer and then redirect
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Get the new template ID from the API response
+        let redirectId = newTemplateId; // fallback to original ID
         
-        // Navigate to the dedicated template editor page
-        window.location.href = `/admin/document-templates/edit/${newTemplateId}`;
+        // If the API returns the created template with new ID, use that
+        if (result.template && result.template.id) {
+          redirectId = result.template.id;
+          console.log(`Using new database ID for redirect: ${redirectId}`);
+        }
+        
+        // Wait a bit and then redirect
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Navigate to the dedicated template editor page using the correct ID
+        window.location.href = `/admin/document-templates/edit/${redirectId}`;
       } else {
         throw new Error(result.error || 'Failed to save new template');
       }
@@ -210,7 +220,10 @@ export function DocumentTemplatesEditor({
                   Manage your document templates. Click on a template to edit it.
                 </p>
               </div>
-              <Button onClick={handleCreateNewTemplate} className="flex items-center space-x-2">
+              <Button 
+                onClick={handleCreateNewTemplate} 
+                className="flex items-center space-x-2 cursor-pointer hover:bg-blue-600 transition-colors duration-200"
+              >
                 <span className="text-white">+</span>
                 <span>Create New Template</span>
               </Button>

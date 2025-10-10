@@ -37,6 +37,7 @@ export interface AppConfig {
       canDelete: boolean;
       canCreate: boolean;
       canEdit: boolean;
+      canManageGlobalConfig: boolean;
     };
   }>;
 }

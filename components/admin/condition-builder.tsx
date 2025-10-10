@@ -70,6 +70,14 @@ export function ConditionBuilder({
         const response = await fetch('/api/admin/parameters');
         const data = await response.json();
         const allParams = data.parameters;
+        
+        // Check if parameters exist and is an array
+        if (!allParams || !Array.isArray(allParams)) {
+          console.log('No parameters defined for condition builder');
+          setParameters([]);
+          return;
+        }
+        
         // Filter to only boolean and enum parameters
         const filteredParams = allParams.filter(
           (param: any) => param.type === 'boolean' || param.type === 'enum'
@@ -535,10 +543,13 @@ export function ConditionBuilder({
                   variant="outline"
                   role="combobox"
                   aria-expanded={isOpen}
+                  disabled={parameters.length === 0}
                   className="h-8 w-full justify-between text-xs"
                 >
                   {currentParameter ? (
                     <span>@{currentParameter.id}</span>
+                  ) : parameters.length === 0 ? (
+                    <span className="text-gray-400">No parameters available</span>
                   ) : (
                     <span className="text-gray-500">Select parameter...</span>
                   )}
@@ -553,7 +564,11 @@ export function ConditionBuilder({
                     value={parameterSearch}
                     onValueChange={setParameterSearch}
                   />
-                  <CommandEmpty>No parameter found.</CommandEmpty>
+                  <CommandEmpty>
+                    {parameters.length === 0 
+                      ? "No parameters defined for this template. Please add parameters first." 
+                      : "No parameter found."}
+                  </CommandEmpty>
                   <CommandGroup className="max-h-48 overflow-auto">
                     {filteredParameters.map((param) => (
                       <CommandItem
