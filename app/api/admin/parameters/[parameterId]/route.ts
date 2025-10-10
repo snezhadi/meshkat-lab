@@ -33,16 +33,10 @@ export async function GET(
     }
 
     console.log('📡 Fetching parameter from database...');
+    // First, fetch the parameter without joins to test basic query
     const { data: parameters, error } = await supabase
       .from('parameters')
-      .select(`
-        *,
-        parameter_types!fk_parameter_type(name),
-        input_types!fk_input_type(name),
-        priority_levels!fk_priority_level(level),
-        parameter_groups!fk_parameter_group(name),
-        parameter_subgroups!fk_parameter_subgroup(name)
-      `)
+      .select('*')
       .eq('id', paramId);
 
     console.log('📊 Query result:', { parametersCount: parameters?.length, error });
@@ -57,25 +51,34 @@ export async function GET(
 
     const param = parameters[0];
 
+    // Fetch related data separately to avoid relationship ambiguity
+    const [typeResult, inputResult, priorityResult, groupResult, subgroupResult] = await Promise.all([
+      param.type_id ? supabase.from('parameter_types').select('name').eq('id', param.type_id).single() : Promise.resolve({ data: null }),
+      param.display_input_id ? supabase.from('input_types').select('name').eq('id', param.display_input_id).single() : Promise.resolve({ data: null }),
+      param.priority_id ? supabase.from('priority_levels').select('level').eq('id', param.priority_id).single() : Promise.resolve({ data: null }),
+      param.display_group_id ? supabase.from('parameter_groups').select('name').eq('id', param.display_group_id).single() : Promise.resolve({ data: null }),
+      param.display_subgroup_id ? supabase.from('parameter_subgroups').select('name').eq('id', param.display_subgroup_id).single() : Promise.resolve({ data: null }),
+    ]);
+
     // Transform to frontend format
     const transformedParameter = {
       id: param.custom_id,
       dbId: param.id,
       name: param.name,
       description: param.description,
-      type: param.parameter_types?.name || 'text',
+      type: typeResult.data?.name || 'text',
       metadata: {
         llm_instructions: param.llm_instructions,
         llm_description: param.llm_description,
-        priority: param.priority_levels?.level || 1,
+        priority: priorityResult.data?.level || 1,
         format: param.format,
       },
       condition: param.condition,
       display: {
-        group: param.parameter_groups?.name || 'General Parameters',
-        subgroup: param.parameter_subgroups?.name || 'General',
+        group: groupResult.data?.name || 'General Parameters',
+        subgroup: subgroupResult.data?.name || 'General',
         label: param.display_label || param.name,
-        input: param.input_types?.name || 'text',
+        input: inputResult.data?.name || 'text',
       },
       options: param.options ? param.options.split(',') : [],
       defaults: {
