@@ -40,8 +40,7 @@ export function DocumentPartEditModal({ part, onSave, onCancel }: DocumentPartEd
           const result = await response.json();
           if (result.success) {
             const params = result.data
-              .map((p: any) => p.id)
-              .filter((id: string) => id.startsWith('employment_'));
+              .map((p: any) => p.id);
             setAvailableParameters(params);
           }
         }

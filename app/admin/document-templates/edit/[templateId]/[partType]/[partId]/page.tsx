@@ -131,7 +131,7 @@ export default function DocumentPartEditPage() {
           console.log(`📋 Available clause IDs:`, foundTemplate.clauses.map(c => c.id));
           console.log(`📋 Available clause titles:`, foundTemplate.clauses.map(c => c.title));
           
-          foundPart = foundTemplate.clauses.find((c: any) => c.id === partId);
+          foundPart = foundTemplate.clauses.find((c: any) => c.id === parseInt(partId as string));
           
           if (!foundPart) {
             console.warn(`❌ Clause with ID ${partId} not found in template data`);
@@ -153,7 +153,7 @@ export default function DocumentPartEditPage() {
           }
         } else if (partType === 'paragraph') {
           for (const clause of foundTemplate.clauses) {
-            foundPart = clause.paragraphs.find((p: any) => p.id === partId);
+            foundPart = clause.paragraphs.find((p: any) => p.id === parseInt(partId as string));
             if (foundPart) break;
           }
           // If paragraph not found in saved data, it might be a newly added unsaved paragraph
@@ -177,7 +177,7 @@ export default function DocumentPartEditPage() {
 
         // Fetch available parameters for the rich text editor
         try {
-          const paramsResponse = await fetch('/api/admin/parameters');
+          const paramsResponse = await fetch(`/api/admin/parameters?templateId=${templateId}`);
           if (paramsResponse.ok) {
             const paramsResult = await paramsResponse.json();
             // The API returns { parameters: [...], config: {...} }
