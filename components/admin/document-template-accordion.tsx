@@ -333,6 +333,7 @@ export function DocumentTemplateAccordion({
   const router = useRouter();
   const [expandedIntroduction, setExpandedIntroduction] = useState(true);
   const [expandedClauses, setExpandedClauses] = useState<Set<string>>(new Set());
+  const [clauseWithNewParagraph, setClauseWithNewParagraph] = useState<string | null>(null);
   
   // Function to expand a specific clause (used by parent component)
   const expandClause = (clauseId: string) => {
@@ -355,8 +356,14 @@ export function DocumentTemplateAccordion({
       }
     }
     
+    // If a paragraph was added to a clause, expand that clause
+    if (clauseWithNewParagraph) {
+      expandClause(clauseWithNewParagraph);
+      setClauseWithNewParagraph(null); // Reset the flag
+    }
+    
     setPreviousClauseCount(currentClauseCount);
-  }, [template.clauses, previousClauseCount]);
+  }, [template.clauses, previousClauseCount, clauseWithNewParagraph]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -528,10 +535,8 @@ export function DocumentTemplateAccordion({
       // This ensures we get the correct paragraph ID from the database
       onTemplateChange(template); // This will trigger fetchTemplate() and get correct data
       
-      // Expand the clause to show the newly added paragraph
-      const newExpanded = new Set(expandedClauses);
-      newExpanded.add(clauseId);
-      setExpandedClauses(newExpanded);
+      // Mark this clause as having a new paragraph - the useEffect will expand it
+      setClauseWithNewParagraph(clauseId);
       
       // Show success message
       toast.success('New paragraph added successfully!');
