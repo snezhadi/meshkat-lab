@@ -119,18 +119,25 @@ export async function PUT(request: NextRequest) {
     // Convert to integer if it's a string number
     actualParagraphId = parseInt(paragraphId);
 
+    // Prepare update data
+    const updateData: any = {
+      title: paragraphData.title,
+      content: paragraphData.content,
+      description: paragraphData.description,
+      condition: paragraphData.condition,
+      llm_description: paragraphData.llm_description,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include sort_order if it's explicitly provided (including 0)
+    if (paragraphData.sort_order !== undefined) {
+      updateData.sort_order = paragraphData.sort_order;
+    }
+
     // Update the paragraph
     const { data: updatedParagraph, error } = await supabase
       .from('template_paragraphs')
-      .update({
-        title: paragraphData.title,
-        content: paragraphData.content,
-        description: paragraphData.description,
-        condition: paragraphData.condition,
-        llm_description: paragraphData.llm_description,
-        sort_order: paragraphData.sort_order !== undefined ? paragraphData.sort_order : undefined,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', actualParagraphId)
       .select()
       .single();

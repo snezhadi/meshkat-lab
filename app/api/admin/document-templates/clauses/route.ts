@@ -123,18 +123,25 @@ export async function PUT(request: NextRequest) {
     // Convert to integer if it's a string number
     actualClauseId = parseInt(clauseId);
 
+    // Prepare update data
+    const updateData: any = {
+      title: clauseData.title,
+      content: clauseData.content,
+      description: clauseData.description,
+      condition: clauseData.condition,
+      llm_description: clauseData.llm_description,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include sort_order if it's explicitly provided (including 0)
+    if (clauseData.sort_order !== undefined) {
+      updateData.sort_order = clauseData.sort_order;
+    }
+
     // Update the clause
     const { data: updatedClause, error } = await supabase
       .from('template_clauses')
-      .update({
-        title: clauseData.title,
-        content: clauseData.content,
-        description: clauseData.description,
-        condition: clauseData.condition,
-        llm_description: clauseData.llm_description,
-        sort_order: clauseData.sort_order !== undefined ? clauseData.sort_order : undefined,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', actualClauseId)
       .select()
       .single();
