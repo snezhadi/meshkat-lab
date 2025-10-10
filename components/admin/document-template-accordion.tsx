@@ -429,13 +429,20 @@ export function DocumentTemplateAccordion({
 
   const handleClauseDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    console.log('🎯 Clause drag end event:', { activeId: active.id, overId: over?.id });
 
     if (over && active.id !== over.id) {
       const oldIndex = localTemplate.clauses.findIndex((clause) => clause.id === active.id);
       const newIndex = localTemplate.clauses.findIndex((clause) => clause.id === over.id);
+      
+      console.log('📍 Clause indices:', { oldIndex, newIndex });
+      console.log('📋 Current clauses:', localTemplate.clauses.map(c => ({ id: c.id, title: c.title })));
 
       // Update local state immediately for responsive UI
       const updatedClauses = arrayMove(localTemplate.clauses, oldIndex, newIndex);
+      console.log('📋 Updated clauses order:', updatedClauses.map(c => ({ id: c.id, title: c.title })));
+      
       const updatedTemplate = {
         ...localTemplate,
         clauses: updatedClauses,
@@ -443,6 +450,7 @@ export function DocumentTemplateAccordion({
 
       // Update local state first (without triggering full refresh)
       setLocalTemplate(updatedTemplate);
+      console.log('✅ Local state updated');
 
       try {
         // Update sort_order in database for all affected clauses
@@ -450,40 +458,46 @@ export function DocumentTemplateAccordion({
         const minIndex = Math.min(oldIndex, newIndex);
         const maxIndex = Math.max(oldIndex, newIndex);
         
-        console.log(`Moving clause from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
+        console.log(`📦 Moving clause from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
+        console.log(`📦 Number of clauses to update: ${maxIndex - minIndex + 1}`);
         
         // Update all clauses in the affected range with their new positions
-        const updates = updatedClauses
-          .slice(minIndex, maxIndex + 1)
-          .map((clause, relativeIndex) => {
-            const newSortOrder = minIndex + relativeIndex;
-            console.log(`  Updating clause ${clause.id} to sort_order ${newSortOrder}`);
-            
-            return fetch(`/api/admin/document-templates/clauses?clauseId=${clause.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                title: clause.title,
-                content: clause.content,
-                description: clause.description || null,
-                condition: clause.condition || null,
-                llm_description: clause.metadata?.llm_description || null,
-                sort_order: newSortOrder,
-              }),
-            });
+        const clausesToUpdate = updatedClauses.slice(minIndex, maxIndex + 1);
+        console.log('📦 Clauses to update:', clausesToUpdate.map(c => ({ id: c.id, title: c.title })));
+        
+        const updates = clausesToUpdate.map((clause, relativeIndex) => {
+          const newSortOrder = minIndex + relativeIndex;
+          console.log(`  🔄 Updating clause ${clause.id} (${clause.title}) to sort_order ${newSortOrder}`);
+          
+          return fetch(`/api/admin/document-templates/clauses?clauseId=${clause.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: clause.title,
+              content: clause.content,
+              description: clause.description || null,
+              condition: clause.condition || null,
+              llm_description: clause.metadata?.llm_description || null,
+              sort_order: newSortOrder,
+            }),
           });
+        });
 
+        console.log('⏳ Waiting for all clause updates to complete...');
         const responses = await Promise.all(updates);
+        console.log('📨 Received responses:', responses.map(r => r.status));
         
         // Check if all updates succeeded
-        for (const response of responses) {
+        for (let i = 0; i < responses.length; i++) {
+          const response = responses[i];
           if (!response.ok) {
             const errorData = await response.json();
+            console.error(`❌ Failed to update clause at index ${i}:`, errorData);
             throw new Error(errorData.error || 'Failed to update clause order');
           }
         }
 
-        console.log('✅ Clause order updated successfully');
+        console.log('✅ All clause updates successful');
         toast.success('Clause order updated!');
       } catch (error) {
         console.error('Error updating clause order:', error);
@@ -496,16 +510,26 @@ export function DocumentTemplateAccordion({
 
   const handleParagraphDragEnd = async (clauseId: string, event: DragEndEvent) => {
     const { active, over } = event;
+    
+    console.log('🎯 Paragraph drag end event:', { clauseId, activeId: active.id, overId: over?.id });
 
     if (over && active.id !== over.id) {
       const clause = localTemplate.clauses.find((c) => c.id === clauseId);
-      if (!clause) return;
+      if (!clause) {
+        console.error('❌ Clause not found:', clauseId);
+        return;
+      }
 
       const oldIndex = clause.paragraphs.findIndex((paragraph) => paragraph.id === active.id);
       const newIndex = clause.paragraphs.findIndex((paragraph) => paragraph.id === over.id);
+      
+      console.log('📍 Paragraph indices:', { oldIndex, newIndex });
+      console.log('📄 Current paragraphs:', clause.paragraphs.map(p => ({ id: p.id, title: p.title })));
 
       // Update local state immediately for responsive UI
       const updatedParagraphs = arrayMove(clause.paragraphs, oldIndex, newIndex);
+      console.log('📄 Updated paragraphs order:', updatedParagraphs.map(p => ({ id: p.id, title: p.title })));
+      
       const updatedTemplate = {
         ...localTemplate,
         clauses: localTemplate.clauses.map((c) =>
@@ -515,6 +539,7 @@ export function DocumentTemplateAccordion({
 
       // Update local state first (without triggering full refresh)
       setLocalTemplate(updatedTemplate);
+      console.log('✅ Local state updated');
 
       try {
         // Update sort_order in database for all affected paragraphs
@@ -522,40 +547,46 @@ export function DocumentTemplateAccordion({
         const minIndex = Math.min(oldIndex, newIndex);
         const maxIndex = Math.max(oldIndex, newIndex);
         
-        console.log(`Moving paragraph from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
+        console.log(`📦 Moving paragraph from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
+        console.log(`📦 Number of paragraphs to update: ${maxIndex - minIndex + 1}`);
         
         // Update all paragraphs in the affected range with their new positions
-        const updates = updatedParagraphs
-          .slice(minIndex, maxIndex + 1)
-          .map((paragraph, relativeIndex) => {
-            const newSortOrder = minIndex + relativeIndex;
-            console.log(`  Updating paragraph ${paragraph.id} to sort_order ${newSortOrder}`);
-            
-            return fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraph.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                title: paragraph.title,
-                content: paragraph.content,
-                description: paragraph.description || null,
-                condition: paragraph.condition || null,
-                llm_description: paragraph.metadata?.llm_description || null,
-                sort_order: newSortOrder,
-              }),
-            });
+        const paragraphsToUpdate = updatedParagraphs.slice(minIndex, maxIndex + 1);
+        console.log('📦 Paragraphs to update:', paragraphsToUpdate.map(p => ({ id: p.id, title: p.title })));
+        
+        const updates = paragraphsToUpdate.map((paragraph, relativeIndex) => {
+          const newSortOrder = minIndex + relativeIndex;
+          console.log(`  🔄 Updating paragraph ${paragraph.id} (${paragraph.title}) to sort_order ${newSortOrder}`);
+          
+          return fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraph.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: paragraph.title,
+              content: paragraph.content,
+              description: paragraph.description || null,
+              condition: paragraph.condition || null,
+              llm_description: paragraph.metadata?.llm_description || null,
+              sort_order: newSortOrder,
+            }),
           });
+        });
 
+        console.log('⏳ Waiting for all paragraph updates to complete...');
         const responses = await Promise.all(updates);
+        console.log('📨 Received responses:', responses.map(r => r.status));
         
         // Check if all updates succeeded
-        for (const response of responses) {
+        for (let i = 0; i < responses.length; i++) {
+          const response = responses[i];
           if (!response.ok) {
             const errorData = await response.json();
+            console.error(`❌ Failed to update paragraph at index ${i}:`, errorData);
             throw new Error(errorData.error || 'Failed to update paragraph order');
           }
         }
 
-        console.log('✅ Paragraph order updated successfully');
+        console.log('✅ All paragraph updates successful');
         toast.success('Paragraph order updated!');
       } catch (error) {
         console.error('Error updating paragraph order:', error);
