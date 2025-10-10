@@ -427,19 +427,70 @@ export function DocumentTemplateAccordion({
     setExpandedClauses(newExpanded);
   };
 
-  const handleClauseDragEnd = (event: DragEndEvent) => {
+  const handleClauseDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
       const oldIndex = localTemplate.clauses.findIndex((clause) => clause.id === active.id);
       const newIndex = localTemplate.clauses.findIndex((clause) => clause.id === over.id);
 
+      // Update local state immediately for responsive UI
+      const updatedClauses = arrayMove(localTemplate.clauses, oldIndex, newIndex);
       const updatedTemplate = {
         ...localTemplate,
-        clauses: arrayMove(localTemplate.clauses, oldIndex, newIndex),
+        clauses: updatedClauses,
       };
 
-      onTemplateChange(updatedTemplate);
+      // Update local state first (without triggering full refresh)
+      setLocalTemplate(updatedTemplate);
+
+      try {
+        // Update sort_order in database for all affected clauses
+        // When moving from position A to position B, all items between A and B need their sort_order updated
+        const minIndex = Math.min(oldIndex, newIndex);
+        const maxIndex = Math.max(oldIndex, newIndex);
+        
+        console.log(`Moving clause from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
+        
+        // Update all clauses in the affected range with their new positions
+        const updates = updatedClauses
+          .slice(minIndex, maxIndex + 1)
+          .map((clause, relativeIndex) => {
+            const newSortOrder = minIndex + relativeIndex;
+            console.log(`  Updating clause ${clause.id} to sort_order ${newSortOrder}`);
+            
+            return fetch(`/api/admin/document-templates/clauses?clauseId=${clause.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: clause.title,
+                content: clause.content,
+                description: clause.description || null,
+                condition: clause.condition || null,
+                llm_description: clause.metadata?.llm_description || null,
+                sort_order: newSortOrder,
+              }),
+            });
+          });
+
+        const responses = await Promise.all(updates);
+        
+        // Check if all updates succeeded
+        for (const response of responses) {
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update clause order');
+          }
+        }
+
+        console.log('✅ Clause order updated successfully');
+        toast.success('Clause order updated!');
+      } catch (error) {
+        console.error('Error updating clause order:', error);
+        toast.error('Failed to update clause order');
+        // Revert local state on error
+        setLocalTemplate(template);
+      }
     }
   };
 
@@ -466,31 +517,46 @@ export function DocumentTemplateAccordion({
       setLocalTemplate(updatedTemplate);
 
       try {
-        // Update sort_order in database for each affected paragraph
-        const updates = updatedParagraphs.map(async (paragraph, index) => {
-          const response = await fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraph.id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              title: paragraph.title,
-              content: paragraph.content,
-              description: paragraph.description,
-              condition: paragraph.condition,
-              llm_description: paragraph.metadata?.llm_description || '',
-              sort_order: index, // Update sort order based on new position
-            }),
+        // Update sort_order in database for all affected paragraphs
+        // When moving from position A to position B, all items between A and B need their sort_order updated
+        const minIndex = Math.min(oldIndex, newIndex);
+        const maxIndex = Math.max(oldIndex, newIndex);
+        
+        console.log(`Moving paragraph from position ${oldIndex} to ${newIndex} - updating positions ${minIndex} to ${maxIndex}`);
+        
+        // Update all paragraphs in the affected range with their new positions
+        const updates = updatedParagraphs
+          .slice(minIndex, maxIndex + 1)
+          .map((paragraph, relativeIndex) => {
+            const newSortOrder = minIndex + relativeIndex;
+            console.log(`  Updating paragraph ${paragraph.id} to sort_order ${newSortOrder}`);
+            
+            return fetch(`/api/admin/document-templates/paragraphs?paragraphId=${paragraph.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: paragraph.title,
+                content: paragraph.content,
+                description: paragraph.description || null,
+                condition: paragraph.condition || null,
+                llm_description: paragraph.metadata?.llm_description || null,
+                sort_order: newSortOrder,
+              }),
+            });
           });
 
+        const responses = await Promise.all(updates);
+        
+        // Check if all updates succeeded
+        for (const response of responses) {
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.error || 'Failed to update paragraph order');
           }
-        });
+        }
 
-        await Promise.all(updates);
-        toast.success('Paragraph order updated successfully!');
+        console.log('✅ Paragraph order updated successfully');
+        toast.success('Paragraph order updated!');
       } catch (error) {
         console.error('Error updating paragraph order:', error);
         toast.error('Failed to update paragraph order');
