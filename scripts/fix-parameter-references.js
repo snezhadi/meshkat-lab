@@ -55,23 +55,33 @@ async function fixParameterReferences() {
       let newContent = clause.content || '';
       let newCondition = clause.condition || '';
       
-      // Update content
-      for (const [oldRef, newRef] of parameterMapping) {
-        const oldPattern = `@${oldRef}`;
-        const newPattern = `@${newRef}`;
-        
-        if (newContent && newContent.includes(oldPattern)) {
-          newContent = newContent.replace(new RegExp(oldPattern, 'g'), newPattern);
-          updated = true;
-          console.log(`  📝 Updated content in clause "${clause.title}": ${oldPattern} → ${newPattern}`);
-        }
-        
-        if (newCondition && typeof newCondition === 'string' && newCondition.includes(oldPattern)) {
-          newCondition = newCondition.replace(new RegExp(oldPattern, 'g'), newPattern);
-          updated = true;
-          console.log(`  🔗 Updated condition in clause "${clause.title}": ${oldPattern} → ${newPattern}`);
-        }
-      }
+            // Update content
+            for (const [oldRef, newRef] of parameterMapping) {
+              const oldPattern = `@${oldRef}`;
+              const newPattern = `@${newRef}`;
+              
+              if (newContent && newContent.includes(oldPattern)) {
+                newContent = newContent.replace(new RegExp(oldPattern, 'g'), newPattern);
+                updated = true;
+                console.log(`  📝 Updated content in clause "${clause.title}": ${oldPattern} → ${newPattern}`);
+              }
+              
+              // Handle condition as JSON object
+              if (newCondition && typeof newCondition === 'object') {
+                const conditionStr = JSON.stringify(newCondition);
+                if (conditionStr.includes(oldRef)) {
+                  // Replace parameter references in the JSON structure
+                  const updatedConditionStr = conditionStr.replace(new RegExp(`"${oldRef}"`, 'g'), `"${newRef}"`);
+                  newCondition = JSON.parse(updatedConditionStr);
+                  updated = true;
+                  console.log(`  🔗 Updated condition in clause "${clause.title}": ${oldRef} → ${newRef}`);
+                }
+              } else if (newCondition && typeof newCondition === 'string' && newCondition.includes(oldPattern)) {
+                newCondition = newCondition.replace(new RegExp(oldPattern, 'g'), newPattern);
+                updated = true;
+                console.log(`  🔗 Updated condition in clause "${clause.title}": ${oldPattern} → ${newPattern}`);
+              }
+            }
       
       if (updated) {
         const { error: updateError } = await supabase
@@ -108,23 +118,33 @@ async function fixParameterReferences() {
       let newContent = paragraph.content || '';
       let newCondition = paragraph.condition || '';
       
-      // Update content
-      for (const [oldRef, newRef] of parameterMapping) {
-        const oldPattern = `@${oldRef}`;
-        const newPattern = `@${newRef}`;
-        
-        if (newContent && newContent.includes(oldPattern)) {
-          newContent = newContent.replace(new RegExp(oldPattern, 'g'), newPattern);
-          updated = true;
-          console.log(`  📝 Updated content in paragraph "${paragraph.title}": ${oldPattern} → ${newPattern}`);
-        }
-        
-        if (newCondition && typeof newCondition === 'string' && newCondition.includes(oldPattern)) {
-          newCondition = newCondition.replace(new RegExp(oldPattern, 'g'), newPattern);
-          updated = true;
-          console.log(`  🔗 Updated condition in paragraph "${paragraph.title}": ${oldPattern} → ${newPattern}`);
-        }
-      }
+            // Update content
+            for (const [oldRef, newRef] of parameterMapping) {
+              const oldPattern = `@${oldRef}`;
+              const newPattern = `@${newRef}`;
+              
+              if (newContent && newContent.includes(oldPattern)) {
+                newContent = newContent.replace(new RegExp(oldPattern, 'g'), newPattern);
+                updated = true;
+                console.log(`  📝 Updated content in paragraph "${paragraph.title}": ${oldPattern} → ${newPattern}`);
+              }
+              
+              // Handle condition as JSON object
+              if (newCondition && typeof newCondition === 'object') {
+                const conditionStr = JSON.stringify(newCondition);
+                if (conditionStr.includes(oldRef)) {
+                  // Replace parameter references in the JSON structure
+                  const updatedConditionStr = conditionStr.replace(new RegExp(`"${oldRef}"`, 'g'), `"${newRef}"`);
+                  newCondition = JSON.parse(updatedConditionStr);
+                  updated = true;
+                  console.log(`  🔗 Updated condition in paragraph "${paragraph.title}": ${oldRef} → ${newRef}`);
+                }
+              } else if (newCondition && typeof newCondition === 'string' && newCondition.includes(oldPattern)) {
+                newCondition = newCondition.replace(new RegExp(oldPattern, 'g'), newPattern);
+                updated = true;
+                console.log(`  🔗 Updated condition in paragraph "${paragraph.title}": ${oldPattern} → ${newPattern}`);
+              }
+            }
       
       if (updated) {
         const { error: updateError } = await supabase
