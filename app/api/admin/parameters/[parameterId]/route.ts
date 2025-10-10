@@ -37,11 +37,11 @@ export async function GET(
       .from('parameters')
       .select(`
         *,
-        parameter_types(name),
-        input_types(name),
-        priority_levels(level),
-        parameter_groups(name),
-        parameter_subgroups(name)
+        parameter_types!fk_parameter_type(name),
+        input_types!fk_input_type(name),
+        priority_levels!fk_priority_level(level),
+        parameter_groups!fk_parameter_group(name),
+        parameter_subgroups!fk_parameter_subgroup(name)
       `)
       .eq('id', paramId);
 
