@@ -63,32 +63,83 @@ export function ConditionBuilder({
     }
   }, [condition]);
 
-  // Load parameters on component mount
+  // Load parameters from availableParameters prop or fetch from API
   useEffect(() => {
-    const loadParameters = async () => {
-      try {
-        const response = await fetch('/api/admin/parameters');
-        const data = await response.json();
-        const allParams = data.parameters;
-        
-        // Check if parameters exist and is an array
-        if (!allParams || !Array.isArray(allParams)) {
-          console.log('No parameters defined for condition builder');
-          setParameters([]);
-          return;
+    if (availableParameters && availableParameters.length > 0) {
+      // Use the passed availableParameters - convert to Parameter objects
+      // We need to fetch parameter details to get type information
+      const loadParameterDetails = async () => {
+        try {
+          // Find templateId from current URL or context
+          const currentPath = window.location.pathname;
+          const templateMatch = currentPath.match(/\/admin\/document-templates\/edit\/(\d+)/);
+          
+          if (templateMatch) {
+            const templateId = templateMatch[1];
+            const response = await fetch(`/api/admin/parameters?templateId=${templateId}`);
+            const data = await response.json();
+            const allParams = data.parameters;
+            
+            if (allParams && Array.isArray(allParams)) {
+              // Filter to only parameters that are in availableParameters and are boolean/enum
+              const filteredParams = allParams.filter(
+                (param: any) => 
+                  availableParameters.includes(param.id) && 
+                  (param.type === 'boolean' || param.type === 'enum')
+              );
+              setParameters(filteredParams);
+            } else {
+              setParameters([]);
+            }
+          } else {
+            // Fallback: create basic parameter objects from availableParameters
+            const basicParams = availableParameters.map(paramId => ({
+              id: paramId,
+              name: paramId,
+              type: 'boolean', // Default type
+            }));
+            setParameters(basicParams);
+          }
+        } catch (error) {
+          console.error('Failed to load parameter details:', error);
+          // Fallback: create basic parameter objects
+          const basicParams = availableParameters.map(paramId => ({
+            id: paramId,
+            name: paramId,
+            type: 'boolean',
+          }));
+          setParameters(basicParams);
         }
-        
-        // Filter to only boolean and enum parameters
-        const filteredParams = allParams.filter(
-          (param: any) => param.type === 'boolean' || param.type === 'enum'
-        );
-        setParameters(filteredParams);
-      } catch (error) {
-        console.error('Failed to load parameters:', error);
-      }
-    };
-    loadParameters();
-  }, []);
+      };
+      
+      loadParameterDetails();
+    } else {
+      // No availableParameters provided, try to fetch from API (legacy behavior)
+      const loadParameters = async () => {
+        try {
+          const response = await fetch('/api/admin/parameters');
+          const data = await response.json();
+          const allParams = data.parameters;
+          
+          if (!allParams || !Array.isArray(allParams)) {
+            console.log('No parameters defined for condition builder');
+            setParameters([]);
+            return;
+          }
+          
+          // Filter to only boolean and enum parameters
+          const filteredParams = allParams.filter(
+            (param: any) => param.type === 'boolean' || param.type === 'enum'
+          );
+          setParameters(filteredParams);
+        } catch (error) {
+          console.error('Failed to load parameters:', error);
+          setParameters([]);
+        }
+      };
+      loadParameters();
+    }
+  }, [availableParameters]);
 
   const updateCondition = (newCondition: Condition | null) => {
     console.log('=== updateCondition CALLED ===');
