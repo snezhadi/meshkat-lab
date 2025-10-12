@@ -327,8 +327,10 @@ export default function ParameterEditPage() {
       }
 
       // Check if ID already exists (excluding current parameter)
-      console.log('🔍 Checking for duplicate ID. parameterId:', parameterId, 'allParameters:', allParameters.length);
-      const duplicate = allParameters.some((p) => p.id === parameter.id && p.id !== parameterId);
+      // Note: parameterId is the database PK (number), parameter.dbId is also the database PK
+      // parameter.id is the custom_id (string), so we need to compare dbId not id
+      console.log('🔍 Checking for duplicate ID. parameterId:', parameterId, 'parameter.dbId:', parameter.dbId, 'allParameters:', allParameters.length);
+      const duplicate = allParameters.some((p) => p.id === parameter.id && p.dbId !== parameter.dbId);
       console.log('🔍 Duplicate check result:', duplicate);
       if (duplicate) {
         console.log('❌ Validation failed: Parameter ID already exists');
