@@ -170,21 +170,9 @@ export async function PUT(
     }
 
     // Look up foreign key IDs
-    console.log('🔍 Looking up foreign key IDs...');
-    console.log('🔍 parameterData.type:', parameterData.type);
-    console.log('🔍 parameterData.input_type:', parameterData.input_type);
-    console.log('🔍 parameterData.priority:', parameterData.priority, 'type:', typeof parameterData.priority);
-    
     const typeId = parameterData.type ? await getParameterTypeId(supabase, parameterData.type) : null;
-    console.log('🔍 typeId result:', typeId);
-    
     const inputTypeId = parameterData.input_type ? await getInputTypeId(supabase, parameterData.input_type) : null;
-    console.log('🔍 inputTypeId result:', inputTypeId);
-    
-    console.log('🔍 About to call getPriorityId with:', parameterData.priority);
-    console.log('🔍 Priority check: !== undefined?', parameterData.priority !== undefined, '!== null?', parameterData.priority !== null);
     const priorityId = (parameterData.priority !== undefined && parameterData.priority !== null) ? await getPriorityId(supabase, parameterData.priority) : null;
-    console.log('🔍 priorityId result:', priorityId);
     
     // Handle optional display fields - only create groups/subgroups if explicitly provided
     let actualGroupId = null;
@@ -257,126 +245,78 @@ export async function PUT(
       updated_at: new Date().toISOString(),
     };
 
-    console.log('🔍 About to update parameter in database:', {
-      parameterId,
-      updateData,
-      typeId,
-      inputTypeId,
-      priorityId,
-      actualGroupId,
-      actualSubgroupId
-    });
-
     // First, update the parameter using database ID
-    console.log('🔍 Executing database update...');
     const { error: updateError } = await supabase
       .from('parameters')
       .update(updateData)
       .eq('id', parameterId);
 
     if (updateError) {
-      console.error('❌ Database update error:', updateError);
       throw new Error(`Failed to update parameter: ${updateError.message}`);
     }
-    
-    console.log('✅ Database update successful');
 
     // Handle jurisdiction defaults if provided
-    console.log('🔍 Checking jurisdiction_defaults:', {
-      exists: !!parameterData.jurisdiction_defaults,
-      isArray: Array.isArray(parameterData.jurisdiction_defaults),
-      length: parameterData.jurisdiction_defaults?.length,
-      data: parameterData.jurisdiction_defaults
-    });
-    
     if (parameterData.jurisdiction_defaults && Array.isArray(parameterData.jurisdiction_defaults)) {
-      console.log('🔍 Processing jurisdiction defaults:', JSON.stringify(parameterData.jurisdiction_defaults, null, 2));
-      
       // First, delete existing jurisdiction defaults for this parameter
-      console.log('🗑️ Deleting existing jurisdiction defaults...');
       const { error: deleteError } = await supabase
         .from('parameter_defaults')
         .delete()
         .eq('parameter_id', parameterId);
 
       if (deleteError) {
-        console.error('❌ Error deleting existing jurisdiction defaults:', deleteError);
         throw new Error(`Failed to delete existing jurisdiction defaults: ${deleteError.message}`);
       }
-      console.log('✅ Existing jurisdiction defaults deleted');
 
       // Insert new jurisdiction defaults
       if (parameterData.jurisdiction_defaults.length > 0) {
         // Get jurisdiction IDs for the jurisdiction names
-        console.log('🔍 Fetching jurisdictions from database...');
         const { data: jurisdictions } = await supabase
           .from('jurisdictions')
           .select('id, name');
-        console.log('📍 Available jurisdictions:', jurisdictions?.length);
 
         const jurisdictionDefaultsToInsert = [];
         
         for (const jd of parameterData.jurisdiction_defaults) {
-          console.log('🔍 Processing jurisdiction default:', jd);
           if (jd.jurisdiction && jd.default !== undefined && jd.default !== '') {
             // Find the jurisdiction ID by name
             const jurisdiction = jurisdictions?.find((j: any) => j.name === jd.jurisdiction);
-            console.log('🔍 Found jurisdiction:', jurisdiction);
             if (jurisdiction) {
               jurisdictionDefaultsToInsert.push({
                 parameter_id: parameterId,
                 jurisdiction_id: jurisdiction.id,
                 default_value: jd.default
               });
-            } else {
-              console.log('⚠️ Jurisdiction not found:', jd.jurisdiction);
             }
-          } else {
-            console.log('⚠️ Skipping invalid jurisdiction default:', jd);
           }
         }
 
-        console.log('📦 Jurisdiction defaults to insert:', jurisdictionDefaultsToInsert.length);
         if (jurisdictionDefaultsToInsert.length > 0) {
-          console.log('💾 Inserting jurisdiction defaults:', JSON.stringify(jurisdictionDefaultsToInsert, null, 2));
           const { error: insertError } = await supabase
             .from('parameter_defaults')
             .insert(jurisdictionDefaultsToInsert);
 
           if (insertError) {
-            console.error('❌ Error inserting jurisdiction defaults:', insertError);
             throw new Error(`Failed to insert jurisdiction defaults: ${insertError.message}`);
           }
-          console.log('✅ Successfully saved jurisdiction defaults');
-        } else {
-          console.log('ℹ️ No valid jurisdiction defaults to insert');
         }
-      } else {
-        console.log('ℹ️ No jurisdiction defaults provided (empty array)');
       }
-    } else {
-      console.log('ℹ️ No jurisdiction defaults to process');
     }
 
     // Then, fetch the updated parameter using database ID
-    console.log('🔍 Fetching updated parameter...');
     const { data: updatedParameters, error: fetchError } = await supabase
       .from('parameters')
       .select('*')
       .eq('id', parameterId);
 
     if (fetchError) {
-      console.error('❌ Database fetch error:', fetchError);
       throw new Error(`Failed to fetch updated parameter: ${fetchError.message}`);
     }
 
     if (!updatedParameters || updatedParameters.length === 0) {
-      console.error('❌ No parameter found after update');
       throw new Error(`Parameter with id "${parameterId}" not found after update`);
     }
 
     const updatedParameter = updatedParameters[0];
-    console.log('✅ Successfully fetched updated parameter:', updatedParameter.name);
 
     return NextResponse.json({
       success: true,
@@ -463,25 +403,11 @@ async function getInputTypeId(supabase: any, inputTypeName: string): Promise<num
 }
 
 async function getPriorityId(supabase: any, priorityLevel: number): Promise<number | null> {
-  console.log('🔍 getPriorityId called with:', priorityLevel, 'type:', typeof priorityLevel);
-  
-  // First, let's see all priority levels
-  const { data: allPriorities } = await supabase
-    .from('priority_levels')
-    .select('*');
-  console.log('📋 All priority levels in database:', allPriorities);
-  
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('priority_levels')
     .select('id')
     .eq('level', priorityLevel)
     .single();
-  console.log('🔍 getPriorityId query result:', { data, error, priorityLevel });
-  
-  if (!data && !error) {
-    console.log('⚠️ No data and no error - priority level not found');
-  }
-  
   return data?.id || null;
 }
 

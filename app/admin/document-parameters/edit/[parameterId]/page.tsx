@@ -283,34 +283,21 @@ export default function ParameterEditPage() {
   };
 
   const handleSave = async () => {
-    console.log('🔍 handleSave called');
-    console.log('🔍 parameter:', parameter);
-    console.log('🔍 config:', config);
-    
     if (!parameter || !config) {
-      console.log('❌ Save blocked: parameter or config is null');
-      console.log('❌ parameter is null:', !parameter);
-      console.log('❌ config is null:', !config);
       return;
     }
 
     try {
-      console.log('🔍 Starting save process...');
       setSaving(true);
-      console.log('🔍 setSaving(true) called');
 
       // Validate required fields
-      console.log('🔍 Validating parameter.id:', parameter.id);
       if (!parameter.id.trim()) {
-        console.log('❌ Validation failed: Parameter ID is empty');
         toast.error('Parameter ID is required');
         setSaving(false);
         return;
       }
 
-      console.log('🔍 Validating parameter.name:', parameter.name);
       if (!parameter.name.trim()) {
-        console.log('❌ Validation failed: Parameter name is empty');
         toast.error('Parameter name is required');
         setSaving(false);
         return;
@@ -318,9 +305,7 @@ export default function ParameterEditPage() {
 
       // Validate parameter ID format (alphanumeric and underscore only)
       const idRegex = /^[a-zA-Z0-9_]+$/;
-      console.log('🔍 Validating parameter.id format:', parameter.id, 'matches regex:', idRegex.test(parameter.id));
       if (!idRegex.test(parameter.id)) {
-        console.log('❌ Validation failed: Invalid parameter ID format');
         toast.error('Parameter ID can only contain letters, numbers, and underscores');
         setSaving(false);
         return;
@@ -329,23 +314,16 @@ export default function ParameterEditPage() {
       // Check if ID already exists (excluding current parameter)
       // Note: parameterId is the database PK (number), parameter.dbId is also the database PK
       // parameter.id is the custom_id (string), so we need to compare dbId not id
-      console.log('🔍 Checking for duplicate ID. parameterId:', parameterId, 'parameter.dbId:', parameter.dbId, 'allParameters:', allParameters.length);
       const duplicate = allParameters.some((p) => p.id === parameter.id && p.dbId !== parameter.dbId);
-      console.log('🔍 Duplicate check result:', duplicate);
       if (duplicate) {
-        console.log('❌ Validation failed: Parameter ID already exists');
         toast.error('Parameter ID already exists');
         setSaving(false);
         return;
       }
 
-      console.log('🔍 Checking templateId:', templateId);
       if (!templateId) {
-        console.log('❌ Validation failed: Template ID not found');
         throw new Error('Template ID not found');
       }
-
-      console.log('✅ All validations passed! Preparing request body...');
 
       // Save only the specific parameter being edited
       const requestBody = {
@@ -368,16 +346,6 @@ export default function ParameterEditPage() {
         template_id: templateId,
       };
 
-      console.log('🔍 Frontend sending request body:', {
-        parameterId,
-        requestBody,
-        parameter: parameter,
-        jurisdiction_defaults: requestBody.jurisdiction_defaults
-      });
-      console.log('📊 Jurisdiction defaults details:', JSON.stringify(requestBody.jurisdiction_defaults, null, 2));
-
-      console.log('🔍 Making API call to:', `/api/admin/parameters/${parameterId}`);
-      
       const response = await fetch(`/api/admin/parameters/${parameterId}`, {
         method: 'PUT',
         headers: {
@@ -386,12 +354,8 @@ export default function ParameterEditPage() {
         body: JSON.stringify(requestBody),
       });
 
-      console.log('📡 API Response status:', response.status);
-      console.log('📡 API Response ok:', response.ok);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
         throw new Error(`Failed to save parameter: ${response.status} ${errorText}`);
       }
 
@@ -400,7 +364,6 @@ export default function ParameterEditPage() {
         throw new Error(result.error || 'Failed to save parameter');
       }
 
-      // console.log(`✅ Parameter saved successfully: ${parameter.id}`);
       toast.success('Parameter saved successfully!');
       setHasUnsavedChanges(false);
 
@@ -417,12 +380,6 @@ export default function ParameterEditPage() {
   const handleCancel = () => {
     handleNavigation('/admin/document-parameters');
   };
-
-  // Debug logging
-  console.log('🔍 Component render - saving state:', saving);
-  console.log('🔍 Component render - loading state:', loading);
-  console.log('🔍 Component render - parameter:', parameter?.id);
-  console.log('🔍 Component render - config:', config);
 
   if (loading) {
     return (
@@ -690,11 +647,7 @@ export default function ParameterEditPage() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => {
-                  console.log('🖱️ Button clicked!');
-                  console.log('🖱️ saving state:', saving);
-                  handleSave();
-                }} 
+                onClick={handleSave} 
                 disabled={saving}
               >
                 {saving ? (
