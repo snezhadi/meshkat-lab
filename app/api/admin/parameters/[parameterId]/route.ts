@@ -280,10 +280,18 @@ export async function PUT(
     console.log('✅ Database update successful');
 
     // Handle jurisdiction defaults if provided
+    console.log('🔍 Checking jurisdiction_defaults:', {
+      exists: !!parameterData.jurisdiction_defaults,
+      isArray: Array.isArray(parameterData.jurisdiction_defaults),
+      length: parameterData.jurisdiction_defaults?.length,
+      data: parameterData.jurisdiction_defaults
+    });
+    
     if (parameterData.jurisdiction_defaults && Array.isArray(parameterData.jurisdiction_defaults)) {
-      console.log('🔍 Processing jurisdiction defaults:', parameterData.jurisdiction_defaults);
+      console.log('🔍 Processing jurisdiction defaults:', JSON.stringify(parameterData.jurisdiction_defaults, null, 2));
       
       // First, delete existing jurisdiction defaults for this parameter
+      console.log('🗑️ Deleting existing jurisdiction defaults...');
       const { error: deleteError } = await supabase
         .from('parameter_defaults')
         .delete()
@@ -293,31 +301,42 @@ export async function PUT(
         console.error('❌ Error deleting existing jurisdiction defaults:', deleteError);
         throw new Error(`Failed to delete existing jurisdiction defaults: ${deleteError.message}`);
       }
+      console.log('✅ Existing jurisdiction defaults deleted');
 
       // Insert new jurisdiction defaults
       if (parameterData.jurisdiction_defaults.length > 0) {
         // Get jurisdiction IDs for the jurisdiction names
+        console.log('🔍 Fetching jurisdictions from database...');
         const { data: jurisdictions } = await supabase
           .from('jurisdictions')
           .select('id, name');
+        console.log('📍 Available jurisdictions:', jurisdictions?.length);
 
         const jurisdictionDefaultsToInsert = [];
         
         for (const jd of parameterData.jurisdiction_defaults) {
+          console.log('🔍 Processing jurisdiction default:', jd);
           if (jd.jurisdiction && jd.default !== undefined && jd.default !== '') {
             // Find the jurisdiction ID by name
             const jurisdiction = jurisdictions?.find((j: any) => j.name === jd.jurisdiction);
+            console.log('🔍 Found jurisdiction:', jurisdiction);
             if (jurisdiction) {
               jurisdictionDefaultsToInsert.push({
                 parameter_id: parameterId,
                 jurisdiction_id: jurisdiction.id,
                 default_value: jd.default
               });
+            } else {
+              console.log('⚠️ Jurisdiction not found:', jd.jurisdiction);
             }
+          } else {
+            console.log('⚠️ Skipping invalid jurisdiction default:', jd);
           }
         }
 
+        console.log('📦 Jurisdiction defaults to insert:', jurisdictionDefaultsToInsert.length);
         if (jurisdictionDefaultsToInsert.length > 0) {
+          console.log('💾 Inserting jurisdiction defaults:', JSON.stringify(jurisdictionDefaultsToInsert, null, 2));
           const { error: insertError } = await supabase
             .from('parameter_defaults')
             .insert(jurisdictionDefaultsToInsert);
@@ -327,8 +346,14 @@ export async function PUT(
             throw new Error(`Failed to insert jurisdiction defaults: ${insertError.message}`);
           }
           console.log('✅ Successfully saved jurisdiction defaults');
+        } else {
+          console.log('ℹ️ No valid jurisdiction defaults to insert');
         }
+      } else {
+        console.log('ℹ️ No jurisdiction defaults provided (empty array)');
       }
+    } else {
+      console.log('ℹ️ No jurisdiction defaults to process');
     }
 
     // Then, fetch the updated parameter using database ID

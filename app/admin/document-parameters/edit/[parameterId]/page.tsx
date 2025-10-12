@@ -371,8 +371,10 @@ export default function ParameterEditPage() {
       console.log('🔍 Frontend sending request body:', {
         parameterId,
         requestBody,
-        parameter: parameter
+        parameter: parameter,
+        jurisdiction_defaults: requestBody.jurisdiction_defaults
       });
+      console.log('📊 Jurisdiction defaults details:', JSON.stringify(requestBody.jurisdiction_defaults, null, 2));
 
       console.log('🔍 Making API call to:', `/api/admin/parameters/${parameterId}`);
       
