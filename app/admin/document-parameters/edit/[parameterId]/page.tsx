@@ -295,16 +295,22 @@ export default function ParameterEditPage() {
     }
 
     try {
+      console.log('🔍 Starting save process...');
       setSaving(true);
+      console.log('🔍 setSaving(true) called');
 
       // Validate required fields
+      console.log('🔍 Validating parameter.id:', parameter.id);
       if (!parameter.id.trim()) {
+        console.log('❌ Validation failed: Parameter ID is empty');
         toast.error('Parameter ID is required');
         setSaving(false);
         return;
       }
 
+      console.log('🔍 Validating parameter.name:', parameter.name);
       if (!parameter.name.trim()) {
+        console.log('❌ Validation failed: Parameter name is empty');
         toast.error('Parameter name is required');
         setSaving(false);
         return;
@@ -312,22 +318,32 @@ export default function ParameterEditPage() {
 
       // Validate parameter ID format (alphanumeric and underscore only)
       const idRegex = /^[a-zA-Z0-9_]+$/;
+      console.log('🔍 Validating parameter.id format:', parameter.id, 'matches regex:', idRegex.test(parameter.id));
       if (!idRegex.test(parameter.id)) {
+        console.log('❌ Validation failed: Invalid parameter ID format');
         toast.error('Parameter ID can only contain letters, numbers, and underscores');
         setSaving(false);
         return;
       }
 
       // Check if ID already exists (excluding current parameter)
-      if (allParameters.some((p) => p.id === parameter.id && p.id !== parameterId)) {
+      console.log('🔍 Checking for duplicate ID. parameterId:', parameterId, 'allParameters:', allParameters.length);
+      const duplicate = allParameters.some((p) => p.id === parameter.id && p.id !== parameterId);
+      console.log('🔍 Duplicate check result:', duplicate);
+      if (duplicate) {
+        console.log('❌ Validation failed: Parameter ID already exists');
         toast.error('Parameter ID already exists');
         setSaving(false);
         return;
       }
 
+      console.log('🔍 Checking templateId:', templateId);
       if (!templateId) {
+        console.log('❌ Validation failed: Template ID not found');
         throw new Error('Template ID not found');
       }
+
+      console.log('✅ All validations passed! Preparing request body...');
 
       // Save only the specific parameter being edited
       const requestBody = {
