@@ -11,7 +11,7 @@ function transformParameterFromDB(param: any): any {
     metadata: {
       llm_instructions: param.llm_instructions,
       llm_description: param.llm_description,
-      priority: param.priority_level || 1,
+      priority: param.priority_level !== null && param.priority_level !== undefined ? param.priority_level : 1,
       format: param.format,
     },
     condition: param.condition,
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       metadata: {
         llm_instructions: param.llm_instructions,
         llm_description: param.llm_description,
-        priority: param.priority_level || 1,
+        priority: param.priority_level !== null && param.priority_level !== undefined ? param.priority_level : 1,
         format: param.format,
       },
       condition: param.condition,
