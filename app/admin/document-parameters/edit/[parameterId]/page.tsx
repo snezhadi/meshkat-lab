@@ -147,8 +147,16 @@ export default function ParameterEditPage() {
       console.log('✅ Parameter data loaded in single request');
 
       // All data comes from single API call now!
-      setAllParameters([]); // We don't need all parameters for edit page
-      setConfig(parameterData.config);
+      // We need parameters for condition editor, so fetch them
+      const paramsResponse = await fetch(`/api/admin/parameters?templateId=${parameterData.templateId}`);
+      if (paramsResponse.ok) {
+        const paramsData = await paramsResponse.json();
+        setAllParameters(paramsData.parameters || []);
+        setConfig(paramsData.config || parameterData.config);
+      } else {
+        setAllParameters([]);
+        setConfig(parameterData.config);
+      }
       setJurisdictions(parameterData.jurisdictions || []);
       setTemplateId(parameterData.templateId);
 
