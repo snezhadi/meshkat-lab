@@ -322,6 +322,8 @@ export default function ParameterEditPage() {
         options: parameter.options,
         llm_instructions: parameter.metadata?.llm_instructions,
         llm_description: parameter.metadata?.llm_description,
+        global_default: parameter.defaults?.global_default,
+        jurisdiction_defaults: parameter.defaults?.jurisdictions || [],
         template_id: templateId,
       };
 

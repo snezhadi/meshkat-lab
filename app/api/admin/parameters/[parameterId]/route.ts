@@ -84,6 +84,7 @@ export async function GET(
       { data: groups },
       { data: subgroups },
       { data: jurisdictions },
+      { data: jurisdictionDefaults },
     ] = await Promise.all([
       supabase.from('parameter_types').select('*').order('sort_order'),
       supabase.from('input_types').select('*').order('sort_order'),
@@ -91,6 +92,7 @@ export async function GET(
       supabase.from('parameter_groups').select('*').eq('template_id', param.template_id).order('sort_order'),
       supabase.from('parameter_subgroups').select('*').eq('template_id', param.template_id).order('sort_order'),
       supabase.from('jurisdictions').select('*').order('name'),
+      supabase.from('parameter_defaults').select('*, jurisdictions(name)').eq('parameter_id', paramId),
     ]);
 
     // Build config object with proper subgroup grouping
@@ -115,6 +117,12 @@ export async function GET(
         ])
       ),
     };
+
+    // Add jurisdiction defaults to the transformed parameter
+    transformedParameter.defaults.jurisdictions = (jurisdictionDefaults || []).map((jd: any) => ({
+      jurisdiction: jd.jurisdictions?.name || '',
+      default: jd.default_value
+    }));
 
     return NextResponse.json({
       success: true,
@@ -267,6 +275,58 @@ export async function PUT(
     }
     
     console.log('✅ Database update successful');
+
+    // Handle jurisdiction defaults if provided
+    if (parameterData.jurisdiction_defaults && Array.isArray(parameterData.jurisdiction_defaults)) {
+      console.log('🔍 Processing jurisdiction defaults:', parameterData.jurisdiction_defaults);
+      
+      // First, delete existing jurisdiction defaults for this parameter
+      const { error: deleteError } = await supabase
+        .from('parameter_defaults')
+        .delete()
+        .eq('parameter_id', parameterId);
+
+      if (deleteError) {
+        console.error('❌ Error deleting existing jurisdiction defaults:', deleteError);
+        throw new Error(`Failed to delete existing jurisdiction defaults: ${deleteError.message}`);
+      }
+
+      // Insert new jurisdiction defaults
+      if (parameterData.jurisdiction_defaults.length > 0) {
+        // Get jurisdiction IDs for the jurisdiction names
+        const { data: jurisdictions } = await supabase
+          .from('jurisdictions')
+          .select('id, name');
+
+        const jurisdictionDefaultsToInsert = [];
+        
+        for (const jd of parameterData.jurisdiction_defaults) {
+          if (jd.jurisdiction && jd.default !== undefined && jd.default !== '') {
+            // Find the jurisdiction ID by name
+            const jurisdiction = jurisdictions?.find((j: any) => j.name === jd.jurisdiction);
+            if (jurisdiction) {
+              jurisdictionDefaultsToInsert.push({
+                parameter_id: parameterId,
+                jurisdiction_id: jurisdiction.id,
+                default_value: jd.default
+              });
+            }
+          }
+        }
+
+        if (jurisdictionDefaultsToInsert.length > 0) {
+          const { error: insertError } = await supabase
+            .from('parameter_defaults')
+            .insert(jurisdictionDefaultsToInsert);
+
+          if (insertError) {
+            console.error('❌ Error inserting jurisdiction defaults:', insertError);
+            throw new Error(`Failed to insert jurisdiction defaults: ${insertError.message}`);
+          }
+          console.log('✅ Successfully saved jurisdiction defaults');
+        }
+      }
+    }
 
     // Then, fetch the updated parameter using database ID
     console.log('🔍 Fetching updated parameter...');
