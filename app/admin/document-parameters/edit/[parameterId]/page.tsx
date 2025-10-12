@@ -283,7 +283,16 @@ export default function ParameterEditPage() {
   };
 
   const handleSave = async () => {
-    if (!parameter || !config) return;
+    console.log('🔍 handleSave called');
+    console.log('🔍 parameter:', parameter);
+    console.log('🔍 config:', config);
+    
+    if (!parameter || !config) {
+      console.log('❌ Save blocked: parameter or config is null');
+      console.log('❌ parameter is null:', !parameter);
+      console.log('❌ config is null:', !config);
+      return;
+    }
 
     try {
       setSaving(true);
