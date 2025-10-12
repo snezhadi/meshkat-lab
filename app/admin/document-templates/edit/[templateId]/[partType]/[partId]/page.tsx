@@ -103,22 +103,22 @@ export default function DocumentPartEditPage() {
   useEffect(() => {
     async function fetchTemplate() {
       try {
-        const response = await fetch('/api/admin/document-templates');
+        console.log(`🔍 Fetching single template for part editor: ${templateId}`);
+        
+        // 🚀 PERFORMANCE: Fetch only this specific template, not all templates!
+        const response = await fetch(`/api/admin/document-templates/${templateId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch document templates');
+          throw new Error('Failed to fetch template');
         }
         const result = await response.json();
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch document templates');
+          throw new Error(result.error || 'Template not found');
         }
 
-        const templates = result.data;
-        const foundTemplate = templates.find((t: DocumentTemplate) => t.id === parseInt(templateId as string));
-
-        if (!foundTemplate) {
-          throw new Error(`Template not found: ${templateId}`);
-        }
+        const foundTemplate = result.data;
+        
+        console.log(`✅ Loaded template for part editor: ${foundTemplate.title}`);
 
         setTemplate(foundTemplate);
 

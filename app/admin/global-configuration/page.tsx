@@ -148,7 +148,13 @@ export default function GlobalConfigurationPage() {
   };
 
   useEffect(() => {
-    // Check permissions first
+    // Wait for permissions to load before checking
+    if (canManageGlobalConfig === null) {
+      // Still loading permissions, don't redirect yet
+      return;
+    }
+    
+    // Check permissions after they're loaded
     if (!canManageGlobalConfig) {
       router.push('/admin/document-templates');
       return;

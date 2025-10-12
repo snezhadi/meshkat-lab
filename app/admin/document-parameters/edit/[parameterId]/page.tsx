@@ -53,8 +53,12 @@ interface Parameter {
 interface ParameterConfig {
   groups: string[];
   subgroups: Record<string, string[]>;
+}
+
+interface GlobalConfig {
   types: string[];
   priorities: number[];
+  inputs: string[];
 }
 
 interface Jurisdiction {
@@ -70,6 +74,7 @@ export default function ParameterEditPage() {
 
   const [parameter, setParameter] = useState<Parameter | null>(null);
   const [config, setConfig] = useState<ParameterConfig | null>(null);
+  const [globalConfig, setGlobalConfig] = useState<GlobalConfig>({ types: [], priorities: [], inputs: [] });
   const [allParameters, setAllParameters] = useState<Parameter[]>([]);
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
   const [templateId, setTemplateId] = useState<string | null>(null);
@@ -125,7 +130,9 @@ export default function ParameterEditPage() {
     try {
       setLoading(true);
 
-      // Fetch parameter directly by database ID (much faster!)
+      console.log('🔍 Loading parameter data...');
+      
+      // 🚀 PERFORMANCE: Single API call gets parameter + config + jurisdictions!
       const parameterResponse = await fetch(`/api/admin/parameters/${parameterId}`);
       if (!parameterResponse.ok) {
         throw new Error('Failed to load parameter');
@@ -136,17 +143,31 @@ export default function ParameterEditPage() {
         throw new Error('Parameter not found');
       }
 
-      // Load jurisdictions
-      const jurisdictionsResponse = await fetch('/api/admin/jurisdictions');
-      if (!jurisdictionsResponse.ok) {
-        throw new Error('Failed to load jurisdictions');
-      }
-      const jurisdictionsData = await jurisdictionsResponse.json();
+      console.log('✅ Parameter data loaded in single request');
 
+      // All data comes from single API call now!
       setAllParameters([]); // We don't need all parameters for edit page
       setConfig(parameterData.config);
-      setJurisdictions(jurisdictionsData.jurisdictions || []);
+      setJurisdictions(parameterData.jurisdictions || []);
       setTemplateId(parameterData.templateId);
+
+      // Fetch global configuration for types, priorities, and inputs
+      try {
+        const globalConfigResponse = await fetch('/api/admin/global-configuration');
+        if (globalConfigResponse.ok) {
+          const globalConfigData = await globalConfigResponse.json();
+          if (globalConfigData.success) {
+            setGlobalConfig({
+              types: globalConfigData.parameterTypes?.map((t: any) => t.name) || [],
+              priorities: globalConfigData.priorityLevels?.map((p: any) => p.level) || [],
+              inputs: globalConfigData.inputTypes?.map((i: any) => i.name) || [],
+            });
+          }
+        }
+      } catch (globalError) {
+        console.warn('Failed to fetch global configuration:', globalError);
+        // Don't fail the whole page load if global config fails
+      }
 
       // Ensure defaults structure exists
       const loadedParameter = parameterData.parameter;
@@ -711,7 +732,7 @@ export default function ParameterEditPage() {
                   onChange={(e) => handleChange('type', e.target.value)}
                   className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.types.map((type) => (
+                  {globalConfig.types.map((type) => (
                     <option key={type} value={type}>
                       {type}
                     </option>
@@ -775,7 +796,7 @@ export default function ParameterEditPage() {
                     onChange={(e) => handleChange('metadata.priority', parseInt(e.target.value))}
                     className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
-                    {config.priorities.map((priority) => (
+                    {globalConfig.priorities.map((priority) => (
                       <option key={priority} value={priority}>
                         {priority}
                       </option>

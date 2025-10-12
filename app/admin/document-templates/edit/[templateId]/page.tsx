@@ -74,21 +74,17 @@ export default function TemplateEditorPage() {
   const fetchTemplate = async (retryCount = 0) => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin/document-templates');
+        console.log(`🔍 Fetching single template: ${templateId}`);
+        
+        // 🚀 PERFORMANCE: Fetch only this specific template, not all templates!
+        const response = await fetch(`/api/admin/document-templates/${templateId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch document templates');
+          throw new Error('Failed to fetch template');
         }
         const result = await response.json();
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch document templates');
-        }
-
-        const templates = result.data;
-        const foundTemplate = templates.find((t: DocumentTemplate) => t.id === parseInt(templateId as string));
-
-        if (!foundTemplate) {
-          // If this is a new template (starts with 'new_template_') and we haven't retried yet, wait and retry
+          // If this is a new template and we haven't retried yet, wait and retry
           const templateIdStr = Array.isArray(templateId) ? templateId[0] : templateId;
           if (templateIdStr && templateIdStr.startsWith('new_template_') && retryCount < 5) {
             console.log(`Template not found, retrying... (attempt ${retryCount + 1}/5)`);
@@ -97,11 +93,16 @@ export default function TemplateEditorPage() {
             await new Promise(resolve => setTimeout(resolve, delay));
             return fetchTemplate(retryCount + 1);
           }
-          throw new Error(`Template not found: ${templateIdStr}`);
+          throw new Error(result.error || 'Template not found');
         }
 
+        const foundTemplate = result.data;
+        
+        console.log(`✅ Loaded template: ${foundTemplate.title} with ${foundTemplate.clauses.length} clauses`);
+        
         setTemplate(foundTemplate);
-        setAllTemplates(templates);
+        // Note: We don't need allTemplates anymore since we're not fetching all templates
+        setAllTemplates([foundTemplate]);
         setError(null); // Clear any previous errors
       } catch (err) {
         console.error('Error in fetchTemplate:', err);

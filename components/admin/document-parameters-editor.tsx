@@ -34,6 +34,9 @@ interface Parameter {
 interface ParameterConfig {
   groups: string[];
   subgroups: Record<string, string[]>;
+}
+
+interface GlobalConfig {
   types: string[];
   priorities: number[];
   inputs: string[];
@@ -89,6 +92,7 @@ export function DocumentParametersEditor({
     };
   });
   const [localConfig, setLocalConfig] = useState<ParameterConfig>(config);
+  const [globalConfig, setGlobalConfig] = useState<GlobalConfig>({ types: [], priorities: [], inputs: [] });
   const [savingConfig, setSavingConfig] = useState(false);
 
   // Apply filters
@@ -152,6 +156,29 @@ export function DocumentParametersEditor({
   React.useEffect(() => {
     setFilteredParameters(applyFilters);
   }, [applyFilters]);
+
+  // Fetch global configuration
+  useEffect(() => {
+    const fetchGlobalConfig = async () => {
+      try {
+        const response = await fetch('/api/admin/global-configuration');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setGlobalConfig({
+              types: result.parameterTypes?.map((t: any) => t.name) || [],
+              priorities: result.priorityLevels?.map((p: any) => p.level) || [],
+              inputs: result.inputTypes?.map((i: any) => i.name) || [],
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch global configuration:', error);
+      }
+    };
+
+    fetchGlobalConfig();
+  }, []);
 
   // Clear filters when navigating away from this page
   useEffect(() => {
@@ -357,7 +384,7 @@ export function DocumentParametersEditor({
         <>
           {/* Filters */}
           <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <ParameterFilters filters={filters} onFiltersChange={setFilters} config={localConfig} />
+            <ParameterFilters filters={filters} onFiltersChange={setFilters} config={localConfig} globalConfig={globalConfig} />
           </div>
 
           {/* Parameters Table */}

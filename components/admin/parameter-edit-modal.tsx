@@ -34,6 +34,9 @@ interface Parameter {
 interface ParameterConfig {
   groups: string[];
   subgroups: Record<string, string[]>;
+}
+
+interface GlobalConfig {
   types: string[];
   priorities: number[];
   inputs: string[];
@@ -42,6 +45,7 @@ interface ParameterConfig {
 interface ParameterEditModalProps {
   parameter: Parameter;
   config: ParameterConfig;
+  globalConfig: GlobalConfig;
   allParameters: Parameter[];
   onSave: (parameter: Parameter) => void;
   onClose: () => void;
@@ -50,6 +54,7 @@ interface ParameterEditModalProps {
 export function ParameterEditModal({
   parameter,
   config,
+  globalConfig,
   allParameters,
   onSave,
   onClose,
@@ -205,7 +210,7 @@ export function ParameterEditModal({
                     onChange={(e) => handleChange('type', e.target.value)}
                     className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
-                    {config.types.map((type) => (
+                    {globalConfig.types.map((type) => (
                       <option key={type} value={type}>
                         {type}
                       </option>
@@ -238,7 +243,7 @@ export function ParameterEditModal({
                   onChange={(e) => handleChange('metadata.priority', parseInt(e.target.value))}
                   className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.priorities.map((priority) => (
+                  {globalConfig.priorities.map((priority) => (
                     <option key={priority} value={priority}>
                       Priority {priority}
                     </option>

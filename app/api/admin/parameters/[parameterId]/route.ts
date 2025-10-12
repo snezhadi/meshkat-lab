@@ -32,16 +32,17 @@ export async function GET(
       );
     }
 
-    console.log('📡 Fetching parameter from database...');
-    // First, fetch the parameter without joins to test basic query
-    const { data: parameters, error } = await supabase
-      .from('parameters')
+    console.log('📡 Fetching parameter from database using view...');
+    // 🚀 PERFORMANCE: Use parameters_full view - single query instead of 6!
+    const { data: param, error } = await supabase
+      .from('parameters_full')
       .select('*')
-      .eq('id', paramId);
+      .eq('id', paramId)
+      .single();
 
-    console.log('📊 Query result:', { parametersCount: parameters?.length, error });
+    console.log('📊 Query result:', { found: !!param, error });
 
-    if (error || !parameters || parameters.length === 0) {
+    if (error || !param) {
       console.error('❌ Parameter not found:', parameterId, error);
       return NextResponse.json(
         { success: false, error: 'Parameter not found' },
@@ -49,36 +50,25 @@ export async function GET(
       );
     }
 
-    const param = parameters[0];
-
-    // Fetch related data separately to avoid relationship ambiguity
-    const [typeResult, inputResult, priorityResult, groupResult, subgroupResult] = await Promise.all([
-      param.type_id ? supabase.from('parameter_types').select('name').eq('id', param.type_id).single() : Promise.resolve({ data: null }),
-      param.display_input_id ? supabase.from('input_types').select('name').eq('id', param.display_input_id).single() : Promise.resolve({ data: null }),
-      param.priority_id ? supabase.from('priority_levels').select('level').eq('id', param.priority_id).single() : Promise.resolve({ data: null }),
-      param.display_group_id ? supabase.from('parameter_groups').select('name').eq('id', param.display_group_id).single() : Promise.resolve({ data: null }),
-      param.display_subgroup_id ? supabase.from('parameter_subgroups').select('name').eq('id', param.display_subgroup_id).single() : Promise.resolve({ data: null }),
-    ]);
-
-    // Transform to frontend format
+    // Transform to frontend format (much simpler now!)
     const transformedParameter = {
       id: param.custom_id,
       dbId: param.id,
       name: param.name,
       description: param.description,
-      type: typeResult.data?.name || 'text',
+      type: param.type_name || 'text',
       metadata: {
         llm_instructions: param.llm_instructions,
         llm_description: param.llm_description,
-        priority: priorityResult.data?.level || 1,
+        priority: param.priority_level || 1,
         format: param.format,
       },
       condition: param.condition,
       display: {
-        group: groupResult.data?.name || 'General Parameters',
-        subgroup: subgroupResult.data?.name || 'General',
+        group: param.group_name || null,
+        subgroup: param.subgroup_name || null,
         label: param.display_label || param.name,
-        input: inputResult.data?.name || 'text',
+        input: param.input_type_name || 'text',
       },
       options: param.options ? param.options.split(',') : [],
       defaults: {
@@ -86,21 +76,56 @@ export async function GET(
       },
     };
 
-    // Also fetch the config for this parameter's template
-    const configResponse = await fetch(
-      `${request.nextUrl.origin}/api/admin/parameters?templateId=${param.template_id}`
-    );
-    let config = null;
-    if (configResponse.ok) {
-      const configData = await configResponse.json();
-      config = configData.config;
-    }
+    // 🚀 PERFORMANCE: Fetch config and jurisdictions directly from database (no internal HTTP calls!)
+    const [
+      { data: parameterTypes },
+      { data: inputTypes },
+      { data: priorityLevels },
+      { data: groups },
+      { data: subgroups },
+      { data: jurisdictions },
+    ] = await Promise.all([
+      supabase.from('parameter_types').select('*').order('sort_order'),
+      supabase.from('input_types').select('*').order('sort_order'),
+      supabase.from('priority_levels').select('*').order('level'),
+      supabase.from('parameter_groups').select('*').eq('template_id', param.template_id).order('sort_order'),
+      supabase.from('parameter_subgroups').select('*').eq('template_id', param.template_id).order('sort_order'),
+      supabase.from('jurisdictions').select('*').order('name'),
+    ]);
+
+    // Build config object with proper subgroup grouping
+    const subgroupsMap = new Map<string, Set<string>>();
+    (subgroups || []).forEach((subgroup: any) => {
+      // Find the group this subgroup belongs to
+      const group = (groups || []).find((g: any) => g.id === subgroup.group_id);
+      if (group) {
+        if (!subgroupsMap.has(group.name)) {
+          subgroupsMap.set(group.name, new Set());
+        }
+        subgroupsMap.get(group.name)!.add(subgroup.name);
+      }
+    });
+
+    const config = {
+      groups: (groups || []).map((g: any) => g.name),
+      subgroups: Object.fromEntries(
+        Array.from(subgroupsMap.entries()).map(([group, subgroupSet]) => [
+          group,
+          Array.from(subgroupSet),
+        ])
+      ),
+    };
 
     return NextResponse.json({
       success: true,
       parameter: transformedParameter,
       templateId: param.template_id.toString(),
       config: config,
+      jurisdictions: (jurisdictions || []).map((j: any) => ({
+        jurisdiction: j.name,
+        country: j.country || '',
+        code: j.code,
+      })),
     });
   } catch (error) {
     console.error('Error fetching parameter:', error);

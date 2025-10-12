@@ -60,17 +60,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch parameters with JOINs using foreign key constraint names
+    // 🚀 PERFORMANCE: Use parameters_full view - single efficient query!
     const { data: parameters, error: parametersError } = await supabase
-      .from('parameters')
-      .select(`
-        *,
-        parameter_types!fk_parameter_type(name),
-        priority_levels!fk_parameter_priority(level),
-        input_types!fk_parameter_input(name),
-        parameter_groups!fk_parameter_group(name),
-        parameter_subgroups!fk_parameter_subgroup(name)
-      `)
+      .from('parameters_full')
+      .select('*')
       .eq('template_id', parseInt(templateId))
       .order('id');
 
@@ -103,19 +96,19 @@ export async function GET(request: NextRequest) {
       dbId: param.id, // Add database primary key for API operations
       name: param.name,
       description: param.description,
-      type: param.parameter_types?.name || 'text',
+      type: param.type_name || 'text',
       metadata: {
         llm_instructions: param.llm_instructions,
         llm_description: param.llm_description,
-        priority: param.priority_levels?.level || 1,
+        priority: param.priority_level || 1,
         format: param.format,
       },
       condition: param.condition,
       display: {
-        group: param.parameter_groups?.name || 'General Parameters',
-        subgroup: param.parameter_subgroups?.name || 'Basic',
+        group: param.group_name || null,
+        subgroup: param.subgroup_name || null,
         label: param.display_label,
-        input: param.input_types?.name || 'textbox',
+        input: param.input_type_name || 'textbox',
       },
       options: param.options ? param.options.split(',') : undefined,
       defaults: {
@@ -151,9 +144,6 @@ export async function GET(request: NextRequest) {
     const config = {
       groups: groups?.map(g => g.name) || [],
       subgroups: subgroupsConfig,
-      types: parameterTypes?.map(t => t.name) || [],
-      priorities: priorityLevels?.map(p => p.level) || [],
-      inputs: inputTypes?.map(i => i.name) || [],
     };
 
     console.log(`GET request - Retrieved ${transformedParameters.length} parameters for template ${templateId}`);

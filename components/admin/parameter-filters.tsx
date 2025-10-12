@@ -17,6 +17,9 @@ interface FilterState {
 interface ParameterConfig {
   groups: string[];
   subgroups: Record<string, string[]>;
+}
+
+interface GlobalConfig {
   types: string[];
   priorities: number[];
 }
@@ -25,9 +28,10 @@ interface ParameterFiltersProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   config: ParameterConfig;
+  globalConfig: GlobalConfig;
 }
 
-export function ParameterFilters({ filters, onFiltersChange, config }: ParameterFiltersProps) {
+export function ParameterFilters({ filters, onFiltersChange, config, globalConfig }: ParameterFiltersProps) {
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     onFiltersChange({
       ...filters,
@@ -147,7 +151,7 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">All Types</option>
-              {config.types.map((type) => (
+              {globalConfig.types.map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -169,7 +173,7 @@ export function ParameterFilters({ filters, onFiltersChange, config }: Parameter
               <option value="">All Priorities</option>
               <option value="none">No Priority (0)</option>
               <option value="has">Has Priority (1+)</option>
-              {config.priorities.slice(1).map((priority) => (
+              {globalConfig.priorities.slice(1).map((priority) => (
                 <option key={priority} value={priority.toString()}>
                   Priority {priority}
                 </option>

@@ -66,7 +66,7 @@ export function usePermissions() {
     canDelete: permissions?.canDelete ?? false,
     canCreate: permissions?.canCreate ?? false,
     canEdit: permissions?.canEdit ?? false,
-    canManageGlobalConfig: permissions?.canManageGlobalConfig ?? false,
+    canManageGlobalConfig: permissions?.canManageGlobalConfig ?? (permissions === null ? null : false),
     refreshPermissions: loadPermissions,
   };
 }

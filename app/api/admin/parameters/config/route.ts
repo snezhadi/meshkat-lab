@@ -73,7 +73,20 @@ export async function POST(request: NextRequest) {
 
     console.log(`Saving parameter configuration for template ${templateId}`);
 
-    // Delete existing groups and subgroups for this template
+    // First, set all parameters' group/subgroup references to null to avoid foreign key constraint violations
+    const { error: updateParamsError } = await supabase
+      .from('parameters')
+      .update({ 
+        display_group_id: null,
+        display_subgroup_id: null
+      })
+      .eq('template_id', parseInt(templateId));
+
+    if (updateParamsError) {
+      throw new Error(`Failed to update parameters: ${updateParamsError.message}`);
+    }
+
+    // Now safely delete existing groups and subgroups for this template
     const { error: deleteSubgroupsError } = await supabase
       .from('parameter_subgroups')
       .delete()

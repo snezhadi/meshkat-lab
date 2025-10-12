@@ -9,9 +9,6 @@ import { Label } from '@/components/ui/label';
 interface ParameterConfig {
   groups: string[];
   subgroups: Record<string, string[]>;
-  types: string[];
-  priorities: number[];
-  inputs: string[];
 }
 
 interface Parameter {
@@ -52,8 +49,6 @@ export function ConfigurationManager({
   const [newGroup, setNewGroup] = useState('');
   const [newSubgroup, setNewSubgroup] = useState('');
   const [selectedGroupForSubgroup, setSelectedGroupForSubgroup] = useState('');
-  const [newType, setNewType] = useState('');
-  const [newPriority, setNewPriority] = useState('');
 
   const handleSave = () => {
     onConfigChange(localConfig);
@@ -68,14 +63,6 @@ export function ConfigurationManager({
     return parameters.some(
       (param) => param.display.group === group && param.display.subgroup === subgroup
     );
-  };
-
-  const isTypeInUse = (type: string) => {
-    return parameters.some((param) => param.type === type);
-  };
-
-  const isPriorityInUse = (priority: number) => {
-    return parameters.some((param) => (param.metadata?.priority ?? 0) === priority);
   };
 
   const addGroup = () => {
@@ -146,62 +133,6 @@ export function ConfigurationManager({
     setTimeout(() => onConfigChange(updatedConfig), 0);
   };
 
-  const addType = () => {
-    if (newType.trim() && !localConfig.types.includes(newType.trim())) {
-      const updatedConfig = {
-        ...localConfig,
-        types: [...localConfig.types, newType.trim()],
-      };
-      setLocalConfig(updatedConfig);
-      onConfigChange(updatedConfig);
-      setNewType('');
-    }
-  };
-
-  const removeType = (typeToRemove: string) => {
-    if (isTypeInUse(typeToRemove)) {
-      alert(
-        `Cannot delete "${typeToRemove}" because it is being used by ${parameters.filter((p) => p.type === typeToRemove).length} parameter(s). Please change those parameters to use a different type first.`
-      );
-      return;
-    }
-
-    const updatedConfig = {
-      ...localConfig,
-      types: localConfig.types.filter((t) => t !== typeToRemove),
-    };
-    setLocalConfig(updatedConfig);
-    setTimeout(() => onConfigChange(updatedConfig), 0);
-  };
-
-  const addPriority = () => {
-    const priorityNum = parseInt(newPriority);
-    if (!isNaN(priorityNum) && !localConfig.priorities.includes(priorityNum)) {
-      const updatedConfig = {
-        ...localConfig,
-        priorities: [...localConfig.priorities, priorityNum].sort((a, b) => a - b),
-      };
-      setLocalConfig(updatedConfig);
-      onConfigChange(updatedConfig);
-      setNewPriority('');
-    }
-  };
-
-  const removePriority = (priorityToRemove: number) => {
-    if (isPriorityInUse(priorityToRemove)) {
-      alert(
-        `Cannot delete "Priority ${priorityToRemove}" because it is being used by ${parameters.filter((p) => (p.metadata?.priority ?? 0) === priorityToRemove).length} parameter(s). Please change those parameters to use a different priority first.`
-      );
-      return;
-    }
-
-    const updatedConfig = {
-      ...localConfig,
-      priorities: localConfig.priorities.filter((p) => p !== priorityToRemove),
-    };
-    setLocalConfig(updatedConfig);
-    setTimeout(() => onConfigChange(updatedConfig), 0);
-  };
 
   // Update localConfig when config prop changes
   useEffect(() => {
@@ -216,8 +147,8 @@ export function ConfigurationManager({
       hasChanges,
       localConfigGroups: localConfig.groups.length,
       configGroups: config.groups.length,
-      localConfigPriorities: localConfig.priorities,
-      configPriorities: config.priorities,
+      localConfigSubgroups: Object.keys(localConfig.subgroups).length,
+      configSubgroups: Object.keys(config.subgroups).length,
     });
   }, [hasChanges, localConfig, config]);
 
@@ -377,112 +308,6 @@ export function ConfigurationManager({
         </div>
       </div>
 
-      {/* Types */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Parameter Types</h3>
-          <div className="flex items-center space-x-2">
-            <Input
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-              placeholder="New type name"
-              className="w-48"
-            />
-            <Button onClick={addType} size="sm" variant="outline">
-              <Plus className="mr-1 h-4 w-4" />
-              Add
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-          {localConfig.types.map((type) => {
-            const inUse = isTypeInUse(type);
-            const usageCount = parameters.filter((p) => p.type === type).length;
-
-            return (
-              <div
-                key={type}
-                className={`flex items-center justify-between rounded-lg p-3 ${
-                  inUse ? 'border border-blue-200 bg-blue-50' : 'bg-gray-50'
-                }`}
-              >
-                <div className="flex-1">
-                  <span
-                    className={`text-sm font-medium ${inUse ? 'text-blue-900' : 'text-gray-900'}`}
-                  >
-                    {type}
-                    {inUse && ` (${usageCount})`}
-                  </span>
-                </div>
-                <Button
-                  onClick={() => removeType(type)}
-                  size="sm"
-                  variant="ghost"
-                  className={`${inUse ? 'cursor-not-allowed text-red-400' : 'text-red-600 hover:text-red-900'}`}
-                  disabled={inUse}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Priorities */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Priority Levels</h3>
-          <div className="flex items-center space-x-2">
-            <Input
-              type="number"
-              value={newPriority}
-              onChange={(e) => setNewPriority(e.target.value)}
-              placeholder="Priority number"
-              className="w-32"
-            />
-            <Button onClick={addPriority} size="sm" variant="outline">
-              <Plus className="mr-1 h-4 w-4" />
-              Add
-            </Button>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {localConfig.priorities.map((priority) => {
-            const inUse = isPriorityInUse(priority);
-            const usageCount = parameters.filter(
-              (p) => (p.metadata?.priority ?? 0) === priority
-            ).length;
-
-            return (
-              <div
-                key={priority}
-                className={`flex items-center justify-between rounded-lg p-3 ${
-                  inUse ? 'border border-blue-200 bg-blue-50' : 'bg-gray-50'
-                }`}
-              >
-                <div className="flex-1">
-                  <span
-                    className={`text-sm font-medium ${inUse ? 'text-blue-900' : 'text-gray-900'}`}
-                  >
-                    Priority {priority}
-                    {inUse && ` (${usageCount})`}
-                  </span>
-                </div>
-                <Button
-                  onClick={() => removePriority(priority)}
-                  size="sm"
-                  variant="ghost"
-                  className={`${inUse ? 'cursor-not-allowed text-red-400' : 'text-red-600 hover:text-red-900'}`}
-                  disabled={inUse}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }
