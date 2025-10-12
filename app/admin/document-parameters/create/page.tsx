@@ -51,6 +51,9 @@ interface Parameter {
 interface Config {
   groups: string[];
   subgroups: { [key: string]: string[] };
+}
+
+interface GlobalConfig {
   types: string[];
   priorities: number[];
   inputs: string[];
@@ -71,6 +74,8 @@ export default function CreateParameterPage() {
   const [config, setConfig] = useState<Config>({
     groups: [],
     subgroups: {},
+  });
+  const [globalConfig, setGlobalConfig] = useState<GlobalConfig>({
     types: [],
     priorities: [],
     inputs: [],
@@ -114,18 +119,20 @@ export default function CreateParameterPage() {
       
       setTemplateId(templateIdParam);
 
-      const [parametersResponse, jurisdictionsResponse] = await Promise.all([
+      const [parametersResponse, jurisdictionsResponse, globalConfigResponse] = await Promise.all([
         fetch(`/api/admin/parameters?templateId=${templateIdParam}`),
         fetch('/api/admin/jurisdictions'),
+        fetch('/api/admin/global-configuration'),
       ]);
 
       if (!parametersResponse.ok || !jurisdictionsResponse.ok) {
         throw new Error('Failed to load data');
       }
 
-      const [parametersData, jurisdictionsData] = await Promise.all([
+      const [parametersData, jurisdictionsData, globalConfigData] = await Promise.all([
         parametersResponse.json(),
         jurisdictionsResponse.json(),
+        globalConfigResponse.ok ? globalConfigResponse.json() : { success: false },
       ]);
 
       const { parameters: parametersList, config: configData } = parametersData;
@@ -133,6 +140,15 @@ export default function CreateParameterPage() {
       setAllParameters(parametersList);
       setConfig(configData);
       setJurisdictions(jurisdictionsData);
+
+      // Set global configuration
+      if (globalConfigData.success) {
+        setGlobalConfig({
+          types: globalConfigData.parameterTypes?.map((t: any) => t.name) || [],
+          priorities: globalConfigData.priorityLevels?.map((p: any) => p.level) || [],
+          inputs: globalConfigData.inputTypes?.map((i: any) => i.name) || [],
+        });
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load parameter data');
@@ -625,7 +641,7 @@ export default function CreateParameterPage() {
                 onChange={(e) => handleChange('type', e.target.value)}
                 className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
-                {config.types.map((type) => (
+                {globalConfig.types.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
@@ -841,7 +857,7 @@ export default function CreateParameterPage() {
                   onChange={(e) => handleChange('metadata.priority', parseInt(e.target.value))}
                   className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  {config.priorities.map((priority) => (
+                  {globalConfig.priorities.map((priority) => (
                     <option key={priority} value={priority}>
                       {priority}
                     </option>
