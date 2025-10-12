@@ -79,7 +79,13 @@ export function ConditionEditor({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowBuilder(!showBuilder)}
+                onClick={() => {
+                  if (showBuilder) {
+                    // When clicking "Done", trigger onConditionChange to notify parent of interaction
+                    onConditionChange(currentCondition);
+                  }
+                  setShowBuilder(!showBuilder);
+                }}
                 className="h-7 text-xs"
               >
                 {showBuilder ? 'Done' : 'Edit'}
