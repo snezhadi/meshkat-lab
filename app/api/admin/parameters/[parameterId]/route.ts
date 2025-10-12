@@ -463,12 +463,24 @@ async function getInputTypeId(supabase: any, inputTypeName: string): Promise<num
 
 async function getPriorityId(supabase: any, priorityLevel: number): Promise<number | null> {
   console.log('🔍 getPriorityId called with:', priorityLevel, 'type:', typeof priorityLevel);
+  
+  // First, let's see all priority levels
+  const { data: allPriorities } = await supabase
+    .from('priority_levels')
+    .select('*');
+  console.log('📋 All priority levels in database:', allPriorities);
+  
   const { data, error } = await supabase
     .from('priority_levels')
     .select('id')
     .eq('level', priorityLevel)
     .single();
-  console.log('🔍 getPriorityId query result:', { data, error });
+  console.log('🔍 getPriorityId query result:', { data, error, priorityLevel });
+  
+  if (!data && !error) {
+    console.log('⚠️ No data and no error - priority level not found');
+  }
+  
   return data?.id || null;
 }
 
