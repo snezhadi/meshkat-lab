@@ -247,6 +247,9 @@ export async function PUT(
       display_subgroup_id: actualSubgroupId, // Can be null if not provided
       display_label: parameterData.display_label,
       options: parameterData.options ? parameterData.options.join(',') : null,
+      condition: parameterData.condition, // Add condition field
+      format: parameterData.format, // Add format field
+      global_default: parameterData.global_default, // Add global_default field
       llm_instructions: parameterData.llm_instructions,
       llm_description: parameterData.llm_description,
       updated_at: new Date().toISOString(),

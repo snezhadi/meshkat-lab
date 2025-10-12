@@ -355,10 +355,12 @@ export default function ParameterEditPage() {
         type: parameter.type,
         input_type: parameter.display?.input,
         priority: parameter.metadata?.priority,
+        format: parameter.metadata?.format, // Add format field
         display_group: parameter.display?.group,
         display_subgroup: parameter.display?.subgroup,
         display_label: parameter.display?.label,
         options: parameter.options,
+        condition: parameter.condition, // Add condition field
         llm_instructions: parameter.metadata?.llm_instructions,
         llm_description: parameter.metadata?.llm_description,
         global_default: parameter.defaults?.global_default,
