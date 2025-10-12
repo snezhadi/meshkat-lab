@@ -82,8 +82,8 @@ export async function GET(request: NextRequest) {
       supabase.from('parameter_types').select('name').order('sort_order'),
       supabase.from('input_types').select('name').order('sort_order'),
       supabase.from('priority_levels').select('level').order('sort_order'),
-      supabase.from('parameter_groups').select('name').eq('template_id', parseInt(templateId)).order('sort_order'),
-      supabase.from('parameter_subgroups').select('name').eq('template_id', parseInt(templateId)).order('sort_order'),
+      supabase.from('parameter_groups').select('id, name').eq('template_id', parseInt(templateId)).order('sort_order'),
+      supabase.from('parameter_subgroups').select('id, name, group_id').eq('template_id', parseInt(templateId)).order('sort_order'),
     ]);
 
     if (typesError || inputError || priorityError || groupsError || subgroupsError) {
