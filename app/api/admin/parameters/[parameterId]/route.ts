@@ -173,7 +173,7 @@ export async function PUT(
     console.log('🔍 Looking up foreign key IDs...');
     console.log('🔍 parameterData.type:', parameterData.type);
     console.log('🔍 parameterData.input_type:', parameterData.input_type);
-    console.log('🔍 parameterData.priority:', parameterData.priority);
+    console.log('🔍 parameterData.priority:', parameterData.priority, 'type:', typeof parameterData.priority);
     
     const typeId = parameterData.type ? await getParameterTypeId(supabase, parameterData.type) : null;
     console.log('🔍 typeId result:', typeId);
@@ -181,6 +181,7 @@ export async function PUT(
     const inputTypeId = parameterData.input_type ? await getInputTypeId(supabase, parameterData.input_type) : null;
     console.log('🔍 inputTypeId result:', inputTypeId);
     
+    console.log('🔍 About to call getPriorityId with:', parameterData.priority);
     const priorityId = parameterData.priority ? await getPriorityId(supabase, parameterData.priority) : null;
     console.log('🔍 priorityId result:', priorityId);
     
@@ -461,11 +462,13 @@ async function getInputTypeId(supabase: any, inputTypeName: string): Promise<num
 }
 
 async function getPriorityId(supabase: any, priorityLevel: number): Promise<number | null> {
-  const { data } = await supabase
+  console.log('🔍 getPriorityId called with:', priorityLevel, 'type:', typeof priorityLevel);
+  const { data, error } = await supabase
     .from('priority_levels')
     .select('id')
     .eq('level', priorityLevel)
     .single();
+  console.log('🔍 getPriorityId query result:', { data, error });
   return data?.id || null;
 }
 
