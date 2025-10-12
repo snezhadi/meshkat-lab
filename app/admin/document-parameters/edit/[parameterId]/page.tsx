@@ -959,7 +959,7 @@ export default function ParameterEditPage() {
                   </Label>
                   <select
                     id="group"
-                    value={parameter.display.group}
+                    value={parameter.display.group || ''}
                     onChange={(e) => handleChange('display.group', e.target.value)}
                     className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
@@ -977,7 +977,7 @@ export default function ParameterEditPage() {
                   </Label>
                   <select
                     id="subgroup"
-                    value={parameter.display.subgroup}
+                    value={parameter.display.subgroup || ''}
                     onChange={(e) => handleChange('display.subgroup', e.target.value)}
                     className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
