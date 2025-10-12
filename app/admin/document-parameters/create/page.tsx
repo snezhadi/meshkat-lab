@@ -6,6 +6,7 @@ import { ArrowLeft, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConditionEditor } from '@/components/admin/condition-editor';
 import { MarkdownEditor } from '@/components/admin/markdown-editor';
+import { getAvailableParameterIds } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -680,7 +681,7 @@ export default function CreateParameterPage() {
             <ConditionEditor
               condition={parameter.condition}
               onConditionChange={(condition: any) => handleChange('condition', condition)}
-              availableParameters={allParameters.map((p) => p.name)}
+              availableParameters={getAvailableParameterIds(allParameters)}
             />
           </CardContent>
         </Card>

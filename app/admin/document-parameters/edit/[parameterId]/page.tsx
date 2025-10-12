@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Condition } from '@/components/admin/condition-builder';
 import { ConditionEditor } from '@/components/admin/condition-editor';
 import { MarkdownEditor } from '@/components/admin/markdown-editor';
+import { getAvailableParameterIds } from '@/lib/utils';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -412,9 +413,7 @@ export default function ParameterEditPage() {
   }
 
   // Extract available parameter IDs (only boolean and enum types for condition editor)
-  const availableParameterIds = allParameters
-    .filter((param) => param.type === 'boolean' || param.type === 'enum')
-    .map((param) => param.id);
+  const availableParameterIds = getAvailableParameterIds(allParameters);
 
   // Render appropriate input based on parameter type
   // Helper function to infer input type from parameter type

@@ -621,9 +621,9 @@ export function ConditionBuilder({
                       : "No parameter found."}
                   </CommandEmpty>
                   <CommandGroup className="max-h-48 overflow-auto">
-                    {filteredParameters.map((param) => (
+                    {filteredParameters.map((param, index) => (
                       <CommandItem
-                        key={param.id}
+                        key={`${param.id}-${index}`}
                         value={param.id}
                         onSelect={() => {
                           const newOpenDropdowns = new Set(openDropdowns);

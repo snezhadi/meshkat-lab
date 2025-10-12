@@ -20,6 +20,16 @@ export function getOrigin(headers: Headers): string {
   return `${proto}://${host}`;
 }
 
+/**
+ * Extract available parameter IDs for condition editor
+ * Filters parameters to only boolean and enum types, then maps to their IDs (custom_ids)
+ */
+export function getAvailableParameterIds(allParameters: any[]): string[] {
+  return allParameters
+    .filter((param) => param.type === 'boolean' || param.type === 'enum')
+    .map((param) => param.id);
+}
+
 // https://react.dev/reference/react/cache#caveats
 // > React will invalidate the cache for all memoized functions for each server request.
 export const getAppConfig = cache(async (origin: string): Promise<AppConfig> => {
