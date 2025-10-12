@@ -652,7 +652,7 @@ export default function ParameterEditPage() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges}>
+              <Button onClick={handleSave} disabled={saving}>
                 {saving ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
