@@ -182,7 +182,7 @@ export async function PUT(
     console.log('🔍 inputTypeId result:', inputTypeId);
     
     console.log('🔍 About to call getPriorityId with:', parameterData.priority);
-    const priorityId = parameterData.priority ? await getPriorityId(supabase, parameterData.priority) : null;
+    const priorityId = (parameterData.priority !== undefined && parameterData.priority !== null) ? await getPriorityId(supabase, parameterData.priority) : null;
     console.log('🔍 priorityId result:', priorityId);
     
     // Handle optional display fields - only create groups/subgroups if explicitly provided
