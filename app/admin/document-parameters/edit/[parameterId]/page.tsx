@@ -148,12 +148,15 @@ export default function ParameterEditPage() {
 
       // All data comes from single API call now!
       // We need parameters for condition editor, so fetch them
+      console.log('🔍 Fetching parameters for templateId:', parameterData.templateId);
       const paramsResponse = await fetch(`/api/admin/parameters?templateId=${parameterData.templateId}`);
       if (paramsResponse.ok) {
         const paramsData = await paramsResponse.json();
+        console.log('✅ Parameters fetched successfully:', paramsData.parameters?.length, 'parameters');
         setAllParameters(paramsData.parameters || []);
         setConfig(paramsData.config || parameterData.config);
       } else {
+        console.log('❌ Failed to fetch parameters:', paramsResponse.status, paramsResponse.statusText);
         setAllParameters([]);
         setConfig(parameterData.config);
       }

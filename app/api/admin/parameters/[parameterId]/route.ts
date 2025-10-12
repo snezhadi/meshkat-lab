@@ -124,6 +124,7 @@ export async function GET(
       default: jd.default_value
     }));
 
+    console.log('📤 Returning parameter data with templateId:', param.template_id.toString());
     return NextResponse.json({
       success: true,
       parameter: transformedParameter,
