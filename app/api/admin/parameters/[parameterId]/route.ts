@@ -182,6 +182,7 @@ export async function PUT(
     console.log('🔍 inputTypeId result:', inputTypeId);
     
     console.log('🔍 About to call getPriorityId with:', parameterData.priority);
+    console.log('🔍 Priority check: !== undefined?', parameterData.priority !== undefined, '!== null?', parameterData.priority !== null);
     const priorityId = (parameterData.priority !== undefined && parameterData.priority !== null) ? await getPriorityId(supabase, parameterData.priority) : null;
     console.log('🔍 priorityId result:', priorityId);
     
