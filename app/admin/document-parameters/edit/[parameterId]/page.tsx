@@ -144,26 +144,18 @@ export default function ParameterEditPage() {
         throw new Error('Parameter not found');
       }
 
-      console.log('✅ Parameter data loaded in single request');
-
       // All data comes from single API call now!
       // We need parameters for condition editor, so fetch them
-      console.log('🔍 Fetching parameters for templateId:', parameterData.templateId);
-      console.log('🔍 Full parameterData object:', JSON.stringify(parameterData, null, 2));
-      
       if (!parameterData.templateId) {
-        console.log('❌ templateId is missing from parameterData');
         setAllParameters([]);
         setConfig(parameterData.config);
       } else {
         const paramsResponse = await fetch(`/api/admin/parameters?templateId=${parameterData.templateId}`);
         if (paramsResponse.ok) {
           const paramsData = await paramsResponse.json();
-          console.log('✅ Parameters fetched successfully:', paramsData.parameters?.length, 'parameters');
           setAllParameters(paramsData.parameters || []);
           setConfig(paramsData.config || parameterData.config);
         } else {
-          console.log('❌ Failed to fetch parameters:', paramsResponse.status, paramsResponse.statusText);
           setAllParameters([]);
           setConfig(parameterData.config);
         }
