@@ -396,6 +396,12 @@ export default function ParameterEditPage() {
     handleNavigation('/admin/document-parameters');
   };
 
+  // Debug logging
+  console.log('🔍 Component render - saving state:', saving);
+  console.log('🔍 Component render - loading state:', loading);
+  console.log('🔍 Component render - parameter:', parameter?.id);
+  console.log('🔍 Component render - config:', config);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -661,7 +667,14 @@ export default function ParameterEditPage() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={saving}>
+              <Button 
+                onClick={() => {
+                  console.log('🖱️ Button clicked!');
+                  console.log('🖱️ saving state:', saving);
+                  handleSave();
+                }} 
+                disabled={saving}
+              >
                 {saving ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
