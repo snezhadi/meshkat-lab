@@ -7,19 +7,19 @@ function transformParameterFromDB(param: any): any {
     id: param.custom_id,
     name: param.name,
     description: param.description,
-    type: param.type_id ? param.parameter_types?.name : 'text',
+    type: param.type_name || 'text',
     metadata: {
       llm_instructions: param.llm_instructions,
       llm_description: param.llm_description,
-      priority: param.priority_id ? param.priority_levels?.level : 1,
+      priority: param.priority_level || 1,
       format: param.format,
     },
     condition: param.condition,
     display: {
-      group: param.parameter_groups?.name || 'General Parameters',
-      subgroup: param.parameter_subgroups?.name || 'Basic',
+      group: param.group_name || null,
+      subgroup: param.subgroup_name || null,
       label: param.display_label,
-      input: param.display_input_id ? param.input_types?.name : 'textbox',
+      input: param.input_type_name || 'textbox',
     },
     options: param.options ? param.options.split(',') : undefined,
     defaults: {
@@ -123,15 +123,14 @@ export async function GET(request: NextRequest) {
     // First, collect all subgroups and group them properly
     if (subgroups) {
       for (const sg of subgroups) {
-        // Get the group for this subgroup from the parameters
-        const groupForSubgroup = transformedParameters.find(p => 
-          p.display.subgroup === sg.name
-        )?.display.group || 'General Parameters';
-        
-        if (!subgroupsMap.has(groupForSubgroup)) {
-          subgroupsMap.set(groupForSubgroup, new Set());
+        // Find the group this subgroup belongs to
+        const group = groups.find((g: any) => g.id === sg.group_id);
+        if (group) {
+          if (!subgroupsMap.has(group.name)) {
+            subgroupsMap.set(group.name, new Set());
+          }
+          subgroupsMap.get(group.name)!.add(sg.name);
         }
-        subgroupsMap.get(groupForSubgroup)!.add(sg.name);
       }
     }
     
