@@ -95,6 +95,11 @@ export function DocumentParametersEditor({
   const [globalConfig, setGlobalConfig] = useState<GlobalConfig>({ types: [], priorities: [], inputs: [] });
   const [savingConfig, setSavingConfig] = useState(false);
 
+  // Update localConfig when config prop changes
+  useEffect(() => {
+    setLocalConfig(config);
+  }, [config]);
+
   // Apply filters
   const applyFilters = useMemo(() => {
     return parameters.filter((param) => {
